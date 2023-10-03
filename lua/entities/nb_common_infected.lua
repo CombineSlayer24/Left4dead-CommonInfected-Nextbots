@@ -242,7 +242,7 @@ function ENT:RunBehaviour()
 				self.loco:SetDesiredSpeed( 15 )
 				self:MoveToPos( self:GetPos() + VectorRand() * random( 250, 500 ) )
 
-				self:ResetSequence( self:LookupSequence("Idle") ) -- revert to idle activity
+				self:ResetSequence( self:LookupSequence( "Idle" ) ) -- revert to idle activity
 				self.IsWalking = true 
 			else
 				self.IsWalking = false
@@ -256,5 +256,5 @@ end
 list.Set( "NPC", "nb_common_infected", {
 	Name = "Common Infected",
 	Class = "nb_common_infected",
-	Category = "Left 4 Dead 2"
+	Category = "Left 4 Dead NextBots"
 })
