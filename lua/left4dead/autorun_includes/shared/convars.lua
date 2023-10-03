@@ -7,6 +7,7 @@ CreateConVar( "left4dead_nb_sv_voiceset", 0, FCVAR_ARCHIVE, "What voiceset shoul
 CreateConVar( "left4dead_nb_sv_deathanims", 1, FCVAR_ARCHIVE, "Should Common Infected do Death Animations?", 0, 1 )
 CreateConVar( "left4dead_nb_sv_climb", 1, FCVAR_ARCHIVE, "Should Common Infected climb up obstacles?", 0, 1 )
 CreateConVar( "left4dead_nb_sv_itemdrops", 1, FCVAR_ARCHIVE, "Should Common Infected spawn with props/items?", 0, 1 )
+CreateConVar( "left4dead_nb_sv_fightothers", 1, FCVAR_ARCHIVE, "Should Common Infected fight other commons?", 0, 1 )
 
 -- ClientSide Convars
 CreateClientConVar( "left4dead_nb_cl_particles", 1, true, "Should Common Infected have particle effects? (Puking, blood)" )

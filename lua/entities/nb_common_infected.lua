@@ -249,7 +249,7 @@ function ENT:RunBehaviour()
 			end
 		end
 		
-		coroutine.wait(0.05)
+		coroutine.wait(0.01)
 	end
 end
 

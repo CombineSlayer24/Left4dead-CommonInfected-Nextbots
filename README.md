@@ -18,6 +18,9 @@ This addon is currently under heavy development, any PR's and contributions is h
 - Possibly do Uncommon Infected for L4D1 Variations and L4D2
 - Create some entities for the Fallen Survivor Infected to drop (Pills +25% health, HealthKit +80% health, Grenades)
 
+### Animation Issues:
+Somewhere in L4D2, there's other Animations that if you don't have L4D2 mounted, it casues issues????
+
 ### General:
 Have them no collide with other Common Infected, Unstuck detection, if stuck, kill them.
 
