@@ -1,4 +1,7 @@
-# TODO:
+# NOTICE
+This addon is currently under heavy development, any PR's and contributions is highly appreciated. 💖 
+
+# TODO
 ### High Priority
 - Make some shared folders
 - Animations (Walking, running, turning, climbing, death, running death)
