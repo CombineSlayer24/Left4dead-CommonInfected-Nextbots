@@ -46,7 +46,7 @@ A difficulty setting for the commons
 Health: 50 (For all difficulties)
 
 ### Damage dealt to target
-Easy: 1 dmg per hit
-Normal: 2 dmg per hit
-Advanced: 5 dmg per hit
-Expert: 20 dmg per hit
+- Easy: 1 dmg per hit
+- Normal: 2 dmg per hit
+- Advanced: 5 dmg per hit
+- Expert: 20 dmg per hit
