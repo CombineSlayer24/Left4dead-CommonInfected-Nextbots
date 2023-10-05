@@ -14,7 +14,6 @@ This addon is currently under heavy development, any PR's and contributions is h
 - Clientside / Serverside death ragdolls
 ### Low Priority
 - Music System (Play the ambient Choir sounds when Common Infected are nearby)
-- Replace .wav sounds for .mp3 for space reasons
 - Possibly do Uncommon Infected for L4D1 Variations and L4D2
 - Create some entities for the Fallen Survivor Infected to drop (Pills +25% health, HealthKit +80% health, Grenades)
 
@@ -28,6 +27,9 @@ Have them no collide with other Common Infected, Unstuck detection, if stuck, ki
 I have no idea how I could make this happen...
 
 ### Music System:
+When the music system is enabled, and common infected are nearby the player around 2000 HU, play ambient zombie choir sounds, with a 30 second delay in between the next sound playing. 
+
+### Horde Music:
 TBD
 
 ### Wandering / Idling:
