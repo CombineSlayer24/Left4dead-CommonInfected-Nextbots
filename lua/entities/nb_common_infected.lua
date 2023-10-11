@@ -10,6 +10,11 @@ ENT.IsRunning = false
 ENT.IsLyingOrSitting = false
 ENT.IsClimbing = false
 
+for _, lua in ipairs( file.Find( "left4dead/*", "LUA") ) do
+    include( "left4dead/" .. lua )
+    print( "[L4D Nextbots] Loaded " .. "left4dead/" .. lua )
+end
+
 -- This might seem reduntant, but trust me, it's not.
 -- We create locals of functions so GLua can access them faster
 local hook_Run = hook.Run
@@ -109,7 +114,7 @@ function ENT:Initialize()
 		local skinCount = self:SkinCount()
 		if skinCount > 0 then self:SetSkin( random( 0, skinCount - 1 ) ) end
 
-		-- Layer idle Animations
+		-- Idle Facial Anims
 		timer_Create("IdleAnimationLayer", 0, 0, function()
 			if !IsValid( self ) then return end
 
@@ -130,6 +135,10 @@ end
 -- Certain Common/Uncommon Infected will have
 -- props attached to them... Riot Cops, Cops
 -- CEDA, ect. Create some props for them to carry
+
+-- itemName = Prop name in table
+-- canparent = Should it parented to the ragdoll on death?
+-- id = id attachment name
 function ENT:CreateItem( itemName, canparent, id )
 	local model = itemModels[ itemName ]
 	if !model then return end
