@@ -46,12 +46,13 @@ When it comes down to models, we make all of the models available for the player
 Should the player only want Military, Police, Rural, Common, Hospital, or all of above? ect ect.
 
 ### Difficulty:
-A difficulty setting for the commons
+A difficulty setting for the commons.
+Commons will also have a damage immunity on the target after a successful attack.
 
 Health: 50 (For all difficulties)
 
 ### Damage dealt to target
-- Easy: 1 dmg per hit
-- Normal: 2 dmg per hit
-- Advanced: 5 dmg per hit
-- Expert: 20 dmg per hit
+- Easy: 1 dmg per hit, 0.5 immunity delay
+- Normal: 2 dmg per hit, 0.33 immunity delay
+- Advanced: 5 dmg per hit, 0.5 immunity delay
+- Expert: 20 dmg per hit, 1.0 immunity delay
