@@ -29,7 +29,7 @@ local Rand = math.Rand
 local table_insert = table.insert
 
 local collisionmins = Vector( -16, -16, 0 )
-local standingcollisionmaxs = Vector( 16, 16, 72 )
+local collisionmaxs = Vector( 16, 16, 72 )
 local crouchingcollisionmaxs = Vector( 16, 16, 36 )
 
 local AddGestureSequence = AddGestureSequence
@@ -96,9 +96,9 @@ function ENT:Initialize()
 		-- We need to change the speed for walking and running, here for now
 		self.loco:SetDesiredSpeed( 280 )
 
-		self:SetCollisionBounds( collisionmins, standingcollisionmaxs )
+		self:SetCollisionBounds( collisionmins, collisionmaxs )
 		self:PhysicsInitShadow()
-		self:PhysicsInit( SOLID_BBOX  )
+		self:SetSolid(SOLID_BBOX)
 
 		self:SetCollisionGroup( COLLISION_GROUP_PLAYER )
 
