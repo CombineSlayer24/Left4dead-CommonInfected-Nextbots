@@ -1,8 +1,8 @@
 patch
 {
-	include "materials/models/left4dead/infected/common/common_infected_shared.vmt"
+	include "materials/models/left4dead/l4d1_common/common_infected_shared.vmt"
 	insert
 	{
-		$baseTexture "models/left4dead/infected/common/common_male_black_head_01"
+		$baseTexture "models/left4dead/l4d1_common/common_male_black_head_01"
 	}
 }

@@ -26,6 +26,7 @@ local timer_Remove = timer.Remove
 local ents_Create = ents.Create
 local random = math.random
 local Rand = math.Rand
+local table_insert = table.insert
 
 local collisionmins = Vector( -16, -16, 0 )
 local standingcollisionmaxs = Vector( 16, 16, 72 )
@@ -66,22 +67,22 @@ local itemModels = {
 	-- Add more items here as needed
 }
 
-
+---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:Initialize()
 	if SERVER then
-		-- When it comes down to models, we make all of the models available for the player/admins to customize. 
+		-- When it comes down to models, we make all of the models available for the player/admins to customize.
 		-- Sorta similar to how the population is handled in L4D2.
 		-- Should the player only want Military, Police, Rural, Common, Hospital, or all of above? ect ect.
 		self:SetModel( "models/infected/c_inf_nextbot/common_police_male01.mdl" )
 		local mdl = self:GetModel()
-		
+
 		self.ci_BehaviorState = "Idle"
 
 		self:SetHealth( 50 )
 		self:SetShouldServerRagdoll( true )
 
 		--if droppableProps:GetBool() then
-		if mdl == "models/infected/c_inf_nextbot/common_police_male01.mdl" && random( 1, 100 ) <= 15 then
+		if mdl == "models/infected/c_inf_nextbot/common_police_male01.mdl" && random( 100 ) <= 15 then
 			self:CreateItem( "nightstick",  true, "baton" )
 		end
 		--end
@@ -97,6 +98,7 @@ function ENT:Initialize()
 
 		self:SetCollisionBounds( collisionmins, standingcollisionmaxs )
 		self:PhysicsInitShadow()
+		self:PhysicsInit( SOLID_BBOX  )
 
 		self:SetCollisionGroup( COLLISION_GROUP_PLAYER )
 
@@ -107,7 +109,7 @@ function ENT:Initialize()
 		-- from Lambdaplayers
 		for _, v in ipairs( self:GetBodyGroups() ) do
 			local subMdls = #v.submodels
-			if subMdls == 0 then continue end 
+			if subMdls == 0 then continue end
 			self:SetBodygroup( v.id, random( 0, subMdls ) )
 		end
 
@@ -115,23 +117,23 @@ function ENT:Initialize()
 		if skinCount > 0 then self:SetSkin( random( 0, skinCount - 1 ) ) end
 
 		-- Idle Facial Anims
-		timer_Create("IdleAnimationLayer", 0, 0, function()
+		timer_Create( "IdleAnimationLayer", 0, 0, function()
 			if !IsValid( self ) then return end
 
-			local anim = self:LookupSequence( "exp_idle_0" .. random( 1, 6 ) )
+			local anim = self:LookupSequence( "exp_idle_0" .. random( 6 ) )
 			self:AddGestureSequence( anim, true )
 
-			timer_Adjust( "IdleAnimationLayer", self:SequenceDuration( anim ) - 0.2)
+			timer.Adjust( "IdleAnimationLayer", self:SequenceDuration( anim ) - 0.25)
 		end)
 
 		local anim = self:LookupSequence( "idlenoise" )
-		self:AddGestureSequence(anim,false)
+		self:AddGestureSequence( anim, false )
 
 	elseif CLIENT then
 		self.ci_lastdraw = 0
 	end
 end
-
+---------------------------------------------------------------------------------------------------------------------------------------------
 -- Certain Common/Uncommon Infected will have
 -- props attached to them... Riot Cops, Cops
 -- CEDA, ect. Create some props for them to carry
@@ -146,7 +148,7 @@ function ENT:CreateItem( itemName, canparent, id )
 	local item = ents_Create( "prop_physics" )
 	item:SetModel( model )
 	item:SetLocalPos( self:GetPos() )
-	item:SetLocalAngles( self:GetAngles() )			
+	item:SetLocalAngles( self:GetAngles() )
 	item:SetOwner( self )
 	item:SetParent( self )
 	item:Fire( "SetParentAttachmentMaintainOffset", id )
@@ -159,20 +161,23 @@ function ENT:CreateItem( itemName, canparent, id )
 	self.item = item
 	self.canparent = canparent
 end
+---------------------------------------------------------------------------------------------------------------------------------------------
+function ENT:OnKilled( dmginfo )
+	hook_Run( "OnNPCKilled", self, dmginfo:GetAttacker(), dmginfo:GetInflictor() )
 
-function ENT:OnKilled(dmginfo)
-	hook_Run("OnNPCKilled", self, dmginfo:GetAttacker(), dmginfo:GetInflictor())
+	local ragdoll = self:BecomeRagdoll( dmginfo )
+	ragdoll:SetCollisionGroup( COLLISION_GROUP_DEBRIS )
 
-	local ragdoll = self:BecomeRagdoll(dmginfo)
-	ragdoll:SetCollisionGroup(COLLISION_GROUP_DEBRIS)
+	ragdoll:DeathExpressions( "death" )
 
 	if IsValid( self.item ) then
 		local item = self.item
-		local dropChance = random( 1, 100) <= 60
+		-- Make this into a convar later
+		local dropChance = random( 100 ) <= 60
 
 		if dropChance or !self.canparent then
 			item:SetParent( nil )
-			item:SetPos(self:GetPos() + Vector( 0, 0, 50 ) )
+			item:SetPos( self:GetPos() + Vector( 0, 0, 50 ) )
 			item:SetCollisionGroup( COLLISION_GROUP_DEBRIS )
 			item:PhysicsInit( SOLID_VPHYSICS )
 
@@ -200,19 +205,18 @@ function ENT:OnKilled(dmginfo)
 		end
 	end
 end
-
+---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:Draw()
 	self.ci_lastdraw = RealTime() + 0.1
 	self:DrawModel()
 	--Msg("Being drawn")
 end
-
+---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:OnRemove()
 	timer_Remove( "IdleAnimationLayer" )
 end
-
+---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:HandleStuck()
-
 	local dmginfo = DamageInfo()
 	dmginfo:SetAttacker( self )
 	dmginfo:SetInflictor( self )
@@ -223,7 +227,7 @@ function ENT:HandleStuck()
 
 	--self:EmitSound( "npc/infected/gore/bullets/bullet_impact_05.wav", 65 )
 end
-
+---------------------------------------------------------------------------------------------------------------------------------------------
 -- Move this over to left4dead/autorun_includes/server/globals.lua later
 -- Some animations don't worry, why? All of running animations and the "Walk"
 -- animations are in place...
@@ -234,17 +238,18 @@ _CommonInfected_WalkAnims = {
 	"Walk_Neutral_03",
 	"Walk_Neutral_04a",
 	"Walk_Neutral_04b",
-    "Shamble_01",
-    "Shamble_02",
-    "Shamble_03",
+	"Shamble_01",
+	"Shamble_02",
+	"Shamble_03",
 	-- "Walk_Neutral_South",
     "Walk" -- beta animation
 }
-
+---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:RunBehaviour()
 	while ( true ) do
+		-- Basic movement for now
 		if ( self:IsOnGround() ) then
-			if ( random( 1, 200 ) == 1 ) then
+			if ( random( 200 ) == 1 ) then
 				local anim = _CommonInfected_WalkAnims[ random( #_CommonInfected_WalkAnims ) ]
 				self:ResetSequence( self:LookupSequence( anim ) )
 
@@ -252,18 +257,58 @@ function ENT:RunBehaviour()
 				self:MoveToPos( self:GetPos() + VectorRand() * random( 250, 500 ) )
 
 				self:ResetSequence( self:LookupSequence( "Idle" ) ) -- revert to idle activity
-				self.IsWalking = true 
+				self.IsWalking = true
 			else
 				self.IsWalking = false
 			end
 		end
-		
+
 		coroutine.wait(0.01)
 	end
 end
 
+---------------------------------------------------------------------------------------------------------------------------------------------
+function ENT:DeathExpressions( expressionType )
+
+	local expressions =
+	{
+		Death01 =
+		{
+			{boneName = "ValveBiped.Exp_Eyelids_Upper", positionOffset = Vector( -0.8, 0, 0 ), angleOffset = Angle( 0, 0, 0 ) },
+			{boneName = "ValveBiped.Exp_Eyebrows", positionOffset = Vector( 0.7, 0, 0 ), angleOffset = Angle( 0, 0, 0 ) },
+		},
+	}
+
+	local expressionCategory = expressions
+	if expressionCategory then
+		local expressionKeys = {}
+		for key in pairs( expressionCategory ) do
+			table_insert( expressionKeys, key )
+		end
+
+		local randomExpressionKey = expressionKeys[ random( #expressionKeys ) ]
+		local bonesToModify = expressionCategory[ randomExpressionKey ]
+
+		for _, boneData in pairs( bonesToModify ) do
+			local boneName = boneData.boneName
+			local positionOffset = boneData.positionOffset
+			local angleOffset = boneData.angleOffset
+
+			local boneIndex = self:LookupBone( boneName )
+			if boneIndex then
+				self:ManipulateBonePosition( boneIndex, positionOffset )
+				self:ManipulateBoneAngles( boneIndex, angleOffset )
+				Msg("Bones set")
+			end
+		end
+	else
+		Msg("Invalid expression type")
+	end
+end
+---------------------------------------------------------------------------------------------------------------------------------------------
 list.Set( "NPC", "nb_common_infected", {
 	Name = "Common Infected",
 	Class = "nb_common_infected",
 	Category = "Left 4 Dead NextBots"
 })
+---------------------------------------------------------------------------------------------------------------------------------------------
