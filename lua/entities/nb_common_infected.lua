@@ -168,7 +168,7 @@ function ENT:OnKilled( dmginfo )
 	local ragdoll = self:BecomeRagdoll( dmginfo )
 	ragdoll:SetCollisionGroup( COLLISION_GROUP_DEBRIS )
 
-	ragdoll:DeathExpressions( "death" )
+	self:SetDeathExpression( ragdoll )
 
 	if IsValid( self.item ) then
 		local item = self.item
@@ -268,41 +268,47 @@ function ENT:RunBehaviour()
 end
 
 ---------------------------------------------------------------------------------------------------------------------------------------------
-function ENT:DeathExpressions( expressionType )
+function ENT:SetDeathExpression( ragdoll )
 
+	-- Maybe have a different way to get face expressions...
+	-- should we rely on random factors, or predefined values instead?
 	local expressions =
 	{
 		Death01 =
 		{
-			{boneName = "ValveBiped.Exp_Eyelids_Upper", positionOffset = Vector( -0.8, 0, 0 ), angleOffset = Angle( 0, 0, 0 ) },
-			{boneName = "ValveBiped.Exp_Eyebrows", positionOffset = Vector( 0.7, 0, 0 ), angleOffset = Angle( 0, 0, 0 ) },
+			{ boneName = "ValveBiped.Exp_Eyelids_Upper", positionOffset = Vector( -0.8, 0, 0 ), angleOffset = Angle( 0, 0, 0 ) },
+			{ boneName = "ValveBiped.Exp_Eyebrows", positionOffset = Vector( 0.7, 0, 0 ), angleOffset = Angle( 0, 0, 0 ) },
+			{ boneName = "ValveBiped.Exp_LipsUpper", positionOffset = Vector( -0.2, 0, 0 ), angleOffset = Angle( 0, 0, 0 ) },
+		},
+		Death02 =
+		{
+			{ boneName = "ValveBiped.Exp_Eyelids_Upper", positionOffset = Vector( -0.65, 0, 0 ), angleOffset = Angle( 0, 0, 0 ) },
+			{ boneName = "ValveBiped.Exp_Eyebrows", positionOffset = Vector( 0.7, 0, 0 ), angleOffset = Angle( 0, 0, 0 ) },
+		},
+		Death03 =
+		{
+			{ boneName = "ValveBiped.Exp_Eyelids_Upper", positionOffset = Vector( -0.3, 0, 0 ), angleOffset = Angle( 0, 0, 0 ) },
+			{ boneName = "ValveBiped.Exp_Eyebrows", positionOffset = Vector( 1.2, 0, 0 ), angleOffset = Angle( 0, 0, 0 ) },
+			{ boneName = "ValveBiped.Exp_Jaw", positionOffset = Vector( -0.3, 0, 0 ), angleOffset = Angle( 0, 0, 0 ) },
 		},
 	}
 
-	local expressionCategory = expressions
-	if expressionCategory then
-		local expressionKeys = {}
-		for key in pairs( expressionCategory ) do
-			table_insert( expressionKeys, key )
+	local expressionKeys = {}
+	for key in pairs( expressions ) do
+		table_insert( expressionKeys, key )
+	end
+
+	local randomExpressionKey = expressionKeys[ random( #expressionKeys ) ]
+	local bonesToModify = expressions[ randomExpressionKey ]
+
+	for _, boneData in pairs( bonesToModify ) do
+		local boneIndex = ragdoll:LookupBone( boneData.boneName )
+		if boneIndex then
+			ragdoll:ManipulateBonePosition( boneIndex, boneData.positionOffset )
+			ragdoll:ManipulateBoneAngles( boneIndex, boneData.angleOffset )
 		end
 
-		local randomExpressionKey = expressionKeys[ random( #expressionKeys ) ]
-		local bonesToModify = expressionCategory[ randomExpressionKey ]
-
-		for _, boneData in pairs( bonesToModify ) do
-			local boneName = boneData.boneName
-			local positionOffset = boneData.positionOffset
-			local angleOffset = boneData.angleOffset
-
-			local boneIndex = self:LookupBone( boneName )
-			if boneIndex then
-				self:ManipulateBonePosition( boneIndex, positionOffset )
-				self:ManipulateBoneAngles( boneIndex, angleOffset )
-				Msg("Bones set")
-			end
-		end
-	else
-		Msg("Invalid expression type")
+		Msg("Bones set \n")
 	end
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
