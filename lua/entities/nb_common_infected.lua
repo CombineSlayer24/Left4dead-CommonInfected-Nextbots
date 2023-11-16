@@ -120,7 +120,7 @@ function ENT:Initialize()
 		timer_Create( "IdleAnimationLayer", 0, 0, function()
 			if !IsValid( self ) then return end
 
-			local anim = self:LookupSequence( "exp_idle_0" .. random( 6 ) )
+			local anim = self:LookupSequence( "exp_angry_0" .. random( 6 ) )
 			self:AddGestureSequence( anim, true )
 
 			timer.Adjust( "IdleAnimationLayer", self:SequenceDuration( anim ) - 0.25)
@@ -270,14 +270,13 @@ end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:SetDeathExpression( ragdoll )
 
-	-- Maybe have a different way to get face expressions...
-	-- should we rely on random factors, or predefined values instead?
-	local expressions =
+	-- Move this to globals.lua later
+	local _DeathExpressions =
 	{
 		Death01 =
 		{
-			{ boneName = "ValveBiped.Exp_Eyelids_Upper", positionOffset = Vector( -0.8, 0, 0 ), angleOffset = Angle( 0, 0, 0 ) },
-			{ boneName = "ValveBiped.Exp_Eyebrows", positionOffset = Vector( 0.7, 0, 0 ), angleOffset = Angle( 0, 0, 0 ) },
+			{ boneName = "ValveBiped.Exp_EyebrowsCorner", positionOffset = Vector( -0.8, 0, 0 ), angleOffset = Angle( 0, 0, 0 ) },
+			{ boneName = "ValveBiped.Exp_Eyebrows", positionOffset = Vector( 1.2, 0, 0 ), angleOffset = Angle( 0, 0, 0 ) },
 			{ boneName = "ValveBiped.Exp_LipsUpper", positionOffset = Vector( -0.2, 0, 0 ), angleOffset = Angle( 0, 0, 0 ) },
 		},
 		Death02 =
@@ -291,15 +290,39 @@ function ENT:SetDeathExpression( ragdoll )
 			{ boneName = "ValveBiped.Exp_Eyebrows", positionOffset = Vector( 1.2, 0, 0 ), angleOffset = Angle( 0, 0, 0 ) },
 			{ boneName = "ValveBiped.Exp_Jaw", positionOffset = Vector( -0.3, 0, 0 ), angleOffset = Angle( 0, 0, 0 ) },
 		},
+		Death04 =
+		{
+			{ boneName = "ValveBiped.Exp_Eyelids_Upper", positionOffset = Vector( -0.8, 0, 0 ), angleOffset = Angle( 0, 0, 0 ) },
+			{ boneName = "ValveBiped.Exp_Eyebrows", positionOffset = Vector( -0.6, 0, 0 ), angleOffset = Angle( 0, 0, 0 ) },
+			{ boneName = "ValveBiped.Exp_Jaw", positionOffset = Vector( 0.05, 0, 0 ), angleOffset = Angle( 0, 0, 0 ) },
+		},
+		Death05 =
+		{
+			{ boneName = "ValveBiped.Exp_Eyelids_Upper", positionOffset = Vector( -0.3, 0, 0 ), angleOffset = Angle( 0, 0, 0 ) },
+			{ boneName = "ValveBiped.Exp_Eyebrows", positionOffset = Vector( 1.5, 0, 0 ), angleOffset = Angle( 0, 0, 0 ) },
+			{ boneName = "ValveBiped.Exp_Jaw", positionOffset = Vector( -0.01, 0, 0 ), angleOffset = Angle( 0, 0, 0 ) },
+			{ boneName = "ValveBiped.Exp_LipsUpper", positionOffset = Vector( 0.1, 0, 0 ), angleOffset = Angle( 0, 0, 0 ) },
+		},
+		Death06 =
+		{
+			{ boneName = "ValveBiped.Exp_EyebrowsCorner", positionOffset = Vector( -0.8, 0, 0 ), angleOffset = Angle( 0, 0, 0 ) },
+			{ boneName = "ValveBiped.Exp_Eyebrows", positionOffset = Vector( 1.2, 0, 0 ), angleOffset = Angle( 0, 0, 0 ) },
+			{ boneName = "ValveBiped.Exp_Eyelids_Upper", positionOffset = Vector( -0.2, 0, 0 ), angleOffset = Angle( 0, 0, 0 ) },
+			{ boneName = "ValveBiped.Exp_Eyelids_Lower", positionOffset = Vector( 0.2, 0, 0 ), angleOffset = Angle( 0, 0, 0 ) },
+			{ boneName = "ValveBiped.Exp_LipsUpper", positionOffset = Vector( -0.12, 0, 0 ), angleOffset = Angle( 0, 0, 0 ) },
+			{ boneName = "ValveBiped.Exp_Jaw", positionOffset = Vector( -0.36, 0, 0 ), angleOffset = Angle( 0, 0, 0 ) },
+		},
 	}
 
 	local expressionKeys = {}
-	for key in pairs( expressions ) do
+	for key in pairs( _DeathExpressions ) do
 		table_insert( expressionKeys, key )
 	end
 
 	local randomExpressionKey = expressionKeys[ random( #expressionKeys ) ]
-	local bonesToModify = expressions[ randomExpressionKey ]
+	local bonesToModify = _DeathExpressions[ randomExpressionKey ]
+
+	Msg( "Expression picked: " .. randomExpressionKey )
 
 	for _, boneData in pairs( bonesToModify ) do
 		local boneIndex = ragdoll:LookupBone( boneData.boneName )

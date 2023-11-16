@@ -21,4 +21,4 @@ CreateConVar( "l4d_sv_cull", 0, FCVAR_ARCHIVE, "If 1, Infected will be removed i
 CreateConVar( "l4d_sv_cull_timeout", 5, FCVAR_ARCHIVE, "Grace period before Infected is culled for being far away", 0, 10 )
 
 -- ClientSide Convars
-CreateClientConVar( "l4d_cl_particles", 1, true, "Should Common Infected have particle effects? (Puking, blood)" )
+CreateClientConVar( "l4d_cl_particles", 1, true, false, "Should Common Infected have particle effects? (Puking, blood)" )
