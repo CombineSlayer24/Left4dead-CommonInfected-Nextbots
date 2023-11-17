@@ -6,7 +6,7 @@ CreateConVar( "l4d_nb_sv_difficulty", 1, FCVAR_ARCHIVE, "Difficulty for Infected
 CreateConVar( "l4d_nb_sv_voiceset", 0, FCVAR_ARCHIVE, "What voiceset should Common Infected use? 0 - Default, 1 - Left 4 Dead 1, 2 - Left 4 Dead 2", 0, 2 )
 CreateConVar( "l4d_nb_sv_deathanims", 1, FCVAR_ARCHIVE, "Should Infected do Death Animations?", 0, 1 )
 CreateConVar( "l4d_nb_sv_climb", 1, FCVAR_ARCHIVE, "Should Infected climb up obstacles?", 0, 1 )
-CreateConVar( "l4d_nb_sv_itemdrops", 1, FCVAR_ARCHIVE, "Should Infected spawn with props/items?", 0, 1 )
+CreateConVar( "l4d_nb_sv_createitems", 1, FCVAR_ARCHIVE, "Should Infected spawn with props/items?", 0, 1 )
 CreateConVar( "l4d_nb_sv_fightothers", 1, FCVAR_ARCHIVE, "Should Infected fight amongst themselves?", 0, 1 )
 
 -- Combat Related

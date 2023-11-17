@@ -3,16 +3,34 @@ AddCSLuaFile()
 ENT.Base = "base_nextbot"
 ENT.PrintName = "Common Infected"
 ENT.Author = "Pyri"
-ENT.IsL4DCommonInfected = true
-ENT.IsL4DUnCommonInfected = false
+ENT.IsCommonInfected = false
+ENT.IsUnCommonInfected = false
 ENT.IsWalking = false
 ENT.IsRunning = false
 ENT.IsLyingOrSitting = false
 ENT.IsClimbing = false
 
-for _, lua in ipairs( file.Find( "left4dead/*", "LUA") ) do
-    include( "left4dead/" .. lua )
-    print( "[L4D Nextbots] Loaded " .. "left4dead/" .. lua )
+--- Include files based on sv_ sh_ or cl_
+local ENT_CommonFiles = file.Find( "left4dead/z_common/*", "LUA", "nameasc" )
+
+for k, luafile in ipairs( ENT_CommonFiles ) do
+    if string.StartWith( luafile, "sv_" ) then -- Server Side Files
+        include( "left4dead/z_common/" .. luafile )
+        print( "Left 4 Dead ENT TABLE: Included Server Side ENT Lua File [" .. luafile .. "]" )
+    elseif string.StartWith( luafile, "sh_" ) then -- Shared Files
+        if SERVER then
+            AddCSLuaFile( "left4dead/z_common/" .. luafile )
+        end
+        include( "left4dead/z_common/" .. luafile )
+        print( "Left 4 Dead ENT TABLE: Included Shared ENT Lua File [" .. luafile .. "]" )
+    elseif string.StartWith( luafile, "cl_" ) then -- Client Side Files
+        if SERVER then
+            AddCSLuaFile( "left4dead/z_common/" .. luafile )
+        else
+            include( "left4dead/z_common/" .. luafile )
+            print( "Left 4 Dead ENT TABLE: Included Client Side ENT Lua File [" .. luafile .. "]" )
+        end
+    end
 end
 
 -- This might seem reduntant, but trust me, it's not.
@@ -27,10 +45,8 @@ local ents_Create = ents.Create
 local random = math.random
 local Rand = math.Rand
 local table_insert = table.insert
-
-local collisionmins = Vector( -16, -16, 0 )
-local collisionmaxs = Vector( 16, 16, 72 )
-local crouchingcollisionmaxs = Vector( 16, 16, 36 )
+local Clamp = math.Clamp
+local coroutine_wait = coroutine.wait
 
 local AddGestureSequence = AddGestureSequence
 local LookupSequence = LookupSequence
@@ -38,10 +54,14 @@ local SequenceDuration = SequenceDuration
 local IsValid = IsValid
 local Vector = Vector
 
+local collisionmins = Vector( -16, -16, 0 )
+local collisionmaxs = Vector( 16, 16, 72 )
+local crouchingcollisionmaxs = Vector( 16, 16, 36 )
+
 -- Convars
 local ignorePlys = GetConVar( "ai_ignoreplayers" )
 local sv_gravity = GetConVar( "sv_gravity" )
---local droppableProps = GetConVar( "left4dead_nb_sv_itemdrops" )
+local droppableProps = GetConVar( "l4d_nb_sv_createitems" )
 
 if CLIENT then language.Add( "nb_common_infected", ENT.PrintName ) end
 
@@ -66,7 +86,6 @@ local itemModels = {
 	painPills = "models/w_models/weapons/w_eq_painpills.mdl",
 	-- Add more items here as needed
 }
-
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:Initialize()
 	if SERVER then
@@ -76,21 +95,21 @@ function ENT:Initialize()
 		self:SetModel( "models/infected/c_inf_nextbot/common_police_male01.mdl" )
 		local mdl = self:GetModel()
 
-		self.ci_BehaviorState = "Idle"
+		self.ci_BehaviorState = "Idle" -- The state for our behavior thread is currently running
 
 		self:SetHealth( 50 )
 		self:SetShouldServerRagdoll( true )
 
-		--if droppableProps:GetBool() then
-		if mdl == "models/infected/c_inf_nextbot/common_police_male01.mdl" && random( 100 ) <= 15 then
-			self:CreateItem( "nightstick",  true, "baton" )
+		if droppableProps:GetBool() then
+			if mdl == "models/infected/c_inf_nextbot/common_police_male01.mdl" && random( 100 ) <= 15 then
+				self:CreateItem( "nightstick",  true, "baton" )
+			end
 		end
-		--end
 
-		self.loco:SetAcceleration( random( 120, 180 ) )
+		--self.loco:SetAcceleration( random( 250, 600 ) )
 		self.loco:SetDeceleration( 200 )
 		self.loco:SetStepHeight( 30 )
-		self.loco:SetGravity( sv_gravity:GetFloat() ) -- Makes us fall at the same speed as the real players do
+		self.loco:SetGravity( sv_gravity:GetFloat() )
 
 		-- Animations will match the speed
 		-- We need to change the speed for walking and running, here for now
@@ -117,17 +136,10 @@ function ENT:Initialize()
 		if skinCount > 0 then self:SetSkin( random( 0, skinCount - 1 ) ) end
 
 		-- Idle Facial Anims
-		timer_Create( "IdleAnimationLayer", 0, 0, function()
-			if !IsValid( self ) then return end
+		ZombieExpression( self, "idle" )
 
-			local anim = self:LookupSequence( "exp_angry_0" .. random( 6 ) )
-			self:AddGestureSequence( anim, true )
-
-			timer.Adjust( "IdleAnimationLayer", self:SequenceDuration( anim ) - 0.25)
-		end)
-
-		local anim = self:LookupSequence( "idlenoise" )
-		self:AddGestureSequence( anim, false )
+		-- Breathing Anims
+		self:AddGestureSequence( self:LookupSequence( "idlenoise" ), false )
 
 	elseif CLIENT then
 		self.ci_lastdraw = 0
@@ -213,7 +225,6 @@ function ENT:Draw()
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:OnRemove()
-	timer_Remove( "IdleAnimationLayer" )
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:HandleStuck()
@@ -228,91 +239,85 @@ function ENT:HandleStuck()
 	--self:EmitSound( "npc/infected/gore/bullets/bullet_impact_05.wav", 65 )
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
--- Move this over to left4dead/autorun_includes/server/globals.lua later
--- Some animations don't worry, why? All of running animations and the "Walk"
--- animations are in place...
-_CommonInfected_WalkAnims = {
-	"Walk_Neutral_01",
-	"Walk_Neutral_02",
-	"Walk_Neutral_02b",
-	"Walk_Neutral_03",
-	"Walk_Neutral_04a",
-	"Walk_Neutral_04b",
-	"Shamble_01",
-	"Shamble_02",
-	"Shamble_03",
-	-- "Walk_Neutral_South",
-    "Walk" -- beta animation
-}
----------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:RunBehaviour()
 	while ( true ) do
 		-- Basic movement for now
 		if ( self:IsOnGround() ) then
-			if ( random( 200 ) == 1 ) then
-				local anim = _CommonInfected_WalkAnims[ random( #_CommonInfected_WalkAnims ) ]
-				self:ResetSequence( self:LookupSequence( anim ) )
-
-				self.loco:SetDesiredSpeed( 15 )
-				self:MoveToPos( self:GetPos() + VectorRand() * random( 250, 500 ) )
-
-				self:ResetSequence( self:LookupSequence( "Idle" ) ) -- revert to idle activity
-				self.IsWalking = true
+			if ( random( 20 ) == 1 ) then
+				self:StartWalkAction()
 			else
-				self.IsWalking = false
+				self:StartIdleAction()
 			end
 		end
 
-		coroutine.wait(0.01)
+		coroutine_wait( 0.1 )
 	end
 end
 
 ---------------------------------------------------------------------------------------------------------------------------------------------
-function ENT:SetDeathExpression( ragdoll )
+--
+	-- 3 function below used for testing...
+	function ENT:StartWalkAction()
+		self.loco:SetAcceleration( random( 160, 280 ) )
+		local anim = _Z_WalkAnims[ random( #_Z_WalkAnims ) ]
+		self:ResetSequence( self:LookupSequence( anim ) )
 
-	-- Move this to globals.lua later
-	local _DeathExpressions =
-	{
-		Death01 =
-		{
-			{ boneName = "ValveBiped.Exp_EyebrowsCorner", positionOffset = Vector( -0.8, 0, 0 ), angleOffset = Angle( 0, 0, 0 ) },
-			{ boneName = "ValveBiped.Exp_Eyebrows", positionOffset = Vector( 1.2, 0, 0 ), angleOffset = Angle( 0, 0, 0 ) },
-			{ boneName = "ValveBiped.Exp_LipsUpper", positionOffset = Vector( -0.2, 0, 0 ), angleOffset = Angle( 0, 0, 0 ) },
-		},
-		Death02 =
-		{
-			{ boneName = "ValveBiped.Exp_Eyelids_Upper", positionOffset = Vector( -0.65, 0, 0 ), angleOffset = Angle( 0, 0, 0 ) },
-			{ boneName = "ValveBiped.Exp_Eyebrows", positionOffset = Vector( 0.7, 0, 0 ), angleOffset = Angle( 0, 0, 0 ) },
-		},
-		Death03 =
-		{
-			{ boneName = "ValveBiped.Exp_Eyelids_Upper", positionOffset = Vector( -0.3, 0, 0 ), angleOffset = Angle( 0, 0, 0 ) },
-			{ boneName = "ValveBiped.Exp_Eyebrows", positionOffset = Vector( 1.2, 0, 0 ), angleOffset = Angle( 0, 0, 0 ) },
-			{ boneName = "ValveBiped.Exp_Jaw", positionOffset = Vector( -0.3, 0, 0 ), angleOffset = Angle( 0, 0, 0 ) },
-		},
-		Death04 =
-		{
-			{ boneName = "ValveBiped.Exp_Eyelids_Upper", positionOffset = Vector( -0.8, 0, 0 ), angleOffset = Angle( 0, 0, 0 ) },
-			{ boneName = "ValveBiped.Exp_Eyebrows", positionOffset = Vector( -0.6, 0, 0 ), angleOffset = Angle( 0, 0, 0 ) },
-			{ boneName = "ValveBiped.Exp_Jaw", positionOffset = Vector( 0.05, 0, 0 ), angleOffset = Angle( 0, 0, 0 ) },
-		},
-		Death05 =
-		{
-			{ boneName = "ValveBiped.Exp_Eyelids_Upper", positionOffset = Vector( -0.3, 0, 0 ), angleOffset = Angle( 0, 0, 0 ) },
-			{ boneName = "ValveBiped.Exp_Eyebrows", positionOffset = Vector( 1.5, 0, 0 ), angleOffset = Angle( 0, 0, 0 ) },
-			{ boneName = "ValveBiped.Exp_Jaw", positionOffset = Vector( -0.01, 0, 0 ), angleOffset = Angle( 0, 0, 0 ) },
-			{ boneName = "ValveBiped.Exp_LipsUpper", positionOffset = Vector( 0.1, 0, 0 ), angleOffset = Angle( 0, 0, 0 ) },
-		},
-		Death06 =
-		{
-			{ boneName = "ValveBiped.Exp_EyebrowsCorner", positionOffset = Vector( -0.8, 0, 0 ), angleOffset = Angle( 0, 0, 0 ) },
-			{ boneName = "ValveBiped.Exp_Eyebrows", positionOffset = Vector( 1.2, 0, 0 ), angleOffset = Angle( 0, 0, 0 ) },
-			{ boneName = "ValveBiped.Exp_Eyelids_Upper", positionOffset = Vector( -0.2, 0, 0 ), angleOffset = Angle( 0, 0, 0 ) },
-			{ boneName = "ValveBiped.Exp_Eyelids_Lower", positionOffset = Vector( 0.2, 0, 0 ), angleOffset = Angle( 0, 0, 0 ) },
-			{ boneName = "ValveBiped.Exp_LipsUpper", positionOffset = Vector( -0.12, 0, 0 ), angleOffset = Angle( 0, 0, 0 ) },
-			{ boneName = "ValveBiped.Exp_Jaw", positionOffset = Vector( -0.36, 0, 0 ), angleOffset = Angle( 0, 0, 0 ) },
-		},
-	}
+		self.loco:SetDesiredSpeed( random( 15, 17 ) )
+		self:MoveToPos( self:GetPos() + VectorRand() * random( 250, 500 ) )
+
+		self.IsWalking = true
+	end
+	---------------------------------------------------------------------------------------------------------------------------------------------
+	function ENT:StartIdleAction()
+		local idleAnim = _Z_IdleAnims[ random( #_Z_IdleAnims ) ]
+		self:SetSequence( self:LookupSequence( idleAnim ) )
+		
+		self.IsWalking = false
+		self.IsRunning = false
+	end
+	---------------------------------------------------------------------------------------------------------------------------------------------
+	function ENT:StartRunAction()
+		self.loco:SetAcceleration( random( 250, 600 ) )
+		local anim = _Z_RunAnims[ random( #_Z_RunAnims ) ]
+		self:ResetSequence( self:LookupSequence( anim ) )
+
+		self.loco:SetDesiredSpeed( 280 )
+		self:MoveToPos( self:GetPos() + VectorRand() * random( 600, 1500 ) )
+
+		self.IsRunning = true
+	end
+--
+---------------------------------------------------------------------------------------------------------------------------------------------
+function ENT:BodyUpdate()
+    local velocity = self.loco:GetVelocity()
+    if !velocity:IsZero() then
+        -- Apparently NEXTBOT:BodyMoveXY() really don't likes swimming animations and sets their playback rate to crazy values, causing the game to crash
+        -- So instead I tried to recreate what that function does, but with clamped set playback rate
+        if self:GetWaterLevel() >= 2 then
+            local selfPos = self:GetPos()
+
+            -- Setup pose parameters (model's legs movement)
+            local moveDir = ( ( selfPos + velocity ) - selfPos ); moveDir.z = 0
+            local moveXY = ( self:GetAngles() - moveDir:Angle() ):Forward()
+
+            local frameTime = FrameTime()
+            self:SetPoseParameter( "move_x", Lerp( 15 * frameTime, self:GetPoseParameter( "move_x" ), moveXY.x ) )
+            self:SetPoseParameter( "move_y", Lerp( 15 * frameTime, self:GetPoseParameter( "move_y" ), moveXY.y ) )
+
+            -- Setup swimming animation's clamped playback rate
+            local length = velocity:Length()
+            local groundSpeed = self:GetSequenceGroundSpeed( self:GetSequence() )
+            self:SetPlaybackRate( Clamp( ( length > 0.2 and ( length / groundSpeed ) or 1 ), 0.5, 2 ) )
+        else
+            self:BodyMoveXY()
+            return
+        end
+    end
+
+    self:FrameAdvance()
+end
+---------------------------------------------------------------------------------------------------------------------------------------------
+function ENT:SetDeathExpression( ragdoll )
 
 	local expressionKeys = {}
 	for key in pairs( _DeathExpressions ) do
