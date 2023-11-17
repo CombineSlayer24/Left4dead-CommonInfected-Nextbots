@@ -228,7 +228,8 @@ function ENT:OnRemove()
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:HandleStuck()
-	local dmginfo = DamageInfo()
+
+--[[ 	local dmginfo = DamageInfo()
 	dmginfo:SetAttacker( self )
 	dmginfo:SetInflictor( self )
 	dmginfo:SetDamageType( DMG_CRUSH )
@@ -236,7 +237,10 @@ function ENT:HandleStuck()
 	self:OnKilled( dmginfo )
 	self.loco:ClearStuck()
 
-	--self:EmitSound( "npc/infected/gore/bullets/bullet_impact_05.wav", 65 )
+	--self:EmitSound( "npc/infected/gore/bullets/bullet_impact_05.wav", 65 ) ]]
+
+	self:Remove()
+	print( "Infected was removed due to getting stuck" )
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:RunBehaviour()
