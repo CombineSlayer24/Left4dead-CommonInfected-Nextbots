@@ -1,7 +1,7 @@
 # NOTICE
 This addon is currently under heavy development, any PR's and contributions is highly appreciated. 💖 
 
-# TODO
+# Common Infected
 ### High Priority
 - Make some shared folders
 - Animations (Walking, running, turning, climbing, death, running death)
@@ -56,3 +56,9 @@ Health: 50 (For all difficulties)
 - Normal: 2 dmg per hit, 0.33 immunity delay
 - Advanced: 5 dmg per hit, 0.5 immunity delay
 - Expert: 20 dmg per hit, 1.0 immunity delay
+
+# Special Infected
+TBD
+
+# Survivor Bots
+TBD
