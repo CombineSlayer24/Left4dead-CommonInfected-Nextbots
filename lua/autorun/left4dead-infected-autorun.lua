@@ -7,14 +7,11 @@ local ipairs = ipairs
 -- Base Addon includes --
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function InitializeAddon()
-
 	---------------------------------------------------------------------------------------------------------------------------------------------
 	local function FileLoaded()
-        return true
-    end
-
+		return true
+	end
 	---------------------------------------------------------------------------------------------------------------------------------------------
-
 	if SERVER then
 
 		local serversidefiles = file_Find( "left4dead/autorun_includes/server/*", "LUA", "nameasc" )
@@ -31,8 +28,6 @@ function InitializeAddon()
 
 	end
 
-	print("\n")
-
 	local sharedfiles = file_Find( "left4dead/autorun_includes/shared/*", "LUA", "nameasc" )
 	for k, luafile in ipairs( sharedfiles ) do
 
@@ -48,8 +43,6 @@ function InitializeAddon()
 			print( "Failed to load Shared Lua File [ " .. luafile .. " ]" )
 		end
 	end
-
-	print("\n")
 
 	--[[ local clientsidefiles = file_Find( "left4dead/autorun_includes/client/*", "LUA", "nameasc" )
 

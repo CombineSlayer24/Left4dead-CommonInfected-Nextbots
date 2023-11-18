@@ -1,0 +1,8 @@
+patch
+{
+	include "materials/models/left4dead/l4d1_common/common_infected_shared.vmt"
+	insert
+	{
+		$baseTexture "models/left4dead/l4d1_common/female_01/common_female_casual_lower_02"
+	}
+}

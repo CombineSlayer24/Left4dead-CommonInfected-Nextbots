@@ -1,8 +1,0 @@
-patch
-{
-	include "materials/models/left4dead/infected/common/common_infected_shared.vmt"
-	insert
-	{
-		$baseTexture "models/left4dead/infected/common/worker/common_worker_male_head_02"
-	}
-}

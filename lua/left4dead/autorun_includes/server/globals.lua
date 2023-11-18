@@ -1,10 +1,12 @@
+---------------------------------------------------------------------------------------------------------------------------------------------
 local ipairs = ipairs
 local string_StartWith = string.StartWith
 local file_Find = file.Find
 local table_Empty = table.Empty
 local table_insert = table.insert
-
-_Z_Walking_Footsteps = {
+---------------------------------------------------------------------------------------------------------------------------------------------
+_Z_Walking_Footsteps = 
+{
 	[MAT_ANTLION] = {"left4dead/footsteps/walk/flesh1.wav","left4dead/footsteps/walk/flesh2.wav","left4dead/footsteps/walk/flesh3.wav","left4dead/footsteps/walk/flesh4.wav"},
 	[MAT_BLOODYFLESH] = {"left4dead/footsteps/walk/flesh1.wav","left4dead/footsteps/walk/flesh2.wav","left4dead/footsteps/walk/flesh3.wav","left4dead/footsteps/walk/flesh4.wav"},
 	[MAT_CONCRETE] = {"left4dead/footsteps/walk/concrete1.wav","left4dead/footsteps/walk/concrete2.wav","left4dead/footsteps/walk/concrete3.wav","left4dead/footsteps/walk/concrete4.wav"},
@@ -25,8 +27,9 @@ _Z_Walking_Footsteps = {
 	[MAT_WOOD] = {"left4dead/footsteps/walk/wood1.wav","left4dead/footsteps/walk/wood2.wav","left4dead/footsteps/walk/wood3.wav","left4dead/footsteps/walk/wood4.wav"},
 	[MAT_GLASS] = {"left4dead/footsteps/walk/glass1.wav","left4dead/footsteps/walk/glass2.wav","left4dead/footsteps/walk/glass3.wav","left4dead/footsteps/walk/glass4.wav"}
 }
-
-_Z_Running_Footsteps = {
+---------------------------------------------------------------------------------------------------------------------------------------------
+_Z_Running_Footsteps = 
+{
 	[MAT_ANTLION] = {"left4dead/footsteps/run/flesh1.wav","left4dead/footsteps/run/flesh2.wav","left4dead/footsteps/run/flesh3.wav","left4dead/footsteps/run/flesh4.wav"},
 	[MAT_BLOODYFLESH] = {"left4dead/footsteps/run/flesh1.wav","left4dead/footsteps/run/flesh2.wav","left4dead/footsteps/run/flesh3.wav","left4dead/footsteps/run/flesh4.wav"},
 	[MAT_CONCRETE] = {"left4dead/footsteps/run/concrete1.wav","left4dead/footsteps/run/concrete2.wav","left4dead/footsteps/run/concrete3.wav","left4dead/footsteps/run/concrete4.wav"},
@@ -47,7 +50,7 @@ _Z_Running_Footsteps = {
 	[MAT_WOOD] = {"left4dead/footsteps/run/wood1.wav","left4dead/footsteps/run/wood2.wav","left4dead/footsteps/run/wood3.wav","left4dead/footsteps/run/wood4.wav"},
 	[MAT_GLASS] = {"left4dead/footsteps/run/glass1.wav","left4dead/footsteps/run/glass2.wav","left4dead/footsteps/run/glass3.wav","left4dead/footsteps/run/glass4.wav"}
 }
-
+---------------------------------------------------------------------------------------------------------------------------------------------
 local unusedAngle = Angle( 0, 0, 0 )
 local b_EyebrowC = "ValveBiped.Exp_EyebrowsCorner"
 local b_Eyebrows = "ValveBiped.Exp_Eyebrows"
@@ -55,8 +58,9 @@ local b_LipsUpper = "ValveBiped.Exp_LipsUpper"
 local b_EyelidUpper = "ValveBiped.Exp_Eyelids_Upper"
 local b_EyelidLower = "ValveBiped.Exp_Eyelids_Lower"
 local b_Jaw = "ValveBiped.Exp_Jaw"
-
-_DeathExpressions = {
+---------------------------------------------------------------------------------------------------------------------------------------------
+_DeathExpressions = 
+{
 	Death01 =
 	{
 		{ boneName = b_EyebrowC, positionOffset = Vector( -0.8, 0, 0 ), angleOffset = unusedAngle },
@@ -97,3 +101,4 @@ _DeathExpressions = {
 		{ boneName = b_Jaw, positionOffset = Vector( -0.36, 0, 0 ), angleOffset = unusedAngle },
 	},
 }
+---------------------------------------------------------------------------------------------------------------------------------------------

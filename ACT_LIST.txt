@@ -1,0 +1,233 @@
+---------------------------------------------------------------------------------------------------------------------------------------------
+// LAYER NOISE (Breathing ect)
+---------------------------------------------------------------------------------------------------------------------------------------------
+Idlenoise
+LyingIdlenoise
+SittingIdlenoise
+
+Leaningidlenoise_LT
+Leaningidlenoise_RT
+Leaningidlenoise
+Leaningidlenoise_Both
+---------------------------------------------------------------------------------------------------------------------------------------------
+// FACIAL EXPRESSIONS
+---------------------------------------------------------------------------------------------------------------------------------------------
+ACT_EXP_ANGRY
+ACT_EXP_IDLE
+ACT_EXP_DEAD // Broken
+---------------------------------------------------------------------------------------------------------------------------------------------
+// MALE ACTIVITYS
+---------------------------------------------------------------------------------------------------------------------------------------------
+// Heard something
+ACT_TERROR_IDLE_ALERT
+ACT_TERROR_IDLE_ALERT_AHEAD
+ACT_TERROR_IDLE_ALERT_BEHIND
+ACT_TERROR_IDLE_ALERT_LEFT
+ACT_TERROR_IDLE_ALERT_RIGHT
+
+// during injury
+ACT_TERROR_IDLE_ALERT_INJURED_AHEAD
+ACT_TERROR_IDLE_ALERT_INJURED_BEHIND
+ACT_TERROR_IDLE_ALERT_INJURED_LEFT
+ACT_TERROR_IDLE_ALERT_INJURED_RIGHT
+
+// Spotted it's prey
+ACT_TERROR_IDLE_ACQUIRE
+
+// Cannot reach
+ACT_TERROR_UNABLE_TO_REACH_TARGET
+
+// Idle 
+ACT_TERROR_IDLE_NEUTRAL
+
+// Turning when Idle
+ACT_TERROR_FACE_RIGHT_NEUTRAL
+ACT_TERROR_FACE_LEFT_NEUTRAL
+
+// Turns around
+ACT_TERROR_ABOUT_FACE_NEUTRAL
+
+// Unused Knife anims???
+ACT_TERROR_CROUCH_IDLE_NEUTRAL
+
+// Transistion from Idle to Alert stance
+ACT_TERROR_NEUTRAL_TO_ALERT
+
+// Transistion from running to standing
+ACT_TERROR_RUN_INTENSE_TO_STAND_ALERT
+
+// Walking
+ACT_TERROR_WALK_NEUTRAL
+ACT_TERROR_SHAMBLE
+ACT_TERROR_WALK_INTENSE // Beta Animation
+
+// Crouch Run
+ACT_TERROR_CROUCH_RUN_INTENSE
+
+// Running
+ACT_TERROR_RUN_INTENSE
+
+// Standing while onfire
+ACT_TERROR_STANDING_ON_FIRE
+
+// Running while onfire
+ACT_TERROR_RUN_ON_FIRE
+
+// Stumbling (when shot at)
+ACT_TERROR_RUN_STUMBLE
+
+// Attack
+ACT_TERROR_ATTACK_CONTINUOUSLY
+
+// Attack while moving
+ACT_TERROR_ATTACK
+
+// Incap Attack
+ACT_TERROR_ATTACK_LOW_CONTINUOUSLY
+
+// Attacking door
+ACT_TERROR_ATTACK_DOOR_CONTINUOUSLY
+
+// Reaching through door
+ACT_TERROR_REACH_THROUGH_DOOR
+
+// Various shoves
+ACT_TERROR_SHOVED_FORWARD
+ACT_TERROR_SHOVED_FORWARD_INTO_WALL
+ACT_TERROR_SHOVED_BACKWARD
+ACT_TERROR_SHOVED_BACKWARD_INTO_WALL
+ACT_TERROR_SHOVED_LEFTWARD
+ACT_TERROR_SHOVED_LEFTWARD_INTO_WALL
+ACT_TERROR_SHOVED_RIGHTWARD
+ACT_TERROR_SHOVED_RIGHTWARD_INTO_WALL
+
+// Jumping
+ACT_TERROR_JUMP
+ACT_TERROR_JUMP_OVER_GAP
+ACT_LEAP
+ACT_TERROR_JUMP_UP_TO_LEDGE
+ACT_TERROR_JUMP_DOWN_FROM_LEDGE
+
+
+// Climbing
+ACT_TERROR_LEDGE_CLIMB
+ACT_TERROR_CLIMB_24_FROM_STAND
+ACT_TERROR_CLIMB_36_FROM_STAND
+ACT_TERROR_CLIMB_36_HURDLE_FROM_STAND // Stumbles a bit after climbing
+ACT_TERROR_CLIMB_48_FROM_STAND
+ACT_TERROR_CLIMB_60_FROM_STAND
+ACT_TERROR_CLIMB_72_FROM_STAND
+ACT_TERROR_CLIMB_84_FROM_STAND
+ACT_TERROR_CLIMB_96_FROM_STAND
+ACT_TERROR_CLIMB_108_FROM_STAND
+ACT_TERROR_CLIMB_120_FROM_STAND
+ACT_TERROR_CLIMB_132_FROM_STAND
+ACT_TERROR_CLIMB_144_FROM_STAND
+ACT_TERROR_CLIMB_156_FROM_STAND
+ACT_TERROR_CLIMB_168_FROM_STAND
+ACT_CLIMB_UP // Ladder or a really really tall wall
+ACT_CLIMB_DOWN
+ACT_TERROR_LADDER_DISMOUNT
+
+// Falling
+ACT_TERROR_FALL
+ACT_TERROR_JUMP_LANDING
+ACT_TERROR_JUMP_LANDING_NEUTRAL
+ACT_TERROR_JUMP_LANDING_HARD_NEUTRAL
+ACT_TERROR_JUMP_LANDING_HARD
+
+// Transistion from standing to sitting
+ACT_TERROR_SIT_FROM_STAND
+
+// Transistion from sitting to standing
+ACT_TERROR_SIT_TO_STAND
+
+// Transistion from sitting to alert (fast get up)
+ACT_TERROR_SIT_TO_STAND_ALERT
+
+// Transistion from to sitting to lying idle
+ACT_TERROR_SIT_TO_LIE
+
+// Sitting Idle
+ACT_TERROR_SIT_IDLE
+
+// Shoved when sitting
+ACT_TERROR_SHOVED_BACKWARD_FROM_SIT
+ACT_TERROR_SHOVED_LEFTWARD_FROM_SIT
+ACT_TERROR_SHOVED_RIGHTWARD_FROM_SIT
+
+// Unused chair sitting anims
+ACT_TERROR_SIT_IN_CHAIR_FROM_STAND
+ACT_TERROR_SIT_IN_CHAIR_TO_STAND
+ACT_TERROR_SIT_IN_CHAIR_TO_STAND_ALERT
+ACT_TERROR_SIT_IN_CHAIR_IDLE
+
+// Transistion from standing to lying
+ACT_TERROR_LIE_FROM_STAND
+
+// Transistion from lying to standing
+ACT_TERROR_LIE_TO_STAND
+
+// Transistion from lying to alert (fast get up)
+ACT_TERROR_LIE_TO_STAND_ALERT
+
+// Transistion from lying to sitting idle
+ACT_TERROR_LIE_TO_SIT
+
+// Lying Idle
+ACT_TERROR_LIE_IDLE
+
+
+// Leaning against a wall
+ACT_TERROR_LEAN_RIGHTWARD_IDLE
+ACT_TERROR_LEAN_LEFTWARD_IDLE
+ACT_TERROR_LEAN_FORWARD_IDLE
+ACT_TERROR_LEAN_BACKWARD_IDLE
+
+// Death anim (Standing)
+ACT_TERROR_DIE_FROM_STAND1 (Female doesn't have this)
+ACT_TERROR_DIE_FROM_STAND
+
+// Death anim (Running)
+ACT_TERROR_DIE_WHILE_RUNNING
+
+// Death Anim (Shotgun)
+ACT_TERROR_DIE_RIGHTWARD_FROM_SHOTGUN
+ACT_TERROR_DIE_LEFTWARD_FROM_SHOTGUN
+ACT_TERROR_DIE_BACKWARD_FROM_SHOTGUN
+
+// Death poses???
+ACT_DIE_FRONTSIDE
+ACT_DIE_BACKSIDE
+ACT_DIE_RIGHTSIDE
+ACT_DIE_LEFTSIDE
+ACT_DIE_CROUCH_FRONTSIDE
+ACT_DIE_CROUCH_BACKSIDE
+ACT_DIE_CROUCH_RIGHTSIDE
+ACT_DIE_CROUCH_LEFTSIDE
+
+// Flinching
+ACT_TERROR_FLINCH
+
+// Used as a layer???
+ACT_TERROR_STARTLE
+
+// Mudmen crawling
+ACT_TERROR_CRAWL_RUN
+
+// Melee Death
+ACT_BLUDGEON_DEATH_RIGHT
+ACT_BLUDGEON_DEATH_LEFT
+ACT_BLUDGEON_DEATH_BACK
+ACT_SLASH_DEATH_RIGHT
+ACT_SLASH_DEATH_LEFT
+ACT_SLASH_DEATH_BACK
+---------------------------------------------------------------------------------------------------------------------------------------------
+// FEMALE ACTIVITYS
+---------------------------------------------------------------------------------------------------------------------------------------------
+// Walking
+ACT_WALK
+
+// Running
+ACT_RUN
+---------------------------------------------------------------------------------------------------------------------------------------------

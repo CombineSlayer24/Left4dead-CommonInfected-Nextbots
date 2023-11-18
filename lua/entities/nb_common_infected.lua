@@ -65,14 +65,6 @@ local droppableProps = GetConVar( "l4d_nb_sv_createitems" )
 
 if CLIENT then language.Add( "nb_common_infected", ENT.PrintName ) end
 
--- For voices and animations
-local femaleModels = {
-}
-
-local maleModels = {
-	"models/infected/c_inf_nextbot/common_police_male01.mdl",
-}
-
 local itemModels = {
 	nightstick = "models/weapons/melee/w_tonfa.mdl",
 	bileJar = "models/w_models/weapons/w_eq_bile_flask.mdl",
@@ -86,13 +78,34 @@ local itemModels = {
 	painPills = "models/w_models/weapons/w_eq_painpills.mdl",
 	-- Add more items here as needed
 }
+
+---------------------------------------------------------------------------------------------------------------------------------------------
+function ENT:SetUpZombie()
+	-- When it comes down to models, we make all of the models available for the player/admins to customize.
+	-- Sorta similar to how the population is handled in L4D2.
+	-- Should the player only want Military, Police, Rural, Common, Hospital, or all of above? ect ect.
+    local mdls = {}
+    for k, v in pairs( _Z_MaleModels ) do table_insert( mdls, v ) end
+    for k, v in pairs( _Z_FemaleModels ) do table_insert( mdls, v ) end
+
+    -- Now select a random model from the combined table
+    local spawnMdl = mdls[ random( #mdls ) ]
+    self:SetModel( spawnMdl )
+
+    -- from Lambdaplayers
+    for _, v in ipairs( self:GetBodyGroups() ) do
+        local subMdls = #v.submodels
+        if subMdls == 0 then continue end
+        self:SetBodygroup( v.id, random( 0, subMdls ) )
+    end
+
+    local skinCount = self:SkinCount()
+    if skinCount > 0 then self:SetSkin( random( 0, skinCount - 1 ) ) end
+end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:Initialize()
 	if SERVER then
-		-- When it comes down to models, we make all of the models available for the player/admins to customize.
-		-- Sorta similar to how the population is handled in L4D2.
-		-- Should the player only want Military, Police, Rural, Common, Hospital, or all of above? ect ect.
-		self:SetModel( "models/infected/c_inf_nextbot/common_police_male01.mdl" )
+		self:SetUpZombie()
 		local mdl = self:GetModel()
 
 		self.ci_BehaviorState = "Idle" -- The state for our behavior thread is currently running
@@ -110,10 +123,6 @@ function ENT:Initialize()
 		self.loco:SetDeceleration( 200 )
 		self.loco:SetStepHeight( 30 )
 		self.loco:SetGravity( sv_gravity:GetFloat() )
-
-		-- Animations will match the speed
-		-- We need to change the speed for walking and running, here for now
-		self.loco:SetDesiredSpeed( 280 )
 
 		self:SetCollisionBounds( collisionmins, collisionmaxs )
 		self:PhysicsInitShadow()
@@ -182,6 +191,7 @@ function ENT:OnKilled( dmginfo )
 
 	self:SetDeathExpression( ragdoll )
 
+	-- Move this into it's own function "ENT:CreateItemOnDeath"
 	if IsValid( self.item ) then
 		local item = self.item
 		-- Make this into a convar later
@@ -204,7 +214,7 @@ function ENT:OnKilled( dmginfo )
 				phys:ApplyForceOffset( force, position )
 			end
 
-			SimpleTimer(15, function()
+			SimpleTimer( 15, function()
 				if IsValid( item ) then
 					item:Remove()
 				end
@@ -248,7 +258,7 @@ function ENT:RunBehaviour()
 		-- Basic movement for now
 		if ( self:IsOnGround() ) then
 			if ( random( 20 ) == 1 ) then
-				self:StartWalkAction()
+				self:StartRunAction()
 			else
 				self:StartIdleAction()
 			end
