@@ -100,7 +100,7 @@ function ENT:Initialize()
 		self:SetShouldServerRagdoll( true )
 
 		if droppableProps:GetBool() then
-			if mdl == "models/infected/c_inf_nextbot/common_police_male01.mdl" && random( 100 ) <= 15 then
+			if mdl == "models/infected/c_nb/common_male_police01.mdl" && random( 100 ) <= 15 then
 				self:CreateItem( "nightstick",  true, "baton" )
 			end
 		end
@@ -149,7 +149,7 @@ end
 -- canparent = Should it parented to the ragdoll on death?
 -- id = id attachment name
 function ENT:CreateItem( itemName, canparent, id )
-	local model = itemModels[ itemName ]
+	local model = Z_itemModels[ itemName ]
 	if !model then return end
 
 	local item = ents_Create( "prop_physics" )
