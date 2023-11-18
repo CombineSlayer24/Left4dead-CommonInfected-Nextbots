@@ -13,7 +13,6 @@ function InitializeAddon()
 	end
 	---------------------------------------------------------------------------------------------------------------------------------------------
 	if SERVER then
-
 		local serversidefiles = file_Find( "left4dead/autorun_includes/server/*", "LUA", "nameasc" )
 		for k, luafile in ipairs( serversidefiles ) do
 
@@ -25,9 +24,8 @@ function InitializeAddon()
 				print( "Failed to load Server Side Lua File [ " .. luafile .. " ]" )
 			end
 		end
-
 	end
-
+	---------------------------------------------------------------------------------------------------------------------------------------------
 	local sharedfiles = file_Find( "left4dead/autorun_includes/shared/*", "LUA", "nameasc" )
 	for k, luafile in ipairs( sharedfiles ) do
 
@@ -43,9 +41,8 @@ function InitializeAddon()
 			print( "Failed to load Shared Lua File [ " .. luafile .. " ]" )
 		end
 	end
-
-	--[[ local clientsidefiles = file_Find( "left4dead/autorun_includes/client/*", "LUA", "nameasc" )
-
+	---------------------------------------------------------------------------------------------------------------------------------------------
+	local clientsidefiles = file_Find( "left4dead/autorun_includes/client/*", "LUA", "nameasc" )
 	for k, luafile in ipairs( clientsidefiles ) do
 		if SERVER then
 			AddCSLuaFile( "left4dead/autorun_includes/client/" .. luafile )
@@ -58,8 +55,7 @@ function InitializeAddon()
 				print( "Failed to load Client Side Lua File [ " .. luafile .. " ]" )
 			end
 		end
-	end ]]
-	--
+	end
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 
