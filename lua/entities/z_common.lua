@@ -64,6 +64,12 @@ local sv_gravity = GetConVar( "sv_gravity" )
 local droppableProps = GetConVar( "l4d_nb_sv_createitems" )
 
 if CLIENT then language.Add( "nb_common_infected", ENT.PrintName ) end
+
+local ci_BatonModels = 
+{
+    ["models/infected/c_nb/common_male_police01.mdl"] = true,
+    ["models/infected/c_nb/trs_common_male_police01.mdl"] = true
+}
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:SetUpZombie()
 	-- When it comes down to models, we make all of the models available for the player/admins to customize.
@@ -100,8 +106,8 @@ function ENT:Initialize()
 		self:SetShouldServerRagdoll( true )
 
 		if droppableProps:GetBool() then
-			if mdl == "models/infected/c_nb/common_male_police01.mdl" && random( 100 ) <= 15 then
-				self:CreateItem( "nightstick",  true, "baton" )
+			if ci_BatonModels[ mdl ] and random( 100 ) <= 15 then
+				self:CreateItem( "nightstick", true, "baton" )
 			end
 		end
 
