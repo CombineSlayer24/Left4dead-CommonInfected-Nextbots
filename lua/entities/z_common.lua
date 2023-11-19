@@ -7,6 +7,7 @@ ENT.IsCommonInfected = false
 ENT.IsUnCommonInfected = false
 ENT.IsWalking = false
 ENT.IsRunning = false
+ENT.Gender = nil
 ENT.IsLyingOrSitting = false
 ENT.IsClimbing = false
 
@@ -45,6 +46,7 @@ local ents_Create = ents.Create
 local random = math.random
 local Rand = math.Rand
 local table_insert = table.insert
+local table_HasValue = table.HasValue
 local Clamp = math.Clamp
 local coroutine_wait = coroutine.wait
 
@@ -76,12 +78,19 @@ function ENT:SetUpZombie()
 	-- Sorta similar to how the population is handled in L4D2.
 	-- Should the player only want Military, Police, Rural, Common, Hospital, or all of above? ect ect.
     local mdls = {}
-    for k, v in pairs(Z_MaleModels ) do table_insert( mdls, v ) end
-    for k, v in pairs(Z_FemaleModels ) do table_insert( mdls, v ) end
+    for k, v in pairs( Z_MaleModels ) do table_insert( mdls, v ) end
+    for k, v in pairs( Z_FemaleModels ) do table_insert( mdls, v ) end
 
     -- Now select a random model from the combined table
     local spawnMdl = mdls[ random( #mdls ) ]
     self:SetModel( spawnMdl )
+
+    -- Set Gender based on model
+    if table_HasValue( Z_MaleModels, spawnMdl ) then
+        self.Gender = "Male"
+    elseif table_HasValue( Z_FemaleModels, spawnMdl ) then
+        self.Gender = "Female"
+    end
 
     -- from Lambdaplayers
     for _, v in ipairs( self:GetBodyGroups() ) do
@@ -99,6 +108,7 @@ function ENT:Initialize()
 
 		self:SetUpZombie()
 		local mdl = self:GetModel()
+		BroadcastLua('chat.AddText("' .. self.Gender .. '")')
 
 		self.ci_BehaviorState = "Idle" -- The state for our behavior thread is currently running
 
@@ -113,7 +123,7 @@ function ENT:Initialize()
 
 		--self.loco:SetAcceleration( random( 250, 600 ) )
 		self.loco:SetDeceleration( 200 )
-		self.loco:SetStepHeight( 30 )
+		self.loco:SetStepHeight( 18 )
 		self.loco:SetGravity( sv_gravity:GetFloat() )
 
 		self:SetCollisionBounds( collisionmins, collisionmaxs )
@@ -139,7 +149,7 @@ function ENT:Initialize()
 		-- Idle Facial Anims
 		ZombieExpression( self, "idle" )
 
-		-- Breathing Anims
+		-- Breathing Anims layer
 		self:AddGestureSequence( self:LookupSequence( "idlenoise" ), false )
 
 	elseif CLIENT then
@@ -250,7 +260,7 @@ function ENT:RunBehaviour()
 		-- Basic movement for now
 		if ( self:IsOnGround() ) then
 			if ( random( 20 ) == 1 ) then
-				self:StartWalkAction()
+				self:StartRunAction()
 			else
 				self:StartIdleAction()
 			end
@@ -262,22 +272,52 @@ end
 
 ---------------------------------------------------------------------------------------------------------------------------------------------
 --
-	-- 3 function below used for testing and animations
+	-- 4 function below used for testing and animations
 	-- We will create an expansive function for Actions
 	function ENT:StartWalkAction()
 		self.loco:SetAcceleration( random( 160, 280 ) )
-		local anim = _Z_WalkAnims[ random( #_Z_WalkAnims ) ]
-		self:ResetSequence( self:LookupSequence( anim ) )
-
+	
+		local anim = self:GetActivity()
+	
+		if self.Gender == "Female" then
+			anim = "ACT_WALK"
+		elseif self.Gender == "Male" then
+			local maleAnims = {
+				"ACT_TERROR_WALK_NEUTRAL",
+				"ACT_TERROR_SHAMBLE",
+				"ACT_TERROR_WALK_INTENSE"
+			}
+			anim = table.Random(maleAnims)
+		end
+	
+		self:ResetSequence( anim )
+	
 		self.loco:SetDesiredSpeed( random( 15, 17 ) )
 		self:MoveToPos( self:GetPos() + VectorRand() * random( 250, 500 ) )
-
+	
 		self.IsWalking = true
 	end
 	---------------------------------------------------------------------------------------------------------------------------------------------
+	function ENT:StartCrouchAction()
+		self.loco:SetAcceleration( random( 200, 280 ) )
+	
+		local anim = self:GetActivity()
+		anim = "ACT_TERROR_CROUCH_RUN_INTENSE"
+	
+		self:ResetSequence( anim )
+	
+		self.loco:SetDesiredSpeed( random( 275, 325 ) )
+		self:MoveToPos( self:GetPos() + VectorRand() * random( 500, 1000 ) )
+	
+		self.IsWalking = true
+	end
+	
+	---------------------------------------------------------------------------------------------------------------------------------------------
 	function ENT:StartIdleAction()
-		local idleAnim = _Z_IdleAnims[ random( #_Z_IdleAnims ) ]
-		self:SetSequence( self:LookupSequence( idleAnim ) )
+		local anim = self:GetActivity()
+		anim = "ACT_TERROR_IDLE_NEUTRAL"
+
+		self:ResetSequence( anim )
 		
 		self.IsWalking = false
 		self.IsRunning = false
@@ -285,8 +325,15 @@ end
 	---------------------------------------------------------------------------------------------------------------------------------------------
 	function ENT:StartRunAction()
 		self.loco:SetAcceleration( random( 250, 600 ) )
-		local anim = _Z_RunAnims[ random( #_Z_RunAnims ) ]
-		self:ResetSequence( self:LookupSequence( anim ) )
+		
+		local anim = self:GetActivity()
+		if self.Gender == "Female" then
+			anim = "ACT_RUN"
+		else
+			anim = "ACT_TERROR_RUN_INTENSE"
+		end
+
+		self:ResetSequence( anim )
 
 		self.loco:SetDesiredSpeed( 280 )
 		self:MoveToPos( self:GetPos() + VectorRand() * random( 600, 1500 ) )
