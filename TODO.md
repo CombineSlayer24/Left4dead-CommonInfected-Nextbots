@@ -55,6 +55,8 @@ When idle, Common Infected randomly should walk around, standing still, be able 
 # Attacking Behavior:
 When Common Infected are in idle state, they should have a chance to fight with another common infected. The way that this should work is whenever a CI is walking around, they will choose a random CI that is the closest to them. Both of the CI should fight eachother. When they are fighting another CI, make their damage -65% so they will be able to fight longer (Who doesn't like to watch a good fight?)
 
+They have limited Vision, 500 for base right now when spotting a prey.
+
 # Climbing:
 When Common Infected are going over slight bumps, have them do the step up climb animation.
 
