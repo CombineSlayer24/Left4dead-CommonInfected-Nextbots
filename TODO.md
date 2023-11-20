@@ -43,7 +43,7 @@
 # Animations:
 Common Infected (male and Females) have the same animation (ACT) names, except for the females, take a look at [ACT_LIST.txt](https://github.com/CombineSlayer24/Left4dead-CommonInfected-Nextbots/blob/main/ACT_LIST.txt).
 
-When Common Infected are walking around and decide to turn, let them turn. If they turn left or right sharply, play the turning act animation.
+When Common Infected are walking around and decide to turn, let them turn without no turning animation. If they turn left or right sharply, play the turning act animation.
 
 When common infected are running and they stop their run, they should play their animation (`ACT_TERROR_RUN_INTENSE_TO_STAND_ALERT`).
 
