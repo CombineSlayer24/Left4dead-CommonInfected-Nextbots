@@ -9,7 +9,6 @@
 	$phong 1
 	$phongboost 0.1
 	$phongexponent 5
-	//$phongexponenttexture "models/humans/male_exponent"
 	$phongtint "[.4 .8 1]"
 	$phongfresnelranges "[1 0 .05]"
 

@@ -1,0 +1,8 @@
+patch
+{
+	include "materials/models/left4dead/l4d1_common/common_infected_shared.vmt"
+	insert
+	{
+		$baseTexture "models/left4dead/l4d1_common/TSA_Agent/common_TSAAgent_male_upper_02"
+	}
+}

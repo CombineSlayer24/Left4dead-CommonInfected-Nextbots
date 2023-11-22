@@ -1,0 +1,10 @@
+// Custom Revision texture by made (Purposely downscaled)
+
+patch
+{
+	include "materials/models/left4dead/l4d1_common/common_infected_shared.vmt"
+	insert
+	{
+		$baseTexture "models/left4dead/l4d1_common_revised/hospital_nurse/common_nurse_female_lower_04"
+	}
+}
