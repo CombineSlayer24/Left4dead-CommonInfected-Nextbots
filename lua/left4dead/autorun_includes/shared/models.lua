@@ -1,20 +1,26 @@
 ---------------------------------------------------------------------------------------------------------------------------------------------
 Z_MaleModels = 
 {
+	-- Cuba's Common Infected
 	"models/infected/c_nb/common_male_police01.mdl",
-    "models/infected/c_nb/common_male_tsaagent01.mdl",
-    "models/infected/c_nb/common_male_worker01.mdl",
+	"models/infected/c_nb/common_male_tsaagent01.mdl",
+	"models/infected/c_nb/common_male_worker01.mdl",
 	"models/infected/c_nb/common_male_surgeon01.mdl",
 	"models/infected/c_nb/common_male_patient01.mdl",
 	"models/infected/c_nb/common_male_military01.mdl",
-    -- TRS Revision
-    "models/infected/c_nb/trs_common_male_police01.mdl",
-    "models/infected/c_nb/trs_common_male_tsaagent01.mdl",
-    "models/infected/c_nb/trs_common_male_worker01.mdl",
+	"models/infected/c_nb/common_male01.mdl",
+	"models/infected/c_nb/common_male02.mdl",
+	-- TRS Revision
+	"models/infected/c_nb/trs_common_male_police01.mdl",
+	"models/infected/c_nb/trs_common_male_tsaagent01.mdl",
+	"models/infected/c_nb/trs_common_male_worker01.mdl",
 	"models/infected/c_nb/trs_common_male_surgeon01.mdl",
 	"models/infected/c_nb/trs_common_male_patient01.mdl",
-	--"models/infected/c_nb/trs_common_male_military01.mdl",
+	"models/infected/c_nb/trs_common_male_military01.mdl",
+	"models/infected/c_nb/trs_common_male01.mdl",
+	"models/infected/c_nb/trs_common_male02.mdl",
 	
+	-- End of Cuba's Common Infected
 }
 ---------------------------------------------------------------------------------------------------------------------------------------------
 Z_FemaleModels = 

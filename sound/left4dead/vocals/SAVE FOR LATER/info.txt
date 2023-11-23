@@ -1,0 +1,2 @@
+We will store this file for later, so we will know which soundfiles to play certain events based on the soundscripts for the infected.
+For now, keep this in here, and use the L4D1/L4D2 file path thingy, until we are certain.
