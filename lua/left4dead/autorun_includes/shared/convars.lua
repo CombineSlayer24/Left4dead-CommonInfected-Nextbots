@@ -1,7 +1,7 @@
 -- Should the population convars be clientsided?
 
 -- ServerSide Convars
-CreateConVar( "l4d_nb_sv_population_enable_police", 1, FCVAR_ARCHIVE, "Should Police models be picked?", 0, 1 )
+--CreateConVar( "l4d_nb_sv_pop_police01_chance", 30, FCVAR_ARCHIVE, "% for Police models being spawned?", 0, 100 )
 CreateConVar( "l4d_nb_sv_difficulty", 1, FCVAR_ARCHIVE, "Difficulty for Infected? 0 - Easy, 1 - Normal, 2 - Advanced, 3 - Expert", 0, 3 )
 CreateConVar( "l4d_nb_sv_voiceset", 0, FCVAR_ARCHIVE, "What voiceset should Common Infected use? 0 - Default, 1 - Left 4 Dead 1, 2 - Left 4 Dead 2", 0, 2 )
 CreateConVar( "l4d_nb_sv_deathanims", 1, FCVAR_ARCHIVE, "Should Infected do Death Animations?", 0, 1 )

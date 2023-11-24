@@ -17,19 +17,19 @@ local ENT_CommonFiles = file.Find( "left4dead/z_common/*", "LUA", "nameasc" )
 for k, luafile in ipairs( ENT_CommonFiles ) do
     if string.StartWith( luafile, "sv_" ) then -- Server Side Files
         include( "left4dead/z_common/" .. luafile )
-        print( "Left 4 Dead ENT TABLE: Included Server Side ENT Lua File [" .. luafile .. "]" )
+        print( "Left 4 Dead Common Infected ENT TABLE: Included Server Side ENT Lua File [" .. luafile .. "]" )
     elseif string.StartWith( luafile, "sh_" ) then -- Shared Files
         if SERVER then
             AddCSLuaFile( "left4dead/z_common/" .. luafile )
         end
         include( "left4dead/z_common/" .. luafile )
-        print( "Left 4 Dead ENT TABLE: Included Shared ENT Lua File [" .. luafile .. "]" )
+        print( "Left 4 Dead Common Infected ENT TABLE: Included Shared ENT Lua File [" .. luafile .. "]" )
     elseif string.StartWith( luafile, "cl_" ) then -- Client Side Files
         if SERVER then
             AddCSLuaFile( "left4dead/z_common/" .. luafile )
         else
             include( "left4dead/z_common/" .. luafile )
-            print( "Left 4 Dead ENT TABLE: Included Client Side ENT Lua File [" .. luafile .. "]" )
+            print( "Left 4 Dead Common Infected ENT TABLE: Included Client Side ENT Lua File [" .. luafile .. "]" )
         end
     end
 end
@@ -87,9 +87,9 @@ function ENT:SetUpZombie()
 
     -- Set Gender based on model
     if table_HasValue( Z_MaleModels, spawnMdl ) then
-        self.Gender = "Male"
+        self.Gender = "male"
     elseif table_HasValue( Z_FemaleModels, spawnMdl ) then
-        self.Gender = "Female"
+        self.Gender = "female"
     end
 
     -- from Lambdaplayers
@@ -279,9 +279,9 @@ end
 	
 		local anim = self:GetActivity()
 	
-		if self.Gender == "Female" then
+		if self.Gender == "female" then
 			anim = "ACT_WALK"
-		elseif self.Gender == "Male" then
+		elseif self.Gender == "male" then
 			local maleAnims = {
 				"ACT_TERROR_WALK_NEUTRAL",
 				"ACT_TERROR_SHAMBLE",
@@ -327,7 +327,7 @@ end
 		self.loco:SetAcceleration( random( 250, 600 ) )
 		
 		local anim = self:GetActivity()
-		if self.Gender == "Female" then
+		if self.Gender == "female" then
 			anim = "ACT_RUN"
 		else
 			anim = "ACT_TERROR_RUN_INTENSE"
