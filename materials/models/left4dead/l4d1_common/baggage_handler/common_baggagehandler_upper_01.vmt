@@ -3,6 +3,6 @@ patch
 	include "materials/models/left4dead/l4d1_common/common_infected_shared.vmt"
 	insert
 	{
-		$baseTexture "models/left4dead/l4d1_common/common_male_head_05"
+		$baseTexture "models/left4dead/l4d1_common/baggage_handler/common_baggagehandler_upper_01"
 	}
 }

@@ -10,6 +10,10 @@ Z_MaleModels =
 	"models/infected/c_nb/common_male_military01.mdl",
 	"models/infected/c_nb/common_male01.mdl",
 	"models/infected/c_nb/common_male02.mdl",
+	"models/infected/c_nb/common_male_suit01.mdl",
+	"models/infected/c_nb/common_male_rural01.mdl",
+	"models/infected/c_nb/common_male_pilot01.mdl",
+	"models/infected/c_nb/common_male_baggagehandler01.mdl",
 	-- TRS Revision
 	"models/infected/c_nb/trs_common_male_police01.mdl",
 	"models/infected/c_nb/trs_common_male_tsaagent01.mdl",
@@ -19,17 +23,25 @@ Z_MaleModels =
 	"models/infected/c_nb/trs_common_male_military01.mdl",
 	"models/infected/c_nb/trs_common_male01.mdl",
 	"models/infected/c_nb/trs_common_male02.mdl",
+	"models/infected/c_nb/trs_common_male_suit01.mdl",
+	"models/infected/c_nb/trs_common_male_rural01.mdl",
+	"models/infected/c_nb/trs_common_male_pilot01.mdl",
+	"models/infected/c_nb/trs_common_male_baggagehandler01.mdl",
 	
 	-- End of Cuba's Common Infected
 }
 ---------------------------------------------------------------------------------------------------------------------------------------------
 Z_FemaleModels = 
 {
+	"models/infected/c_nb/common_female01.mdl",
 	"models/infected/c_nb/common_female_rural01.mdl",
 	"models/infected/c_nb/common_female_nurse01.mdl",
+	"models/infected/c_nb/common_female_suit01.mdl",
 	-- TRS Revision
+	"models/infected/c_nb/trs_common_female01.mdl",
 	"models/infected/c_nb/trs_common_female_rural01.mdl",
 	"models/infected/c_nb/trs_common_female_nurse01.mdl",
+	"models/infected/c_nb/trs_common_female_suit01.mdl",
 }
 ---------------------------------------------------------------------------------------------------------------------------------------------
 -- Spawnable props that get parented to the zombie model
