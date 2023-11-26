@@ -283,8 +283,8 @@ end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:StartWandering()
 	self.loco:SetDesiredSpeed( 300 )
-	self.loco:SetAcceleration( 15000 )
-	self.loco:SetDeceleration( 15000 )
+	self.loco:SetAcceleration( 5000 )
+	self.loco:SetDeceleration( 5000 )
 
 	local anim = self:GetActivity()
 	
