@@ -320,7 +320,7 @@ function ENT:StartWandering()
 
 		--PrintMessage(HUD_PRINTTALK,"Distance to enemy: " .. distance)
 		if distance > 100 then
-			local pathFollow = Path( "Chase" )
+			local pathFollow = Path( "Follow" )
 			pathFollow:SetMinLookAheadDistance( 10 )
         	pathFollow:SetGoalTolerance( 5 )
         	pathFollow:Compute( self, detectedEnemy:GetPos() )
@@ -347,6 +347,77 @@ function ENT:StartWandering()
 		self:BodyUpdate()
 	end
 end
+---------------------------------------------------------------------------------------------------------------------------------------------
+--
+	-- 4 function below used for testing and animations
+	-- We will create an expansive function for Actions
+	function ENT:StartWalkAction()
+		self.loco:SetAcceleration( random( 160, 280 ) )
+	
+		local anim = self:GetActivity()
+	
+		if self.Gender == "female" then
+			anim = "ACT_WALK"
+		elseif self.Gender == "male" then
+			local maleAnims = {
+				"ACT_TERROR_WALK_NEUTRAL",
+				"ACT_TERROR_SHAMBLE",
+				"ACT_TERROR_WALK_INTENSE"
+			}
+			anim = table.Random(maleAnims)
+		end
+	
+		self:ResetSequence( anim )
+	
+		self.loco:SetDesiredSpeed( random( 15, 17 ) )
+		self:MoveToPos( self:GetPos() + VectorRand() * random( 250, 500 ) )
+	
+		self.IsWalking = true
+	end
+	---------------------------------------------------------------------------------------------------------------------------------------------
+	function ENT:StartCrouchAction()
+		self.loco:SetAcceleration( random( 200, 280 ) )
+	
+		local anim = self:GetActivity()
+		anim = "ACT_TERROR_CROUCH_RUN_INTENSE"
+	
+		self:ResetSequence( anim )
+	
+		self.loco:SetDesiredSpeed( random( 275, 325 ) )
+		self:MoveToPos( self:GetPos() + VectorRand() * random( 500, 1000 ) )
+	
+		self.IsWalking = true
+	end
+	
+	---------------------------------------------------------------------------------------------------------------------------------------------
+	function ENT:StartIdleAction()
+		local anim = self:GetActivity()
+		anim = "ACT_TERROR_IDLE_NEUTRAL"
+
+		self:ResetSequence( anim )
+		
+		self.IsWalking = false
+		self.IsRunning = false
+	end
+	---------------------------------------------------------------------------------------------------------------------------------------------
+	function ENT:StartRunAction()
+		self.loco:SetAcceleration( random( 250, 600 ) )
+		
+		local anim = self:GetActivity()
+		if self.Gender == "female" then
+			anim = "ACT_RUN"
+		else
+			anim = "ACT_TERROR_RUN_INTENSE"
+		end
+
+		self:ResetSequence( anim )
+
+		self.loco:SetDesiredSpeed( 280 )
+		self:MoveToPos( self:GetPos() + VectorRand() * random( 600, 1500 ) )
+
+		self.IsRunning = true
+	end
+--
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:BodyUpdate()
     local velocity = self.loco:GetVelocity()
