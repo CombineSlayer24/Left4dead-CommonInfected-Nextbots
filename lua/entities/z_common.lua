@@ -65,7 +65,7 @@ local ignorePlys = GetConVar( "ai_ignoreplayers" )
 local sv_gravity = GetConVar( "sv_gravity" )
 local droppableProps = GetConVar( "l4d_nb_sv_createitems" )
 
-if CLIENT then language.Add( "nb_common_infected", ENT.PrintName ) end
+if CLIENT then language.Add( "z_common", ENT.PrintName ) end
 
 local ci_BatonModels = 
 {
@@ -92,15 +92,16 @@ function ENT:SetUpZombie()
         self.Gender = "female"
     end
 
-    -- from Lambdaplayers
-    for _, v in ipairs( self:GetBodyGroups() ) do
-        local subMdls = #v.submodels
-        if subMdls == 0 then continue end
-        self:SetBodygroup( v.id, random( 0, subMdls ) )
-    end
+	-- Randomize Bodygroups
+	for _, v in ipairs( self:GetBodyGroups() ) do
+		local subMdls = #v.submodels
+		if subMdls == 0 then continue end
+		self:SetBodygroup( v.id, random( 0, subMdls ) )
+	end
 
-    local skinCount = self:SkinCount()
-    if skinCount > 0 then self:SetSkin( random( 0, skinCount - 1 ) ) end
+	-- Randomize Skinds
+	local skinCount = self:SkinCount()
+	if skinCount > 0 then self:SetSkin( random( 0, skinCount - 1 ) ) end
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:Initialize()
@@ -135,16 +136,6 @@ function ENT:Initialize()
 		self:SetLagCompensated( true )
 		self:AddFlags( FL_OBJECT + FL_NPC )
 		self:SetSolidMask( MASK_PLAYERSOLID )
-
-		-- from Lambdaplayers
-		for _, v in ipairs( self:GetBodyGroups() ) do
-			local subMdls = #v.submodels
-			if subMdls == 0 then continue end
-			self:SetBodygroup( v.id, random( 0, subMdls ) )
-		end
-
-		local skinCount = self:SkinCount()
-		if skinCount > 0 then self:SetSkin( random( 0, skinCount - 1 ) ) end
 
 		-- Idle Facial Anims
 		ZombieExpression( self, "idle" )

@@ -1,7 +1,6 @@
 -- This is just an idea on what sounds we want to play during specific events
 
-
---[[ Zombie_BulletImpact = {
+Zombie_BulletImpact = {
     "left4dead/vocals/infected/sfx/gore/bullet_impact_01.mp3",
     "left4dead/vocals/infected/sfx/gore/bullet_impact_02.mp3",
     "left4dead/vocals/infected/sfx/gore/bullet_impact_03.mp3",
@@ -343,4 +342,4 @@ ZCommon_L4D1_Death = {
     "left4dead/vocals/infected/death/"..self.Gender.."/death_47.wav",
     "left4dead/vocals/infected/death/"..self.Gender.."/death_48.wav",
     "left4dead/vocals/infected/death/"..self.Gender.."/death_49.wav",
-} ]]
+}
