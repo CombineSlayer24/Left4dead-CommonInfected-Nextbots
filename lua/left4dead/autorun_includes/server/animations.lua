@@ -8,7 +8,6 @@ local LookupSequence = LookupSequence
 local SequenceDuration = SequenceDuration
 local IsValid = IsValid
 ---------------------------------------------------------------------------------------------------------------------------------------------
----------------------------------------------------------------------------------------------------------------------------------------------
 -- ent = The Zombie
 -- expressionType = Can be "idle" and "angry"
 -- expressionType must be typed in as ("idle" and "angry")

@@ -3,7 +3,7 @@ AddCSLuaFile()
 ENT.Base = "base_nextbot"
 ENT.PrintName = "Common Infected"
 ENT.Author = "Pyri"
-ENT.IsCommonInfected = false
+ENT.IsCommonInfected = true
 ENT.IsUnCommonInfected = false
 ENT.IsWalking = false
 ENT.IsRunning = false
@@ -45,10 +45,13 @@ local timer_Remove = timer.Remove
 local ents_Create = ents.Create
 local random = math.random
 local Rand = math.Rand
+local MathHuge = math.huge
 local table_insert = table.insert
 local table_HasValue = table.HasValue
 local Clamp = math.Clamp
 local coroutine_wait = coroutine.wait
+local ents_FindInSphere = ents.FindInSphere
+local CurTime = CurTime()
 
 local AddGestureSequence = AddGestureSequence
 local LookupSequence = LookupSequence
@@ -65,7 +68,7 @@ local ignorePlys = GetConVar( "ai_ignoreplayers" )
 local sv_gravity = GetConVar( "sv_gravity" )
 local droppableProps = GetConVar( "l4d_nb_sv_createitems" )
 
-if CLIENT then language.Add( "z_common", ENT.PrintName ) end
+if CLIENT then language.Add( "nb_common_infected", ENT.PrintName ) end
 
 local ci_BatonModels = 
 {
@@ -87,21 +90,22 @@ function ENT:SetUpZombie()
 
     -- Set Gender based on model
     if table_HasValue( Z_MaleModels, spawnMdl ) then
-        self.Gender = "male"
+        self.Gender = "Male"
     elseif table_HasValue( Z_FemaleModels, spawnMdl ) then
-        self.Gender = "female"
+        self.Gender = "Female"
     end
 
-	-- Randomize Bodygroups
-	for _, v in ipairs( self:GetBodyGroups() ) do
-		local subMdls = #v.submodels
-		if subMdls == 0 then continue end
-		self:SetBodygroup( v.id, random( 0, subMdls ) )
-	end
+	self:InitSounds()
 
-	-- Randomize Skinds
-	local skinCount = self:SkinCount()
-	if skinCount > 0 then self:SetSkin( random( 0, skinCount - 1 ) ) end
+    -- from Lambdaplayers
+    for _, v in ipairs( self:GetBodyGroups() ) do
+        local subMdls = #v.submodels
+        if subMdls == 0 then continue end
+        self:SetBodygroup( v.id, random( 0, subMdls ) )
+    end
+
+    local skinCount = self:SkinCount()
+    if skinCount > 0 then self:SetSkin( random( 0, skinCount - 1 ) ) end
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:Initialize()
@@ -170,7 +174,7 @@ function ENT:CreateItem( itemName, canparent, id )
 	item:SetCollisionGroup( COLLISION_GROUP_IN_VEHICLE )
 	item:Spawn()
 	item:Activate()
-	item:SetSolid( SOLID_VPHYSICS )
+	item:SetSolid( SOLID_BSP )
 
 	self.item = item
 	self.canparent = canparent
@@ -246,92 +250,102 @@ function ENT:HandleStuck()
 	print( "Infected was removed due to getting stuck" )
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
-function ENT:RunBehaviour()
-	while ( true ) do
-		-- Basic movement for now
-		if ( self:IsOnGround() ) then
-			if ( random( 20 ) == 1 ) then
-				self:StartRunAction()
-			else
-				self:StartIdleAction()
+function ENT:Think()
+
+end
+---------------------------------------------------------------------------------------------------------------------------------------------
+function ENT:FindNearestEnemy()
+    local enemies = ents_FindInSphere(self:GetPos(), 2500) -- Find potential targets
+    local nearestEnemy = nil -- Our enemy
+    local nearestDistance = MathHuge -- Limited to out range of FindInSphere, 
+
+    for _, enemy in pairs(enemies) do
+
+		if enemy ~= self and not enemy.IsCommonInfected and enemy:IsNPC() or enemy:IsPlayer() or !ignorePlys or enemy:IsNextBot() and not enemy.IsCommonInfected then
+			local distance = self:GetPos():Distance(enemy:GetPos()) -- Calculating distance between zombie and target
+
+			if distance < nearestDistance then
+				nearestDistance = distance
+				nearestEnemy = enemy
 			end
 		end
+    end
 
+    return nearestEnemy -- Returning target for all purposes.
+end
+---------------------------------------------------------------------------------------------------------------------------------------------
+function ENT:RunBehaviour()
+	while ( true ) do
+		self:StartWandering()
 		coroutine_wait( 0.1 )
 	end
 end
-
 ---------------------------------------------------------------------------------------------------------------------------------------------
---
-	-- 4 function below used for testing and animations
-	-- We will create an expansive function for Actions
-	function ENT:StartWalkAction()
-		self.loco:SetAcceleration( random( 160, 280 ) )
-	
-		local anim = self:GetActivity()
-	
-		if self.Gender == "female" then
-			anim = "ACT_WALK"
-		elseif self.Gender == "male" then
-			local maleAnims = {
-				"ACT_TERROR_WALK_NEUTRAL",
-				"ACT_TERROR_SHAMBLE",
-				"ACT_TERROR_WALK_INTENSE"
-			}
-			anim = table.Random(maleAnims)
-		end
-	
-		self:ResetSequence( anim )
-	
-		self.loco:SetDesiredSpeed( random( 15, 17 ) )
-		self:MoveToPos( self:GetPos() + VectorRand() * random( 250, 500 ) )
-	
-		self.IsWalking = true
-	end
-	---------------------------------------------------------------------------------------------------------------------------------------------
-	function ENT:StartCrouchAction()
-		self.loco:SetAcceleration( random( 200, 280 ) )
-	
-		local anim = self:GetActivity()
-		anim = "ACT_TERROR_CROUCH_RUN_INTENSE"
-	
-		self:ResetSequence( anim )
-	
-		self.loco:SetDesiredSpeed( random( 275, 325 ) )
-		self:MoveToPos( self:GetPos() + VectorRand() * random( 500, 1000 ) )
-	
-		self.IsWalking = true
-	end
-	
-	---------------------------------------------------------------------------------------------------------------------------------------------
-	function ENT:StartIdleAction()
-		local anim = self:GetActivity()
-		anim = "ACT_TERROR_IDLE_NEUTRAL"
+function ENT:StartWandering()
+	self.loco:SetDesiredSpeed( 300 )
+	self.loco:SetAcceleration( 15000 )
+	self.loco:SetDeceleration( 15000 )
 
-		self:ResetSequence( anim )
-		
-		self.IsWalking = false
-		self.IsRunning = false
+	local anim = self:GetActivity()
+	
+	if self.Gender == "Female" then
+		anim = "ACT_RUN"
+	else
+		anim = "ACT_TERROR_RUN_INTENSE"
 	end
-	---------------------------------------------------------------------------------------------------------------------------------------------
-	function ENT:StartRunAction()
-		self.loco:SetAcceleration( random( 250, 600 ) )
-		
-		local anim = self:GetActivity()
-		if self.Gender == "female" then
-			anim = "ACT_RUN"
-		else
-			anim = "ACT_TERROR_RUN_INTENSE"
+
+	local detectedEnemy = self:FindNearestEnemy()
+
+	--print("Detected Enemy:", detectedEnemy)
+
+	if not IsValid( detectedEnemy ) then
+		self:ResetSequence( anim )
+		--PrintMessage(HUD_PRINTTALK, "Common Infected has no enemy.")
+		self.loco:SetDesiredSpeed( 150 )
+		self:MoveToPos( self:GetPos() + VectorRand() * math.random( 250, 300 ) )
+	else
+		local directionToEnemy = ( detectedEnemy:GetPos() - self:GetPos() ):GetNormalized()
+		local distance = self:GetPos():Distance( detectedEnemy:GetPos() )
+		local AngleToEnemy = directionToEnemy:Angle()
+		AngleToEnemy.p = 0
+
+		-- Very basic voice stuff, move to a dedicated function for speaking
+		if random( 10 ) == 4 then
+			if !self.SpeakDelay or CurTime() - self.SpeakDelay > Rand( 1.2, 2 ) then
+				local Snd = ZCommon_L4D1_RageAtVictim[ random( #ZCommon_L4D1_RageAtVictim ) ]
+				self:EmitSound(Snd)
+				self.SpeakDelay = CurTime()
+			end
 		end
 
-		self:ResetSequence( anim )
+		--PrintMessage(HUD_PRINTTALK,"Distance to enemy: " .. distance)
+		if distance > 100 then
+			local pathFollow = Path( "Chase" )
+			pathFollow:SetMinLookAheadDistance( 10 )
+        	pathFollow:SetGoalTolerance( 5 )
+        	pathFollow:Compute( self, detectedEnemy:GetPos() )
+			pathFollow:Draw()
+			pathFollow:Update( self )
+			--PrintMessage(HUD_PRINTTALK, "Following!")
+			self:ResetSequence( anim )
+		elseif distance < 100 and ( not self.AttackDelay or CurTime() - self.AttackDelay > 1.2 ) then
 
-		self.loco:SetDesiredSpeed( 280 )
-		self:MoveToPos( self:GetPos() + VectorRand() * random( 600, 1500 ) )
+			local smackSnd = ZCommon_AttackSmack[ random( #ZCommon_AttackSmack ) ]
+			self:ResetSequence( "ACT_TERROR_ATTACK_CONTINUOUSLY" )
+			self:SetAngles( AngleToEnemy )
+			local dmginfo = DamageInfo()
+			dmginfo:SetDamage( 5 )
+			dmginfo:SetDamageType( DMG_DIRECT )
+			dmginfo:SetInflictor( self )
+			detectedEnemy:TakeDamageInfo( dmginfo )
+			self:EmitSound( smackSnd )
+			self.AttackDelay = CurTime()
+		end
 
-		self.IsRunning = true
+		--PrintMessage(HUD_PRINTTALK, "Common Infected is moving to enemy position: " .. tostring(detectedEnemy:GetPos()))
+		self:BodyUpdate()
 	end
---
+end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:BodyUpdate()
     local velocity = self.loco:GetVelocity()
@@ -348,6 +362,7 @@ function ENT:BodyUpdate()
             local frameTime = FrameTime()
             self:SetPoseParameter( "move_x", Lerp( 15 * frameTime, self:GetPoseParameter( "move_x" ), moveXY.x ) )
             self:SetPoseParameter( "move_y", Lerp( 15 * frameTime, self:GetPoseParameter( "move_y" ), moveXY.y ) )
+			--self:InvalidateBoneCache()
 
             -- Setup swimming animation's clamped playback rate
             local length = velocity:Length()
@@ -390,4 +405,8 @@ list.Set( "NPC", "z_common", {
 	Class = "z_common",
 	Category = "Left 4 Dead NextBots"
 })
+
+if CLIENT then
+	language.Add( "z_common", "Common Infected" )
+end
 ---------------------------------------------------------------------------------------------------------------------------------------------
