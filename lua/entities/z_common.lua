@@ -51,7 +51,7 @@ local table_HasValue = table.HasValue
 local Clamp = math.Clamp
 local coroutine_wait = coroutine.wait
 local ents_FindInSphere = ents.FindInSphere
-local CurTime = CurTime()
+local CurTime = CurTime
 
 local AddGestureSequence = AddGestureSequence
 local LookupSequence = LookupSequence
@@ -331,6 +331,7 @@ function ENT:StartWandering()
 		elseif distance < 100 and ( not self.AttackDelay or CurTime() - self.AttackDelay > 1.2 ) then
 
 			local smackSnd = ZCommon_AttackSmack[ random( #ZCommon_AttackSmack ) ]
+	
 			self:ResetSequence( "ACT_TERROR_ATTACK_CONTINUOUSLY" )
 			self:SetAngles( AngleToEnemy )
 			local dmginfo = DamageInfo()
