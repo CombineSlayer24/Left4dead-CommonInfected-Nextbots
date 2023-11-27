@@ -309,11 +309,9 @@ function ENT:StartWandering()
 		local AngleToEnemy = directionToEnemy:Angle()
 		AngleToEnemy.p = 0
 
-		-- Very basic voice stuff, move to a dedicated function for speaking
-		if random( 10 ) == 4 then
+		if random( 8 ) == 3 then
 			if !self.SpeakDelay or CurTime() - self.SpeakDelay > Rand( 1.2, 2 ) then
-				local Snd = ZCommon_L4D1_RageAtVictim[ random( #ZCommon_L4D1_RageAtVictim ) ]
-				self:EmitSound(Snd)
+				self:Vocalize( ZCommon_L4D1_RageAtVictim )
 				self.SpeakDelay = CurTime()
 			end
 		end

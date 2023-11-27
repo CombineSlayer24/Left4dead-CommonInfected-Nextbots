@@ -1,3 +1,16 @@
+local random = math.random
+local Rand = math.Rand
+local MathHuge = math.huge
+local CurTime = CurTime
+local EmitSound = EmitSound
+
+---------------------------------------------------------------------------------------------------------------------------------------------
+-- Play the requested voiceline
+-- Action = the global voiceset
+function ENT:Vocalize( action )
+    local Snd = action[ random( #action ) ]
+    self:EmitSound( Snd )
+end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 -- Play the requested animation sequence
 function ENT:PlaySequence( sequence )
