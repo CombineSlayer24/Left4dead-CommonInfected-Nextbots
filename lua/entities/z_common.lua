@@ -299,7 +299,7 @@ function ENT:StartWandering()
 	--print("Detected Enemy:", detectedEnemy)
 
 	if not IsValid( detectedEnemy ) then
-		self:ResetSequence( anim )
+		self:PlaySequence( anim )
 		--PrintMessage(HUD_PRINTTALK, "Common Infected has no enemy.")
 		self.loco:SetDesiredSpeed( 150 )
 		self:MoveToPos( self:GetPos() + VectorRand() * math.random( 250, 300 ) )
@@ -327,12 +327,14 @@ function ENT:StartWandering()
 			pathFollow:Draw()
 			pathFollow:Update( self )
 			--PrintMessage(HUD_PRINTTALK, "Following!")
-			self:ResetSequence( anim )
+			self:PlaySequence( anim )
 		elseif distance < 100 and ( not self.AttackDelay or CurTime() - self.AttackDelay > 1.2 ) then
 
 			local smackSnd = ZCommon_AttackSmack[ random( #ZCommon_AttackSmack ) ]
+			self.loco:SetDesiredSpeed( 0 )
+			anim = "ACT_TERROR_ATTACK_CONTINUOUSLY"
 	
-			self:ResetSequence( "ACT_TERROR_ATTACK_CONTINUOUSLY" )
+			self:PlaySequence( anim )
 			self:SetAngles( AngleToEnemy )
 			local dmginfo = DamageInfo()
 			dmginfo:SetDamage( 5 )

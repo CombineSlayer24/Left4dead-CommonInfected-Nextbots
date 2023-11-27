@@ -1,4 +1,13 @@
 ---------------------------------------------------------------------------------------------------------------------------------------------
+-- Play the requested animation sequence
+function ENT:PlaySequence( sequence )
+    local seq = self:LookupSequence( sequence )
+    if seq > 0 then
+        self:ResetSequence( seq )
+        self:SetSequence( seq )
+    end
+end
+---------------------------------------------------------------------------------------------------------------------------------------------
 -- Returns the position and angle of a specified bone
 function ENT:GetBoneTransformation( bone, target )
     target = ( target or self )
