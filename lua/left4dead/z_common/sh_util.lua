@@ -7,9 +7,18 @@ local EmitSound = EmitSound
 ---------------------------------------------------------------------------------------------------------------------------------------------
 -- Play the requested voiceline
 -- Action = the global voiceset
+-- Need to make a check for IsSpeaking
 function ENT:Vocalize( action )
+    local pitch
     local Snd = action[ random( #action ) ]
-    self:EmitSound( Snd )
+
+    if self.Gender == "Female" then
+        pitch = random( 100, 112 )
+        self:EmitSound( Snd, 80, pitch )
+    elseif self.Gender == "Male" then
+        pitch = random( 94, 104 )
+        self:EmitSound( Snd, 80, pitch )
+    end
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 -- Play the requested animation sequence

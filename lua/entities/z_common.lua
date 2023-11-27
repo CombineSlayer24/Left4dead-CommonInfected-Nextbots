@@ -312,6 +312,7 @@ function ENT:StartWandering()
 		if random( 8 ) == 3 then
 			if !self.SpeakDelay or CurTime() - self.SpeakDelay > Rand( 1.2, 2 ) then
 				self:Vocalize( ZCommon_L4D1_RageAtVictim )
+				PrintMessage( HUD_PRINTTALK, "Rage At Victim!" )
 				self.SpeakDelay = CurTime()
 			end
 		end
@@ -328,9 +329,16 @@ function ENT:StartWandering()
 			self:PlaySequence( anim )
 		elseif distance < 100 and ( not self.AttackDelay or CurTime() - self.AttackDelay > 1.2 ) then
 
-			local smackSnd = ZCommon_AttackSmack[ random( #ZCommon_AttackSmack ) ]
 			self.loco:SetDesiredSpeed( 0 )
 			anim = "ACT_TERROR_ATTACK_CONTINUOUSLY"
+
+			if random( 2 ) == 1 then
+				if !self.SpeakDelay or CurTime() - self.SpeakDelay > Rand( 0.2, 1 ) then
+					self:Vocalize( ZCommon_L4D1_BecomeEnraged )
+					PrintMessage( HUD_PRINTTALK, "Enraged!" )
+					self.SpeakDelay = CurTime()
+				end
+			end
 	
 			self:PlaySequence( anim )
 			self:SetAngles( AngleToEnemy )
@@ -339,7 +347,7 @@ function ENT:StartWandering()
 			dmginfo:SetDamageType( DMG_DIRECT )
 			dmginfo:SetInflictor( self )
 			detectedEnemy:TakeDamageInfo( dmginfo )
-			self:EmitSound( smackSnd )
+			self:Vocalize( ZCommon_AttackSmack )
 			self.AttackDelay = CurTime()
 		end
 

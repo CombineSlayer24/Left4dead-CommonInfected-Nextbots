@@ -18,7 +18,7 @@ function ZombieExpression( ent, expressionType )
 		local anim = ent:LookupSequence( "exp_" .. expressionType .. "_0" .. random( 6 ) )
 		ent:AddGestureSequence( anim, true )
 
-		timer_Adjust( "IdleAnimationLayer", ent:SequenceDuration( anim ) )
+		timer_Adjust( "IdleAnimationLayer", ent:SequenceDuration( anim ) - 0.2 )
 	end)
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
