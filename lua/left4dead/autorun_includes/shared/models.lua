@@ -28,11 +28,14 @@ Z_MaleModels =
 	"models/infected/c_nb/trs_common_male_pilot01.mdl",
 	"models/infected/c_nb/trs_common_male_baggagehandler01.mdl",
 	
-	-- End of Cuba's Common Infected
+	-- L4D2
+	"models/infected/l4d2_nb/common_male_dressshirt_jeans.mdl",
+	"models/infected/l4d2_nb/uncommon_male_ceda.mdl",
 }
 ---------------------------------------------------------------------------------------------------------------------------------------------
 Z_FemaleModels = 
 {
+	-- Cuba's Common Infected
 	"models/infected/c_nb/common_female01.mdl",
 	"models/infected/c_nb/common_female_rural01.mdl",
 	"models/infected/c_nb/common_female_nurse01.mdl",
@@ -42,6 +45,10 @@ Z_FemaleModels =
 	"models/infected/c_nb/trs_common_female_rural01.mdl",
 	"models/infected/c_nb/trs_common_female_nurse01.mdl",
 	"models/infected/c_nb/trs_common_female_suit01.mdl",
+
+	-- L4D2
+	"models/infected/l4d2_nb/common_female_tanktop_jeans.mdl",
+	"models/infected/l4d2_nb/common_female_tshirt_skirt.mdl",
 }
 ---------------------------------------------------------------------------------------------------------------------------------------------
 -- Spawnable props that get parented to the zombie model
@@ -60,3 +67,18 @@ Z_itemModels =
 	-- Add more items here as needed
 }
 ---------------------------------------------------------------------------------------------------------------------------------------------
+function PrecacheZombies()
+	for k, v in ipairs( Z_MaleModels ) do
+		util.PrecacheModel( v )
+	end
+
+	for k, v in ipairs( Z_FemaleModels ) do
+		util.PrecacheModel( v )
+	end
+
+	for k, v in ipairs( Z_itemModels ) do
+		util.PrecacheModel( v )
+	end
+end
+---------------------------------------------------------------------------------------------------------------------------------------------
+hook.Add( "PostGamemodeLoaded", "z_precache", PrecacheZombies )

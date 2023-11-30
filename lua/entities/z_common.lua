@@ -58,6 +58,7 @@ local LookupSequence = LookupSequence
 local SequenceDuration = SequenceDuration
 local IsValid = IsValid
 local Vector = Vector
+local ents_GetAll = ents.GetAll
 
 local collisionmins = Vector( -16, -16, 0 )
 local collisionmaxs = Vector( 16, 16, 72 )
@@ -113,7 +114,6 @@ function ENT:Initialize()
 
 		self:SetUpZombie()
 		local mdl = self:GetModel()
-		BroadcastLua('chat.AddText("' .. self.Gender .. '")')
 
 		self.ci_BehaviorState = "Idle" -- The state for our behavior thread is currently running
 
@@ -121,8 +121,12 @@ function ENT:Initialize()
 		self:SetShouldServerRagdoll( true )
 
 		if droppableProps:GetBool() then
-			if ci_BatonModels[ mdl ] and random( 100 ) <= 15 then
+			local randomValue = random( 100 ) <= 15
+			
+			if ci_BatonModels[ mdl ] and randomValue then
 				self:CreateItem( "nightstick", true, "baton" )
+			elseif mdl == "models/infected/l4d2_nb/uncommon_male_ceda.mdl" and randomValue then
+				self:CreateItem( "bileJar", false, "grenade" )
 			end
 		end
 
@@ -180,6 +184,44 @@ function ENT:CreateItem( itemName, canparent, id )
 	self.canparent = canparent
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
+function ENT:CreateItemOnDeath( ragdoll )
+	local item = self.item
+	-- Make this into a convar later
+	local dropChance = random( 100 ) <= 60
+
+	if dropChance or !self.canparent then
+		item:SetParent( nil )
+		item:SetPos( self:GetPos() + Vector( 0, 0, 50 ) )
+		item:SetCollisionGroup( COLLISION_GROUP_DEBRIS )
+		item:PhysicsInit( SOLID_VPHYSICS )
+
+		local phys = item:GetPhysicsObject()
+		if IsValid( phys ) then
+			phys:EnableGravity( true )
+			phys:Wake()
+
+			-- Apply a force so they fly up or around.
+			local randX = random( -1000, 1000 )
+			local randY = random( -1000, 1000 )
+			local randZ = random( 450, 100 )
+			local force = Vector( randX, randY, randZ )
+			local position = item:WorldToLocal( item:OBBCenter() ) + Vector( Rand( 5, 10 ), Rand( 5, 10 ), Rand( -10, 60 ) )
+			phys:ApplyForceOffset( force, position )
+		end
+
+		SimpleTimer( 15, function()
+			if IsValid( item ) then
+				item:Remove()
+			end
+		end)
+	else
+		-- Parent to the model, don't drop.
+		if IsValid( ragdoll ) then
+			item:SetParent( ragdoll )
+		end
+	end
+end
+---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:OnKilled( dmginfo )
 	hook_Run( "OnNPCKilled", self, dmginfo:GetAttacker(), dmginfo:GetInflictor() )
 
@@ -188,42 +230,28 @@ function ENT:OnKilled( dmginfo )
 
 	self:SetDeathExpression( ragdoll )
 
-	-- Move this into it's own function "ENT:CreateItemOnDeath"
 	if IsValid( self.item ) then
-		local item = self.item
-		-- Make this into a convar later
-		local dropChance = random( 100 ) <= 60
+		self:CreateItemOnDeath( ragdoll )
+	end
 
-		if dropChance or !self.canparent then
-			item:SetParent( nil )
-			item:SetPos( self:GetPos() + Vector( 0, 0, 50 ) )
-			item:SetCollisionGroup( COLLISION_GROUP_DEBRIS )
-			item:PhysicsInit( SOLID_VPHYSICS )
+	-- Have a chance for the ragdoll to fly around a bit.
+	-- Instead of faceplanting if no animations played, they could land
+	-- on their back.
+	if random( 10 ) == 1 then
+		local phys = ragdoll:GetPhysicsObject()
+		if IsValid( phys ) then
+			local randX = random( -20, 30 )
+			local randY = random( -20, 30 )
+			local randZ = random( -30, 60 )
+			local force = Vector( randX, randY, randZ )
 
-			local phys = item:GetPhysicsObject()
-			if IsValid( phys ) then
-				phys:EnableGravity( true )
-				phys:Wake()
-
-				-- Apply a force so they fly up or around.
-				local force = Vector( random( -1000, 1000 ), random( -1000, 1000 ), random( 450, 1000 ) )
-				local position = item:WorldToLocal( item:OBBCenter() ) + Vector( Rand( 5, 10 ), Rand( 5, 10 ), Rand( -10, 60 ) )
-				phys:ApplyForceOffset( force, position )
-			end
-
-			SimpleTimer( 15, function()
-				if IsValid( item ) then
-					item:Remove()
-				end
-			end)
-		else
-			-- Parent to the model, don't drop.
-			if IsValid( ragdoll ) then
-				item:SetParent( ragdoll )
-			end
+			-- Apply the force at a random point on the ragdoll.
+			local position = Vector( 0,0,0 )
+			phys:ApplyForceOffset( force, position )
 		end
 	end
 end
+
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:Draw()
 	self.ci_lastdraw = RealTime() + 0.1
@@ -232,6 +260,9 @@ function ENT:Draw()
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:OnRemove()
+end
+---------------------------------------------------------------------------------------------------------------------------------------------
+function ENT:Think()
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:HandleStuck()
@@ -250,7 +281,7 @@ function ENT:HandleStuck()
 	print( "Infected was removed due to getting stuck" )
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
-function ENT:Think()
+function ENT:PhysicsCollide( data, phys )
 
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
@@ -323,7 +354,7 @@ function ENT:StartWandering()
 			pathFollow:SetMinLookAheadDistance( 10 )
         	pathFollow:SetGoalTolerance( 5 )
         	pathFollow:Compute( self, detectedEnemy:GetPos() )
-			pathFollow:Draw()
+			--pathFollow:Draw()
 			pathFollow:Update( self )
 			--PrintMessage(HUD_PRINTTALK, "Following!")
 			self:PlaySequence( anim )

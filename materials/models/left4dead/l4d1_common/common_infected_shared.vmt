@@ -1,19 +1,19 @@
 "VertexLitGeneric"
 {
 	$halflambert 0
-	"$nodecal" "1"
-	"$model" "1"
-	"$surfaceprop" "flesh"
+	$nodecal 1
+	$model 1
+	$surfaceprop flesh
 
-// -- From here down is new stuff which will only be applied if $phong is set to 1 --
+	// Phong info
 	$phong 1
 	$phongboost 0.1
 	$phongexponent 5
 	$phongtint "[.4 .8 1]"
 	$phongfresnelranges "[1 0 .05]"
 
-// Rim lighting parameters
-	"$rimlight" "1"				// To enable rim lighting (requires phong)
-	"$rimlightexponent" "80"             // Exponent for phong component of rim lighting
-	"$rimlightboost" ".5"	               // Boost for ambient cube component of rim lighting
+	// Rim light info
+	$rimlight 1
+	$rimlightexponent 80
+	$rimlightboost .5
 }
