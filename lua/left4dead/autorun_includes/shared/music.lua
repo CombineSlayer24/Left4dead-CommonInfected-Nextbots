@@ -2,6 +2,7 @@
 ---------------------------------------------------------------------------------------------------------------------------------------------
 Z_Music_Germs = 
 {
+    -- L4D1
     -- Large Horde
     "left4dead/music/mob/germl1a.mp3",
     "left4dead/music/mob/germl1b.mp3",
@@ -17,11 +18,49 @@ Z_Music_Germs =
     "left4dead/music/mob/germs1b.mp3",
     "left4dead/music/mob/germs2a.mp3",
     "left4dead/music/mob/germs2b.mp3",
+    "left4dead/music/mob/germs3a.mp3",
     -- X-Large Horde
     "left4dead/music/mob/germx1a.mp3",
     "left4dead/music/mob/germx1b.mp3",
     "left4dead/music/mob/germx2a.mp3",
-    "left4dead/music/mob/germx2b.mp3"
+    "left4dead/music/mob/germx2b.mp3",
+
+    -- L4D2
+
+--[[     "music/mob/easygerml1a.wav",
+    "music/mob/easygerml1b.wav",
+    "music/mob/easygerml2a.wav",
+    "music/mob/easygerml2b.wav",
+    "music/mob/easygermm1a.wav",
+    "music/mob/easygermm1b.wav",
+    "music/mob/easygermm1c.wav",
+    "music/mob/easygermm1d.wav",
+    "music/mob/easygermm2c.wav",
+    "music/mob/easygermm2d.wav",
+    "music/mob/easygerms1a.wav",
+    "music/mob/easygerms1b.wav",
+    "music/mob/easygermx1a.wav",
+    "music/mob/easygermx1b.wav",
+    "music/mob/easygermx2a.wav",
+    "music/mob/easygermx2b.wav",
+
+    "music/mob/milltowngerml1a.wav",
+    "music/mob/milltowngerml1b.wav",
+    "music/mob/milltowngerml1c.wav",
+    "music/mob/milltowngerml2a.wav",
+    "music/mob/milltowngerml2b.wav",
+    "music/mob/milltowngerml2c.wav",
+    "music/mob/milltowngermm1a.wav",
+    "music/mob/milltowngermm1b.wav",
+    "music/mob/milltowngermm1d.wav",
+    "music/mob/milltowngermm2a.wav",
+    "music/mob/milltowngermm2b.wav",
+    "music/mob/milltowngermm2c.wav",
+    "music/mob/milltowngermx1a.wav",
+    "music/mob/milltowngermx1b.wav",
+    "music/mob/milltowngermx1c.wav",
+    "music/mob/milltowngermx2a.wav",
+    "music/mob/milltowngermx2b.wav", ]]
 }
 ---------------------------------------------------------------------------------------------------------------------------------------------
 Z_Music_Choir = 

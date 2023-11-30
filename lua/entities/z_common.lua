@@ -139,7 +139,7 @@ function ENT:Initialize()
 		self:PhysicsInitShadow()
 		self:SetSolid(SOLID_BBOX)
 
-		self:SetCollisionGroup( COLLISION_GROUP_PLAYER )
+		self:SetCollisionGroup(COLLISION_GROUP_INTERACTIVE)
 
 		self:SetLagCompensated( true )
 		self:AddFlags( FL_OBJECT + FL_NPC )
@@ -281,10 +281,6 @@ function ENT:HandleStuck()
 	print( "Infected was removed due to getting stuck" )
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
-function ENT:PhysicsCollide( data, phys )
-
-end
----------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:FindNearestEnemy()
     local enemies = ents_FindInSphere(self:GetPos(), 2500) -- Find potential targets
     local nearestEnemy = nil -- Our enemy
@@ -354,7 +350,7 @@ function ENT:StartWandering()
 			pathFollow:SetMinLookAheadDistance( 10 )
         	pathFollow:SetGoalTolerance( 5 )
         	pathFollow:Compute( self, detectedEnemy:GetPos() )
-			--pathFollow:Draw()
+			pathFollow:Draw()
 			pathFollow:Update( self )
 			--PrintMessage(HUD_PRINTTALK, "Following!")
 			self:PlaySequence( anim )

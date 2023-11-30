@@ -81,4 +81,4 @@ function PrecacheZombies()
 	end
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
-hook.Add( "PostGamemodeLoaded", "z_precache", PrecacheZombies )
+--hook.Add( "PostGamemodeLoaded", "z_precache", PrecacheZombies )
