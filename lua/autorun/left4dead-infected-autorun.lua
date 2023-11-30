@@ -111,7 +111,7 @@ local function IsVisible( player, vec )
     return true
 end
 
-CreateConVar( "l4d_nb_z_spawn_radius", 2000, FCVAR_ARCHIVE, "Should Zombies spawn in player sightlines?", 250, 25000 )
+CreateConVar( "l4d_nb_z_spawn_radius", 2000, FCVAR_ARCHIVE, "Zombie Spawn radius from player.", 250, 25000 )
 
 --Get's the same height level as player
 local function GetNavAreasNear( pos, radius, caller )
@@ -132,7 +132,7 @@ local function GetNavAreasNear( pos, radius, caller )
 				local height = nav:GetSizeY()
 				local maxOffset = width <= 40 and height <= 40 and 1 or 20  -- Set the max offset based on the size of the navmesh area 
 				local xyOffset = VectorRand() * maxOffset -- Randomize X and Y components, keep Z at 0 
-				xyOffset.z = 25
+				xyOffset.z = 25 -- In case if our tracehull doesn't work, spawn the entity up a bit
 
 				local spawnPos = nav:GetCenter() + xyOffset -- Add randomized offset to the center of the nav area 
 
@@ -193,7 +193,6 @@ concommand.Add( "l4d_nb_z_spawn", SpawnRandomZombie, nil, "Spawn a Zombie at a r
 
 local function SpawnMob(caller)
 
-	SpawnNPC( nil, "z_common", caller )
 	SpawnNPC( nil, "z_common", caller )
 	SpawnNPC( nil, "z_common", caller )
 	SpawnNPC( nil, "z_common", caller )
