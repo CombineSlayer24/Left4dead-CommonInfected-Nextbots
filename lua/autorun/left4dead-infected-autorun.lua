@@ -221,6 +221,7 @@ end
 concommand.Add( "l4d_nb_z_spawn_mob", SpawnMob, nil, "Spawn a Mob at a random Navmesh area")
 
 -- Used for cleaning up stuff for debugging
+-- Credit to VJ Base
 if SERVER then
 	local IsValid = IsValid
 	local ipairs = ipairs
@@ -236,7 +237,7 @@ if SERVER then
 		allammo = "Removed All Your Ammo",
 	}
 	
-	concommand.Add("vj_cleanup", function( ply, cmd, args )
+	concommand.Add("l4d_d_cleanup", function( ply, cmd, args )
 		local plyValid = IsValid( ply )
 		if plyValid and !ply:IsAdmin() then return end
 		
