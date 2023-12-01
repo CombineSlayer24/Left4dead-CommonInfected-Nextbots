@@ -1,0 +1,34 @@
+VertexLitGeneric
+{
+	$basetexture "models/left4dead/ci_burning"
+	$bumpmap "models/left4dead/l4d2_common/ci_normal"
+	$halflambert 1
+
+
+	// Phong info
+	$phong 1
+	$phongtint "[.62 .72 1]"
+	$phongexponent 70
+	$phongboost 5
+	$phongfresnelranges "[0.2 0.5 1.0]"
+	$diffuseexp "1.0"
+	$allowdiffusemodulation 0
+
+	// OLD PHONG
+//	$phong 1
+//	$phongboost 0.3
+//	$phongexponent 10
+//	$phongtint "[.62 .72 1]"
+//	$phongfresnelranges "[0.75 0.25 1]"
+
+	// Rim light info
+	$rimlight 1
+	$rimlightexponent 10
+	$rimlightboost 0.3
+
+	// Detail info
+	$detail "models/left4dead/l4d2_common/detail/ci_detail_dirt"
+	$detailframe 0
+	$detailscale 2
+	$detailblendfactor 0
+}
