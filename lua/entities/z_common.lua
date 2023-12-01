@@ -68,6 +68,7 @@ local crouchingcollisionmaxs = Vector( 16, 16, 36 )
 local ignorePlys = GetConVar( "ai_ignoreplayers" )
 local sv_gravity = GetConVar( "sv_gravity" )
 local droppableProps = GetConVar( "l4d_nb_sv_createitems" )
+local developer = GetConVar( "developer" )
 
 if CLIENT then language.Add( "nb_common_infected", ENT.PrintName ) end
 
@@ -96,8 +97,6 @@ function ENT:SetUpZombie()
         self.Gender = "Female"
     end
 
-	self:InitSounds()
-
     -- from Lambdaplayers
     for _, v in ipairs( self:GetBodyGroups() ) do
         local subMdls = #v.submodels
@@ -113,6 +112,7 @@ function ENT:Initialize()
 	if SERVER then
 
 		self:SetUpZombie()
+		self:InitSounds()
 		local mdl = self:GetModel()
 
 		self.ci_BehaviorState = "Idle" -- The state for our behavior thread is currently running
@@ -146,7 +146,7 @@ function ENT:Initialize()
 		self:SetSolidMask( MASK_PLAYERSOLID )
 
 		-- Idle Facial Anims
-		ZombieExpression( self, "idle" )
+		self:ZombieExpression( "idle" )
 
 		-- Breathing Anims layer
 		self:AddGestureSequence( self:LookupSequence( "idlenoise" ), false )
@@ -203,7 +203,7 @@ function ENT:CreateItemOnDeath( ragdoll )
 			-- Apply a force so they fly up or around.
 			local randX = random( -1000, 1000 )
 			local randY = random( -1000, 1000 )
-			local randZ = random( 450, 100 )
+			local randZ = random( 450, 1000 )
 			local force = Vector( randX, randY, randZ )
 			local position = item:WorldToLocal( item:OBBCenter() ) + Vector( Rand( 5, 10 ), Rand( 5, 10 ), Rand( -10, 60 ) )
 			phys:ApplyForceOffset( force, position )
@@ -234,6 +234,8 @@ function ENT:OnKilled( dmginfo )
 		self:CreateItemOnDeath( ragdoll )
 	end
 
+	self:Vocalize( ZCommon_L4D1_Death )
+
 	-- Have a chance for the ragdoll to fly around a bit.
 	-- Instead of faceplanting if no animations played, they could land
 	-- on their back.
@@ -262,21 +264,47 @@ end
 function ENT:OnRemove()
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
-function ENT:Think()
+function ENT:DirectPoseParametersAt(pos, pitch, yaw, center)
+	local isstring = isstring
+	local isentity = isentity
+	local isvector = isvector
+	local AngleDifference = math.AngleDifference
+	local GetAngles = self.GetAngles
+	local SetPoseParameter = self.SetPoseParameter
+	local WorldSpaceCenter = self.WorldSpaceCenter
+
+	if not isstring(yaw) then
+		return self:DirectPoseParametersAt(pos, pitch.."_pitch", pitch.."_yaw", yaw)
+	elseif isentity(pos) then 
+		pos = pos:WorldSpaceCenter() 
+	end
+
+	if isvector(pos) then
+		center = center or WorldSpaceCenter(self)
+		local angle = (pos - center):Angle()
+		SetPoseParameter(self, pitch, AngleDifference(angle.p, GetAngles(self).p))
+		SetPoseParameter(self, yaw, AngleDifference(angle.y, GetAngles(self).y))
+	else
+		SetPoseParameter(self, pitch, 0)
+		SetPoseParameter(self, yaw, 0)
+	end
+end
+---------------------------------------------------------------------------------------------------------------------------------------------
+function ENT:LookAtEntity( ent )
+	local enemy = self:FindNearestEnemy()
+	if IsValid(enemy) and enemy:GetBonePosition(1) then
+		local distance = self:GetPos():Distance(enemy:GetPos())
+
+		-- Look at out prey
+		if distance < 700 then
+			self:DirectPoseParametersAt(enemy:GetBonePosition(1), "body", self:EyePos())
+		else -- If our prey is too far, don't look at them
+			self:DirectPoseParametersAt(nil, "body_pitch", "body_yaw", 0)
+		end
+	end
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:HandleStuck()
-
---[[ 	local dmginfo = DamageInfo()
-	dmginfo:SetAttacker( self )
-	dmginfo:SetInflictor( self )
-	dmginfo:SetDamageType( DMG_CRUSH )
-	dmginfo:SetDamage( self:Health() )
-	self:OnKilled( dmginfo )
-	self.loco:ClearStuck()
-
-	--self:EmitSound( "npc/infected/gore/bullets/bullet_impact_05.wav", 65 ) ]]
-
 	self:Remove()
 	print( "Infected was removed due to getting stuck" )
 end
@@ -303,15 +331,27 @@ end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:RunBehaviour()
 	while ( true ) do
-		self:StartWandering()
-		coroutine_wait( 0.1 )
+		local enemy = self:FindNearestEnemy()
+		if not IsValid(enemy) then
+			self:StartWandering()
+		elseif IsValid(enemy) then
+			local distance = self:GetPos():Distance(enemy:GetPos())
+			if distance > 100 then
+				self:ChaseTarget(enemy)
+				--PrintMessage(HUD_PRINTTALK, "Chasing!")
+			else
+				self:Attack(enemy)
+				--PrintMessage(HUD_PRINTTALK, "Attacking!")
+			end
+		end
+		coroutine.yield()
 	end
 end
+
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:StartWandering()
-	self.loco:SetDesiredSpeed( 300 )
-	self.loco:SetAcceleration( 5000 )
-	self.loco:SetDeceleration( 5000 )
+	self.loco:SetAcceleration(5000)
+	self.loco:SetDeceleration(5000)
 
 	local anim = self:GetActivity()
 	
@@ -321,66 +361,94 @@ function ENT:StartWandering()
 		anim = "ACT_TERROR_RUN_INTENSE"
 	end
 
-	local detectedEnemy = self:FindNearestEnemy()
+	self:ResetSequence(anim)
+	self.loco:SetDesiredSpeed(350)
+	self:MoveToPos(self:GetPos() + VectorRand() * math.random(250, 300))
+end
+---------------------------------------------------------------------------------------------------------------------------------------------
+function ENT:Attack(target)
+	local detectedEnemy = target
+	local directionToEnemy = (target:GetPos() - self:GetPos()):GetNormalized()
+	local distance = self:GetPos():Distance(target:GetPos())
+	local AngleToEnemy = directionToEnemy:Angle()
+	AngleToEnemy.p = 0
+	if distance < 100 and (not self.AttackDelay or CurTime() - self.AttackDelay > 1.2) then
+		self:SetCycle(0)
+		self:SetPlaybackRate(1)
+		self:SetAngles(AngleToEnemy)
 
-	--print("Detected Enemy:", detectedEnemy)
-
-	if not IsValid( detectedEnemy ) then
-		self:PlaySequence( anim )
-		--PrintMessage(HUD_PRINTTALK, "Common Infected has no enemy.")
-		self.loco:SetDesiredSpeed( 150 )
-		self:MoveToPos( self:GetPos() + VectorRand() * math.random( 250, 300 ) )
-	else
-		local directionToEnemy = ( detectedEnemy:GetPos() - self:GetPos() ):GetNormalized()
-		local distance = self:GetPos():Distance( detectedEnemy:GetPos() )
-		local AngleToEnemy = directionToEnemy:Angle()
-		AngleToEnemy.p = 0
-
-		if random( 8 ) == 3 then
-			if !self.SpeakDelay or CurTime() - self.SpeakDelay > Rand( 1.2, 2 ) then
-				self:Vocalize( ZCommon_L4D1_RageAtVictim )
-				PrintMessage( HUD_PRINTTALK, "Rage At Victim!" )
+		if random( 2 ) == 1 then
+			if !self.SpeakDelay or CurTime() - self.SpeakDelay > Rand( 0.2, 1 ) then
+				self:Vocalize( ZCommon_L4D1_BecomeEnraged )
+				PrintMessage( HUD_PRINTTALK, "Enraged!" )
 				self.SpeakDelay = CurTime()
 			end
 		end
 
-		--PrintMessage(HUD_PRINTTALK,"Distance to enemy: " .. distance)
-		if distance > 100 then
-			local pathFollow = Path( "Follow" )
-			pathFollow:SetMinLookAheadDistance( 10 )
-        	pathFollow:SetGoalTolerance( 5 )
-        	pathFollow:Compute( self, detectedEnemy:GetPos() )
-			pathFollow:Draw()
-			pathFollow:Update( self )
-			--PrintMessage(HUD_PRINTTALK, "Following!")
-			self:PlaySequence( anim )
-		elseif distance < 100 and ( not self.AttackDelay or CurTime() - self.AttackDelay > 1.2 ) then
-
-			self.loco:SetDesiredSpeed( 0 )
-			anim = "ACT_TERROR_ATTACK_CONTINUOUSLY"
-
-			if random( 2 ) == 1 then
-				if !self.SpeakDelay or CurTime() - self.SpeakDelay > Rand( 0.2, 1 ) then
-					self:Vocalize( ZCommon_L4D1_BecomeEnraged )
-					PrintMessage( HUD_PRINTTALK, "Enraged!" )
-					self.SpeakDelay = CurTime()
-				end
-			end
-	
-			self:PlaySequence( anim )
-			self:SetAngles( AngleToEnemy )
-			local dmginfo = DamageInfo()
-			dmginfo:SetDamage( 5 )
-			dmginfo:SetDamageType( DMG_DIRECT )
-			dmginfo:SetInflictor( self )
-			detectedEnemy:TakeDamageInfo( dmginfo )
-			self:Vocalize( ZCommon_AttackSmack )
-			self.AttackDelay = CurTime()
-		end
-
-		--PrintMessage(HUD_PRINTTALK, "Common Infected is moving to enemy position: " .. tostring(detectedEnemy:GetPos()))
-		self:BodyUpdate()
+		local dmginfo = DamageInfo()
+		dmginfo:SetDamage(5)
+		dmginfo:SetDamageType(DMG_DIRECT)
+		dmginfo:SetInflictor(self)
+		dmginfo:SetAttacker(self)
+		target:TakeDamageInfo(dmginfo)
+		self:Vocalize( ZCommon_AttackSmack )
+		self:LookAtEntity()
+		self:PlayAttackAnimation()
+		self.AttackDelay = CurTime()
 	end
+end
+---------------------------------------------------------------------------------------------------------------------------------------------
+function ENT:ChaseTarget(target)
+	self.loco:SetDesiredSpeed(300)
+	self.loco:SetAcceleration(5000)
+	self.loco:SetDeceleration(5000)
+	self.IsRunning = true
+
+	local anim = self:GetActivity()
+	
+	if self.Gender == "Female" then
+		anim = "ACT_RUN"
+	else
+		anim = "ACT_TERROR_RUN_INTENSE"
+	end
+
+	if random( 8 ) == 3 then
+		if !self.SpeakDelay or CurTime() - self.SpeakDelay > Rand( 1.2, 2 ) then
+			self:Vocalize( ZCommon_L4D1_RageAtVictim )
+			PrintMessage( HUD_PRINTTALK, "Rage At Victim!" )
+			self.SpeakDelay = CurTime()
+		end
+	end
+
+	self:ResetSequence(anim)
+	self.loco:SetDesiredSpeed(300)
+	self:LookAtEntity()
+
+    local TargetToChase = target
+    local path = Path("Follow")
+    --path:Chase(self, target)
+    path:Compute(self, TargetToChase:GetPos())
+    while (path:IsValid() and IsValid(TargetToChase)) do
+        if path:GetAge() > 0.1 then
+            path:Compute(self, TargetToChase:GetPos())
+        end
+
+		if developer:GetBool() then path:Draw() end
+
+        path:Update(self)
+
+		local distance = self:GetPos():Distance(TargetToChase:GetPos())
+        if distance > 90 then
+            break
+        end
+
+        coroutine.yield()
+    end
+end
+
+function ENT:PlayAttackAnimation()
+	coroutine.wait(0.4)
+	self:ResetSequence("ACT_TERROR_ATTACK_CONTINUOUSLY")
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 --
@@ -394,11 +462,7 @@ end
 		if self.Gender == "female" then
 			anim = "ACT_WALK"
 		elseif self.Gender == "male" then
-			local maleAnims = {
-				"ACT_TERROR_WALK_NEUTRAL",
-				"ACT_TERROR_SHAMBLE",
-				"ACT_TERROR_WALK_INTENSE"
-			}
+			local maleAnims = { "ACT_TERROR_WALK_NEUTRAL", "ACT_TERROR_SHAMBLE", "ACT_TERROR_WALK_INTENSE" }
 			anim = table.Random(maleAnims)
 		end
 	

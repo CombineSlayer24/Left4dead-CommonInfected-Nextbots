@@ -27,7 +27,7 @@ Z_Music_Germs =
 
     -- L4D2
 
---[[     "music/mob/easygerml1a.wav",
+    "music/mob/easygerml1a.wav",
     "music/mob/easygerml1b.wav",
     "music/mob/easygerml2a.wav",
     "music/mob/easygerml2b.wav",
@@ -43,6 +43,35 @@ Z_Music_Germs =
     "music/mob/easygermx1b.wav",
     "music/mob/easygermx2a.wav",
     "music/mob/easygermx2b.wav",
+
+    "music/mob/mallgerml1a.wav",
+    "music/mob/mallgerml1b.wav",
+    "music/mob/mallgerml1c.wav",
+    "music/mob/mallgermm1a.wav",
+    "music/mob/mallgermm2a.wav",
+    "music/mob/mallgermm2b.wav",
+    "music/mob/mallgerms1a.wav",
+    "music/mob/mallgerms1b.wav",
+    "music/mob/mallgerms2a.wav",
+    "music/mob/mallgerms2b.wav",
+
+    "music/mob/parishtmptgerml1a.wav",
+    "music/mob/parishtmptgerml1b.wav",
+    "music/mob/parishtmptgerml2a.wav",
+    "music/mob/parishtmptgerml2b.wav",
+    "music/mob/parishtmptgermm1a.wav",
+    "music/mob/parishtmptgermm1b.wav",
+    "music/mob/parishtmptgermm2a.wav",
+    "music/mob/parishtmptgermm2b.wav",
+    "music/mob/parishtmptgermm2c.wav",
+    "music/mob/parishtmptgermm2d.wav",
+    "music/mob/parishtmptgermx1a.wav",
+    "music/mob/parishtmptgermx1b.wav",
+    "music/mob/parishtmptgermx1c.wav",
+    "music/mob/parishtmptgermx1d.wav",
+    "music/mob/parishtmptgermx2a.wav",
+    "music/mob/parishtmptgermx2b.wav",
+    "music/mob/parishtmptgermx2c.wav",
 
     "music/mob/milltowngerml1a.wav",
     "music/mob/milltowngerml1b.wav",
@@ -60,7 +89,7 @@ Z_Music_Germs =
     "music/mob/milltowngermx1b.wav",
     "music/mob/milltowngermx1c.wav",
     "music/mob/milltowngermx2a.wav",
-    "music/mob/milltowngermx2b.wav", ]]
+    "music/mob/milltowngermx2b.wav",
 }
 ---------------------------------------------------------------------------------------------------------------------------------------------
 Z_Music_Choir = 

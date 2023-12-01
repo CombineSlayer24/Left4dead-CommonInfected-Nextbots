@@ -1,8 +1,28 @@
+local SERVER = SERVER
 local random = math.random
 local Rand = math.Rand
 local MathHuge = math.huge
 local CurTime = CurTime
 local EmitSound = EmitSound
+local timer_Create = timer.Create
+local timer_Adjust = timer.Adjust
+local timer_Remove = timer.Remove
+local IsValid = IsValid
+---------------------------------------------------------------------------------------------------------------------------------------------
+-- expressionType must be typed in as ("idle" and "angry")
+function ENT:ZombieExpression( expressionType )
+    timer_Remove( "AnimationLayer" )
+    timer_Create( "AnimationLayer", 2, 0, function()
+        if !IsValid( self ) then return end
+
+        if SERVER then
+            local anim = self:LookupSequence( "exp_" .. expressionType .. "_0" .. random( 6 ) )
+            self:AddGestureSequence( anim, false )
+        end
+
+        timer_Adjust( "AnimationLayer", self:SequenceDuration( anim ) - 0.2 )
+    end)
+end
 
 ---------------------------------------------------------------------------------------------------------------------------------------------
 -- Play the requested voiceline

@@ -68,6 +68,7 @@ concommand.Add( "l4d_dev_reloadaddon", InitializeAddon )
 
 local IsValid = IsValid
 local random = math.random
+local Rand = math.Rand
 local GetConVar = GetConVar
 local Rad = math.rad
 local Cos = math.cos
@@ -124,7 +125,7 @@ local function GetNavAreasNear( pos, radius, caller )
 		if IsValid( nav ) and nav:GetSizeX() > 40 and nav:GetSizeY() > 40 and !nav:IsUnderwater() and 
 		   ( pos:DistToSqr( nav:GetClosestPointOnArea( pos ) ) < ( radius * radius ) and 
 		   pos:DistToSqr( nav:GetClosestPointOnArea( pos ) ) > ( ( radius / 3 ) * ( radius / 3 ) ) and 
-		   nav:GetCenter().z >= playerZ - 40 and nav:GetCenter().z <= playerZ + 40 ) then
+		   nav:GetCenter().z >= playerZ - 200 and nav:GetCenter().z <= playerZ + 200 ) then
 
 			-- Check if the center of the nav area is visible to the player and within their FOV 
 			if ( !IsVisible( caller, nav:GetCenter() ) and !IsInFOV( caller, nav:GetCenter() )) then 
@@ -156,68 +157,62 @@ local function GetNavAreasNear( pos, radius, caller )
 	return foundareas 
 end 
 
-local function SpawnNPC( pos, class, caller )
+local function SpawnNPC( class, caller, amount )
 	local plyradius = GetConVar( "l4d_nb_z_spawn_radius" )
 	if !IsValid( caller ) then return end
-	
-	if !pos then
-		local areas = GetNavAreasNear( caller:GetPos(), plyradius:GetInt(), caller )
+
+	local areas = GetNavAreasNear( caller:GetPos(), plyradius:GetInt(), caller )
+	if !areas or #areas == 0 then return end
+	local spawnTimerName = "SpawnTimer_" .. caller:UserID() -- Unique timer name for each player
+
+	timer.Create(spawnTimerName, 0.05, amount, function()
+
 		pos = areas[ random( #areas ) ]
-		if !pos then return end
-	end
 
-	local npc = ents_Create( class )
-	npc:SetPos( pos )
-	npc:SetAngles( Angle( 0, random( -180, 180 ), 0 ) )
-	npc:Spawn()
-
-	local effect = EffectData()
-	effect:SetEntity( npc )
-	util_Effect( "propspawn", effect )
-
-	undo_Create( "NPC (" .. class .. ")" )
-	undo_SetPlayer( caller )
-	undo_SetCustomUndoText( "Undone " .. "NPC (" .. class .. ")" )
-	undo_AddEntity( npc )
-	undo_Finish( "NPC (" .. class .. ")" )
-
-	return npc
+		local npc = ents_Create( class )
+		
+		-- Add a random offset to the spawn position
+		local offset = Vector( Rand( -5, 5 ), Rand(- 5, 5 ), 0 )
+		npc:SetPos( pos + offset )
+		
+		npc:SetAngles( Angle( 0, math.random( -180, 180 ), 0 ) )
+		npc:Spawn()
+	end)
 end
+
+
 
 local function SpawnRandomZombie(caller)
 
-	SpawnNPC( nil, "z_common", caller )
+	SpawnNPC( "z_common", caller, 1 )
 end
 
 concommand.Add( "l4d_nb_z_spawn", SpawnRandomZombie, nil, "Spawn a Zombie at a random Navmesh area")
 
 local function SpawnMob(caller)
-
-	SpawnNPC( nil, "z_common", caller )
-	SpawnNPC( nil, "z_common", caller )
-	SpawnNPC( nil, "z_common", caller )
-	SpawnNPC( nil, "z_common", caller )
-	SpawnNPC( nil, "z_common", caller )
-	SpawnNPC( nil, "z_common", caller )
-	SpawnNPC( nil, "z_common", caller )
-	SpawnNPC( nil, "z_common", caller )
-	SpawnNPC( nil, "z_common", caller )
-	SpawnNPC( nil, "z_common", caller )
-	SpawnNPC( nil, "z_common", caller )
-	SpawnNPC( nil, "z_common", caller )
-	SpawnNPC( nil, "z_common", caller )
-	SpawnNPC( nil, "z_common", caller )
-	SpawnNPC( nil, "z_common", caller )
-	SpawnNPC( nil, "z_common", caller )
-
 	if IsValid(caller) then
 		local soundPath = Z_Music_Germs[math.random(#Z_Music_Germs)]
 		caller:EmitSound(soundPath,75,100,1)
 		PrintMessage(HUD_PRINTCENTER, "[Incoming Attack!]")
+		SpawnNPC( "z_common", caller, 16 )
+	end
+end
+
+local function SpawnMegaMob(caller)
+
+	if IsValid(caller) then
+		caller:EmitSound("left4dead/vocals/infected/sfx/megamob_" .. random(2) .. ".mp3",75,100,1)
+
+		timer.Simple(math.Rand(1,3), function() 
+			local soundPath = Z_Music_Germs[math.random(#Z_Music_Germs)]
+			caller:EmitSound(soundPath,75,100,1)
+			SpawnNPC( "z_common", caller, 40 )
+		end)
 	end
 end
 
 concommand.Add( "l4d_nb_z_spawn_mob", SpawnMob, nil, "Spawn a Mob at a random Navmesh area")
+concommand.Add( "l4d_nb_z_spawn_megamob", SpawnMegaMob, nil, "Spawn a Mob at a random Navmesh area")
 
 -- Used for cleaning up stuff for debugging
 -- Credit to VJ Base
@@ -278,3 +273,35 @@ if SERVER then
 		end
 	end, nil, "", {FCVAR_DONTRECORD})
 end
+
+CreateConVar( "l4d_nb_z_drawcount", 1, FCVAR_ARCHIVE, "Show the amount of zombies on screen?", 0, 1 )
+
+local function DrawZombieCount()
+	if !GetConVar("l4d_nb_z_drawcount"):GetBool() then return end
+	local count = 0
+	local color = Color(0, 255, 0) -- Placeholder "default" local color
+
+	for _, ent in pairs(ents.FindByClass("z_common")) do
+		count = count + 1
+	end
+
+	if count >= 1 and count <= 6 then
+		color = Color(0, 255, 0) -- Green
+	elseif count >= 7 and count <= 11 then
+		color = Color(255, 255, 0) -- Yellow
+	elseif count >= 12 and count <= 15 then
+		color = Color(255, 0, 0) -- Red
+	elseif count >= 16 then
+		color = Color(128, 0, 0) -- Darker red
+	else
+		color = Color(255, 255, 255)
+	end
+	
+	if count > 0 then
+		draw.SimpleTextOutlined("Total Zombies Alive: " .. count, "DermaLarge", ScrW() / 2, 42, color, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER, 2, Color(0, 0, 0))
+	else
+		draw.SimpleTextOutlined("Total Zombies Alive:", "DermaLarge", ScrW() / 2, 42, color, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER, 2, Color(0, 0, 0))
+	end
+end
+
+hook.Add("HUDPaint", "DrawZombieCount", DrawZombieCount)
