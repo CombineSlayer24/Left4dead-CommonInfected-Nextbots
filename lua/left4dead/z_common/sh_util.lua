@@ -85,7 +85,7 @@ function ENT:DoLandingAnimation()
 		local anim = self:GetActivity()
 
 		-- If they are after their prey, don't do long landing anims
-		if IsValid( self:GetEnemy() ) then
+		if IsValid( self:FindNearestEnemy() ) then
 			local landingAnims = { "ACT_TERROR_JUMP_LANDING_HARD", "ACT_TERROR_JUMP_LANDING_HARD_NEUTRAL" }
 			anim = table_Random(landingAnims)
 		else
@@ -103,7 +103,7 @@ function ENT:DoLandingAnimation()
 			if !IsValid( self ) then return end
 			self.PlayingAnimSeq = false
 			if self:IsOnGround() then
-				if IsValid( self:GetEnemy() ) then
+				if IsValid( self:FindNearestEnemy() ) then
 					self:StartRun()
 				else
 					-- No enemy, so transistion to idle
@@ -114,6 +114,15 @@ function ENT:DoLandingAnimation()
 		end)
 
 		self.IsLanded = false
+	end
+end
+---------------------------------------------------------------------------------------------------------------------------------------------
+-- Play the requested animation sequence
+function ENT:PlaySequence( sequence )
+	local seq = self:LookupSequence( sequence )
+	if seq > 0 then
+		self:ResetSequence( seq )
+		self:SetSequence( seq )
 	end
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
@@ -172,15 +181,6 @@ function ENT:Vocalize( action )
 	end
 end
 
----------------------------------------------------------------------------------------------------------------------------------------------
--- Play the requested animation sequence
-function ENT:PlaySequence( sequence )
-	local seq = self:LookupSequence( sequence )
-	if seq > 0 then
-		self:ResetSequence( seq )
-		self:SetSequence( seq )
-	end
-end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 -- Returns the position and angle of a specified bone
 function ENT:GetBoneTransformation( bone, target )

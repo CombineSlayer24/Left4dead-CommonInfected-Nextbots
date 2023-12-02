@@ -50,6 +50,7 @@ local random = math.random
 local Rand = math.Rand
 local MathHuge = math.huge
 local table_insert = table.insert
+local table_Random = table.Random
 local table_HasValue = table.HasValue
 local Clamp = math.Clamp
 local coroutine_wait = coroutine.wait
@@ -111,6 +112,8 @@ function ENT:SetUpZombie()
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:Initialize()
+	game.AddParticles( "particles/boomer_fx.pcf" )
+
 	if SERVER then
 
 		self:SetUpZombie()
@@ -222,46 +225,6 @@ function ENT:CreateItemOnDeath( ragdoll )
 end
 
 ---------------------------------------------------------------------------------------------------------------------------------------------
-function ENT:OnKilled( dmginfo )
-	hook_Run( "OnNPCKilled", self, dmginfo:GetAttacker(), dmginfo:GetInflictor() )
-
-	local ragdoll = self:BecomeRagdoll( dmginfo )
-	ragdoll:SetCollisionGroup( COLLISION_GROUP_DEBRIS )
-
-	self:SetDeathExpression( ragdoll )
-	if IsValid( self.item ) then self:CreateItemOnDeath( ragdoll ) end
-
-	self:Vocalize( ZCommon_L4D1_Death )
-
-	-- Suit deflate sound
-	if self:GetUncommonInf( "CEDA" ) then
-		ragdoll:EmitSound("left4dead/vocals/infected/death/ceda_suit_deflate_0" .. random( 3 ) .. ".wav", 75, random( 90, 100 ), 0.75 )
-	end
-
-	if !self.Flameproof and dmginfo:IsDamageType( DMG_BURN ) then
-		local burnMat = "models/left4dead/ci_burning"
-		ragdoll:Ignite( 5, 0 )
-		ragdoll:SetMaterial( burnMat )
-	end
-
-	-- Have a chance for the ragdoll to fly around a bit.
-	-- Instead of faceplanting if no animations played, they could land
-	-- on their back.
-	if random( 10 ) == 1 then
-		local phys = ragdoll:GetPhysicsObject()
-		if IsValid( phys ) then
-			local randX = random( -20, 30 )
-			local randY = random( -20, 30 )
-			local randZ = random( -30, 60 )
-			local force = Vector( randX, randY, randZ )
-
-			-- Apply the force at a random point on the ragdoll.
-			local position = Vector( 0,0,0 )
-			phys:ApplyForceOffset( force, position )
-		end
-	end
-end
----------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:PlaySequenceAndMove( seq, options, callback )
 	if isstring( seq ) then seq = self:LookupSequence( seq )
 	elseif not isnumber( seq ) then return end
@@ -312,9 +275,15 @@ function ENT:PlaySequenceAndWait2( seq, rate, callback )
 	end )
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
-function ENT:OnInjured(dmginfo)
-	-- If uncommon infected are either CEDA, Fallen or Jimmy Gibbs Jr.
-	-- will become flameproof
+function ENT:PlayGesture( activity )
+	local seq = self:LookupSequence( activity )
+	if seq > 0 then
+		self:RestartGesture( self:GetSequenceActivity( seq ), true )
+	end
+end
+---------------------------------------------------------------------------------------------------------------------------------------------
+function ENT:OnInjured( dmginfo )
+	-- If uncommon infected are either CEDA, Fallen or Jimmy Gibbs Jr. will become flameproof
 	if self:GetUncommonInf( "CEDA" ) or self:GetUncommonInf( "FALLEN" ) or self:GetUncommonInf( "JIMMYGIBBS" )  then 
 		self:SetFlameproof( dmginfo )
 	end
@@ -335,11 +304,51 @@ function ENT:OnInjured(dmginfo)
 	if random( 3 ) == 1 then
 		self:Vocalize( ZCommon_Pain )
 	end
+
+	if !dmginfo:IsDamageType( DMG_BURN ) and self:Health() > 0 and random( 4 ) == 1 then
+		self:PlayGesture( "ACT_TERROR_FLINCH" )
+	end
+
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
-function ENT:Draw()
-	self.ci_lastdraw = RealTime() + 0.1
-	self:DrawModel()
+function ENT:OnKilled( dmginfo )
+	hook_Run( "OnNPCKilled", self, dmginfo:GetAttacker(), dmginfo:GetInflictor() )
+
+	local ragdoll = self:BecomeRagdoll( dmginfo )
+	ragdoll:SetCollisionGroup( COLLISION_GROUP_DEBRIS )
+
+	self:SetDeathExpression( ragdoll )
+	if IsValid( self.item ) then self:CreateItemOnDeath( ragdoll ) end
+
+	self:Vocalize( ZCommon_L4D1_Death )
+
+	-- Suit deflate sound
+	if self:GetUncommonInf( "CEDA" ) then
+		ragdoll:EmitSound("left4dead/vocals/infected/death/ceda_suit_deflate_0" .. random( 3 ) .. ".wav", 75, random( 90, 100 ), 0.75 )
+	end
+
+	if !self.Flameproof and dmginfo:IsDamageType( DMG_BURN ) then
+		local burnMat = "models/left4dead/ci_burning"
+		ragdoll:Ignite( 5, 0 )
+		ragdoll:SetMaterial( burnMat )
+	end
+
+	-- Have a chance for the ragdoll to fly around a bit.
+	-- Instead of faceplanting if no animations played, they could land
+	-- on their back.
+	if random( 10 ) == 1 then
+		local phys = ragdoll:GetPhysicsObject()
+		if IsValid( phys ) then
+			local randX = random( -20, 30 )
+			local randY = random( -20, 30 )
+			local randZ = random( -30, 60 )
+			local force = Vector( randX, randY, randZ )
+
+			-- Apply the force at a random point on the ragdoll.
+			local position = Vector( 0,0,0 )
+			phys:ApplyForceOffset( force, position )
+		end
+	end
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:Think()
@@ -423,7 +432,7 @@ function ENT:DirectPoseParametersAt( pos, pitch, yaw, center )
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:LookAtEntity( ent )
-	local enemy = self:GetEnemy()
+	local enemy = self:FindNearestEnemy()
 	if IsValid( enemy ) and enemy:GetBonePosition( 1 ) then
 		local distance = self:GetPos():Distance( enemy:GetPos() )
 
@@ -438,6 +447,7 @@ end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:HandleStuck()
 	self:TakeDamage(self:Health(), self, self)
+	self:Vocalize( Zombie_BulletImpact )
 	print( "Infected was removed due to getting stuck" )
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
@@ -448,7 +458,7 @@ function ENT:FindNearestEnemy()
 
 	for _, enemy in pairs(enemies) do
 
-		if IsValid(enemy) and enemy:IsNPC() or (enemy:IsPlayer() and enemy:Alive()) or !ignorePlys or (enemy:IsNextBot() and not enemy.IsCommonInfected and not enemy.IsLambdaPlayer or enemy:IsNextBot() and enemy.IsLambdaPlayer and enemy:Alive())  then
+		if IsValid(enemy) and enemy:IsNPC() or (enemy:IsPlayer() and enemy:Alive()) or (enemy:IsNextBot() and not enemy.IsCommonInfected and not enemy.IsLambdaPlayer or enemy:IsNextBot() and enemy.IsLambdaPlayer and enemy:Alive())  then
 			local distance = self:GetPos():Distance(enemy:GetPos()) -- Calculating distance between zombie and target
 
 			if distance < nearestDistance then
@@ -461,15 +471,9 @@ function ENT:FindNearestEnemy()
 	return nearestEnemy -- Returning target for all purposes.
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
--- Returns our current and nearest enemy
-function ENT:GetEnemy()
-	--PrintMessage(HUD_PRINTTALK, "GetEnemy()")
-	return self:FindNearestEnemy()
-end
----------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:RunBehaviour()
 	while true do
-		local enemy = self:GetEnemy()
+		local enemy = self:FindNearestEnemy()
 		if IsValid(enemy) then
 			local dist = self:GetPos():Distance(enemy:GetPos())
 
@@ -488,22 +492,23 @@ end
 
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:StartWandering()
-	self.loco:SetAcceleration( random( 160, 280 ) )
+	self.loco:SetAcceleration( 500 )
 	self.loco:SetDeceleration( 1000 )
+	self.IsWalking = true
 	
 	local anim = self:GetActivity()
+	local maleAnims = { "ACT_TERROR_WALK_NEUTRAL", "ACT_TERROR_SHAMBLE", "ACT_TERROR_WALK_INTENSE" }
 
-	if self.Gender == "female" then
+	if self.Gender == "Female" then
 		anim = "ACT_WALK"
-	elseif self.Gender == "male" then
-		local maleAnims = { "ACT_TERROR_WALK_NEUTRAL", "ACT_TERROR_SHAMBLE", "ACT_TERROR_WALK_INTENSE" }
-		anim = table.Random( maleAnims )
+	else
+		anim = table_Random( maleAnims )
 	end
 
-	self:ResetSequence( anim )
+	self:PlaySequenceAndMove( anim )
 
-	self.loco:SetDesiredSpeed( random( 15, 17 ) )
-	self:MoveToPos( self:GetPos() + VectorRand() * math.random( 250, 300 ) )
+	self.loco:SetDesiredSpeed( random( 15, 20 ) )
+	self:MoveToPos( self:GetPos() + VectorRand() * math.random( 150, 200 ) )
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:StartRun()
@@ -557,6 +562,63 @@ function ENT:Attack(target)
 
 	return true
 end
+---------------------------------------------------------------------------------------------------------------------------------------------
+-- New Rework for melee attack (Standing)
+-- needs some work, ie ci sometimes not playing animations
+--[[ function ENT:Attack(target)
+	local detectedEnemy = target
+	if !IsValid( detectedEnemy ) then return false end
+
+	local directionToEnemy = ( detectedEnemy:GetPos() - self:GetPos() ):GetNormalized()
+	local distance = self:GetPos():Distance( detectedEnemy:GetPos() )
+	local AngleToEnemy = directionToEnemy:Angle()
+	AngleToEnemy.p = 0
+	if distance < 100 and ( !self.AttackDelay or CurTime() - self.AttackDelay > Rand( 0.7, 1.2 ) ) then
+		self:SetCycle( 0 )
+		self:SetPlaybackRate( 1 )
+		self:SetAngles( AngleToEnemy )
+		self.ci_BehaviorState = "AttackingVictim"
+
+		if random( 2 ) == 1 and ( !self.SpeakDelay or CurTime() - self.SpeakDelay > Rand( 0.2, 1 ) ) then
+			self:Vocalize( ZCommon_L4D1_BecomeEnraged )
+			PrintMessage( HUD_PRINTTALK, "Enraged!" )
+			self.SpeakDelay = CurTime()
+		end
+
+		local anim = "ACT_TERROR_ATTACK_CONTINUOUSLY"
+		if self:GetActivity() != self:LookupSequence( anim ) then
+			self:ResetSequence( anim )
+			self.AttackDelay = CurTime() + self:SequenceDuration( anim )
+
+			-- Create a timer to apply damage at a random interval between 0.75 and 1.25 seconds
+			-- Lets add the delays based from the Convars
+			local timerName = "AttackDamage"..self:EntIndex()
+			timer.Create( timerName, Rand( 0.7, 1.2 ), self:SequenceDuration( anim ) / Rand( 0.7, 1.2 ), function()
+				if IsValid( detectedEnemy ) and IsValid( self ) then
+					local distance = self:GetPos():Distance( detectedEnemy:GetPos() )
+					if distance > 100 then
+						PrintMessage( HUD_PRINTTALK, "Attack Timer Killed" )
+						timer.Remove( timerName )
+						self.AttackDelay = nil
+						return
+					end
+
+					local dmginfo = DamageInfo()
+					dmginfo:SetDamage( 5 )
+					dmginfo:SetDamageType( DMG_DIRECT )
+					dmginfo:SetInflictor( self )
+					dmginfo:SetAttacker( self )
+					detectedEnemy:TakeDamageInfo( dmginfo )
+					self:Vocalize( ZCommon_AttackSmack )
+				end
+			end)
+		end
+
+		self:LookAtEntity()
+	end
+
+	return true
+end ]]
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:ChaseTarget( target )
 	self:StartRun()
@@ -645,6 +707,11 @@ function ENT:SetDeathExpression( ragdoll )
 			ragdoll:ManipulateBoneAngles( boneIndex, boneData.angleOffset )
 		end
 	end
+end
+---------------------------------------------------------------------------------------------------------------------------------------------
+function ENT:Draw()
+	self.ci_lastdraw = RealTime() + 0.1
+	self:DrawModel()
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 list.Set( "NPC", "z_common", {
