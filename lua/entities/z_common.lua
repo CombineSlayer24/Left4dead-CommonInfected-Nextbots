@@ -88,8 +88,9 @@ function ENT:SetUpZombie()
 
 	-- Now select a random model from the combined table
 	local spawnMdl = mdls[ random( #mdls ) ]
-	--self:SetModel( spawnMdl )
-	self:SetModel( "models/infected/l4d2_nb/uncommon_male_ceda.mdl" )
+	self:SetModel( spawnMdl )
+	-- Really need to work on a population manager :(
+	--self:SetModel( "models/infected/l4d2_nb/uncommon_male_ceda.mdl" )
 
 	-- Set Gender based on model
 	if table_HasValue( Z_MaleModels, spawnMdl ) then
