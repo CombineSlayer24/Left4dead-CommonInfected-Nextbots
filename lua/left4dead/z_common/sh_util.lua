@@ -137,7 +137,7 @@ end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 -- Set our current infected flameproof
 function ENT:SetFlameproof( dmginfo )
-	self.Flameproof = false
+	self.Flameproof = true
 	if dmginfo:IsDamageType( DMG_BURN ) then
 	
 		if SERVER then
@@ -150,8 +150,6 @@ function ENT:SetFlameproof( dmginfo )
 				dmginfo:GetAttacker():Fire( "kill", "", 0.1 )
 			end
 		end
-
-		self.Flameproof = true
 		return true
 	end
 
