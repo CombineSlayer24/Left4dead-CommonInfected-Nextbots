@@ -364,7 +364,7 @@ function ENT:FindNearestEnemy()
 
 	for _, enemy in pairs(enemies) do
 
-		if enemy ~= self and not enemy.IsCommonInfected and enemy:IsNPC() or enemy:IsPlayer() or !ignorePlys or enemy:IsNextBot() and not enemy.IsCommonInfected then
+		if enemy:IsNPC() or (enemy:IsPlayer() and enemy:Alive()) or !ignorePlys or (enemy:IsNextBot() and not enemy.IsCommonInfected) then
 			local distance = self:GetPos():Distance(enemy:GetPos()) -- Calculating distance between zombie and target
 
 			if distance < nearestDistance then
