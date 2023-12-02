@@ -125,7 +125,7 @@ local function GetNavAreasNear( pos, radius, caller )
 		if IsValid( nav ) and nav:GetSizeX() > 40 and nav:GetSizeY() > 40 and !nav:IsUnderwater() and 
 		   ( pos:DistToSqr( nav:GetClosestPointOnArea( pos ) ) < ( radius * radius ) and 
 		   pos:DistToSqr( nav:GetClosestPointOnArea( pos ) ) > ( ( radius / 3 ) * ( radius / 3 ) ) and 
-		   nav:GetCenter().z >= playerZ - 200 and nav:GetCenter().z <= playerZ + 200 ) then
+		   nav:GetCenter().z >= playerZ - 250 and nav:GetCenter().z <= playerZ + 250 ) then
 
 			-- Check if the center of the nav area is visible to the player and within their FOV 
 			if ( !IsVisible( caller, nav:GetCenter() ) and !IsInFOV( caller, nav:GetCenter() )) then 
@@ -194,7 +194,7 @@ local function SpawnMob(caller)
 		local soundPath = Z_Music_Germs[math.random(#Z_Music_Germs)]
 		caller:EmitSound(soundPath,75,100,1)
 		PrintMessage(HUD_PRINTCENTER, "[Incoming Attack!]")
-		SpawnNPC( "z_common", caller, 16 )
+		SpawnNPC( "z_common", caller, Rand( 8, 16 ) )
 	end
 end
 
@@ -206,7 +206,7 @@ local function SpawnMegaMob(caller)
 		timer.Simple(math.Rand(1,3), function() 
 			local soundPath = Z_Music_Germs[math.random(#Z_Music_Germs)]
 			caller:EmitSound(soundPath,75,100,1)
-			SpawnNPC( "z_common", caller, 40 )
+			SpawnNPC( "z_common", caller, Rand( 24, 30 ) )
 		end)
 	end
 end

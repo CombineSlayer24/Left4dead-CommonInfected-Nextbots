@@ -2,11 +2,13 @@ local SERVER = SERVER
 local random = math.random
 local Rand = math.Rand
 local MathHuge = math.huge
+local Clamp = math.Clamp
 local CurTime = CurTime
 local EmitSound = EmitSound
 local timer_Create = timer.Create
 local timer_Adjust = timer.Adjust
 local timer_Remove = timer.Remove
+local table_Random = table.Random
 local IsValid = IsValid
 local ipairs = ipairs
 ---------------------------------------------------------------------------------------------------------------------------------------------
@@ -25,7 +27,97 @@ function ENT:ZombieExpression( expressionType )
 	end)
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
-function ENT:IsUnCommonInfected( model )
+-- Returns the time we will play our next footsteps ound
+function ENT:GetStepSoundTime()
+	local stepTime = 0.35
+	
+	if self:GetWaterLevel() != 2 then
+		local maxSpeed = self.loco:GetVelocity():Length2D()
+		stepTime = Clamp( stepTime * ( 200 / maxSpeed ), 0.25, 0.45 )
+	else
+		stepTime = 0.6
+	end
+
+	return stepTime
+end
+---------------------------------------------------------------------------------------------------------------------------------------------
+-- Play our footstep sounds
+-- TODO: We need to mute the male footsteps by hooking into the animation events
+local QuickTrace = util.QuickTrace
+local _Z_Running_Footsteps = _Z_Running_Footsteps
+function ENT:PlayStepSound( volume )
+	local stepMat = QuickTrace( self:WorldSpaceCenter(), vector_up * -32756, self ).MatType
+	local selfPos = self:GetPos()
+	if RunHook( "LambdaFootStep", self, selfPos, stepMat ) == true then return end
+
+	local sndPitch, sndName = 100
+	local waterLvl = self:GetWaterLevel()
+	if waterLvl != 0 and waterLvl != 3 and self:IsOnGround() then
+		sndName = "player/footsteps/wade" .. random( 8 ) .. ".wav"
+		sndPitch = random( 90, 110 )
+		if !volume then volume = 0.65 end
+	else
+		local stepSnds = ( _Z_Running_Footsteps[ stepMat ] or _Z_Running_Footsteps[ MAT_DEFAULT ] )
+		sndName = stepSnds[ random( #stepSnds ) ]
+		if !volume then volume = 0.5 end
+	end
+
+	self:EmitSound( sndName, 75, sndPitch, volume )
+end
+---------------------------------------------------------------------------------------------------------------------------------------------
+-- Checks if we are airborn
+function ENT:IsAirborne()
+	if !self.IsLanded then
+		self:SetCycle( 0 )
+
+		local anim = self:GetActivity()
+
+		anim = "ACT_TERROR_FALL"
+
+		self:ResetSequence(anim)
+		self.IsLanded = true
+	end
+end
+---------------------------------------------------------------------------------------------------------------------------------------------
+-- Handles our Landing animations
+function ENT:DoLandingAnimation()
+	if self.IsLanded then
+		local anim = self:GetActivity()
+
+		-- If they are after their prey, don't do long landing anims
+		if IsValid( self:GetEnemy() ) then
+			local landingAnims = { "ACT_TERROR_JUMP_LANDING_HARD", "ACT_TERROR_JUMP_LANDING_HARD_NEUTRAL" }
+			anim = table_Random(landingAnims)
+		else
+			-- If they are just wandering around with no enemies, then use the slow landing anim
+			if random( 4 ) == 1 then
+				anim = "ACT_TERROR_JUMP_LANDING_NEUTRAL" or "ACT_TERROR_JUMP_LANDING_HARD_NEUTRAL"
+			end
+		end
+
+		self:PlaySequenceAndMove( anim )
+		PrintMessage( HUD_PRINTTALK, "I Landed!" )
+		self.PlayingAnimSeq = false
+
+		timer.Simple(self:SequenceDuration(anim) - 0.5, function()
+			self.PlayingAnimSeq = false
+			if self:IsOnGround() then
+				if IsValid( self:GetEnemy() ) then
+					self:StartRun()
+				else
+					-- No enemy, so transistion to idle
+					local anim = "ACT_TERROR_RUN_INTENSE_TO_STAND_ALERT"
+					self:PlaySequenceAndMove( anim )
+				end
+			end
+		end)
+
+		self.IsLanded = false
+	end
+end
+---------------------------------------------------------------------------------------------------------------------------------------------
+-- Checks what type of Uncommon Infected we want
+function ENT:GetUncommonInf( model )
 	local modelTable = {
 		CEDA = { "models/infected/l4d2_nb/uncommon_male_ceda.mdl" },
 	}
@@ -39,6 +131,26 @@ function ENT:IsUnCommonInfected( model )
 	end
 
 	-- Our specific model isn't a uncommon
+	return false
+end
+---------------------------------------------------------------------------------------------------------------------------------------------
+-- Set our current infected flameproof
+function ENT:SetFlameproof( dmginfo )
+	if dmginfo:IsDamageType( DMG_BURN ) then
+		dmginfo:SetDamage( 0 )
+		
+		if SERVER then
+			self:Extinguish()
+			self:StopSound( "General.BurningFlesh" )
+			if dmginfo:GetAttacker():GetClass() == "entityflame" then
+				self:StopSound( "General.BurningObject" )
+				dmginfo:GetAttacker():Fire( "kill", "", 0.1 )
+			end
+		end
+
+		return true
+	end
+
 	return false
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
@@ -57,6 +169,7 @@ function ENT:Vocalize( action )
 		self:EmitSound( Snd, 80, pitch )
 	end
 end
+
 ---------------------------------------------------------------------------------------------------------------------------------------------
 -- Play the requested animation sequence
 function ENT:PlaySequence( sequence )
