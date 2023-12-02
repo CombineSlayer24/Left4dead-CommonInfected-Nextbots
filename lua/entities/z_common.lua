@@ -130,7 +130,7 @@ function ENT:Initialize()
 			end
 		end
 
-		self.loco:SetStepHeight( 18 )
+		self.loco:SetStepHeight( 22 )
 		self.loco:SetGravity( sv_gravity:GetFloat() )
 
 		self:SetCollisionBounds( collisionmins, collisionmaxs )
@@ -353,7 +353,7 @@ function ENT:LookAtEntity( ent )
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:HandleStuck()
-	self:Remove()
+	self:TakeDamage(self:Health(), self, self)
 	print( "Infected was removed due to getting stuck" )
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
@@ -447,51 +447,59 @@ function ENT:Attack(target)
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:ChaseTarget(target)
-	self.loco:SetDesiredSpeed(300)
-	self.loco:SetAcceleration(5000)
-	self.loco:SetDeceleration(5000)
-	self.IsRunning = true
+    self.loco:SetDesiredSpeed(300)
+    self.loco:SetAcceleration(5000)
+    self.loco:SetDeceleration(5000)
+    self.IsRunning = true
 
-	local anim = self:GetActivity()
-	
-	if self.Gender == "Female" then
-		anim = "ACT_RUN"
-	else
-		anim = "ACT_TERROR_RUN_INTENSE"
-	end
+    local anim = self:GetActivity()
 
-	if random( 8 ) == 3 then
-		if !self.SpeakDelay or CurTime() - self.SpeakDelay > Rand( 1.2, 2 ) then
-			self:Vocalize( ZCommon_L4D1_RageAtVictim )
-			PrintMessage( HUD_PRINTTALK, "Rage At Victim!" )
-			self.SpeakDelay = CurTime()
-		end
-	end
+    if self.Gender == "Female" then
+        anim = "ACT_RUN"
+    else
+        anim = "ACT_TERROR_RUN_INTENSE"
+    end
 
-	self:ResetSequence(anim)
-	self.loco:SetDesiredSpeed(300)
-	self:LookAtEntity()
+    if random(8) == 3 then
+        if not self.SpeakDelay or CurTime() - self.SpeakDelay > Rand(1.2, 2) then
+            self:Vocalize(ZCommon_L4D1_RageAtVictim)
+            PrintMessage(HUD_PRINTTALK, "Rage At Victim!")
+            self.SpeakDelay = CurTime()
+        end
+    end
 
-	local TargetToChase = target
+    self:ResetSequence(anim)
+    self.loco:SetDesiredSpeed(300)
+    self:LookAtEntity()
+
+    local TargetToChase = target
 	local path = Path("Follow")
-	--path:Chase(self, target)
+	path:SetMinLookAheadDistance(300)
+	path:SetGoalTolerance(55)
 	path:Compute(self, TargetToChase:GetPos())
-	while (path:IsValid() and IsValid(TargetToChase)) do
-		if path:GetAge() > 0.1 then
-			path:Compute(self, TargetToChase:GetPos())
+
+	if (!path:IsValid()) then
+		return "failed"
+	end
+
+	while (path:IsValid() and TargetToChase) do
+
+		if ( path:GetAge() > 0.1 ) then
+			path:Compute( self, TargetToChase:GetPos())
 		end
 
-		if developer:GetBool() then path:Draw() end
-
-		path:Update(self)
-
-		local distance = self:GetPos():Distance( TargetToChase:GetPos() )
-		if distance > 90 then
-			break
+		path:Update( self )
+				
+		if ( self.loco:IsStuck() ) then
+			self:HandleStuck()
+			return "stuck"
 		end
-
+		
 		coroutine.yield()
 	end
+
+	return "ok"
+
 end
 
 function ENT:PlayAttackAnimation()
