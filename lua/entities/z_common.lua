@@ -552,28 +552,28 @@ function ENT:Attack(target)
 	return true
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
-function ENT:ChaseTarget(target)
+function ENT:ChaseTarget( target )
 	self:StartRun()
 	self.ci_BehaviorState = "ChasingVictim"
 
 	local TargetToChase = target
-	local path = Path("Follow")
-	path:SetMinLookAheadDistance(300)
-	path:SetGoalTolerance(55)
-	path:Compute(self, TargetToChase:GetPos())
+	local path = Path( "Follow" )
+	path:SetMinLookAheadDistance( 300 )
+	path:SetGoalTolerance( 55 )
+	path:Compute( self, TargetToChase:GetPos() )
 
-	if (!path:IsValid()) then
+	if ( !path:IsValid() ) then
 		return "failed"
 	end
 
-	while (path:IsValid() and TargetToChase) do
+	while (path:IsValid() and TargetToChase:IsValid()) do
 
 		if ( path:GetAge() > 0.1 ) then
 			path:Compute( self, TargetToChase:GetPos())
 		end
 
 		path:Update( self )
-				
+
 		if ( self.loco:IsStuck() ) then
 			self:HandleStuck()
 			return "stuck"
@@ -583,7 +583,6 @@ function ENT:ChaseTarget(target)
 	end
 
 	return "ok"
-
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:PlayAttackAnimation()

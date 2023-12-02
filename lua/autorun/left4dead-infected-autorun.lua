@@ -58,7 +58,6 @@ function InitializeAddon()
 	end
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
-
 InitializeAddon()
 
 concommand.Add( "l4d_dev_reloadaddon", InitializeAddon )
@@ -83,6 +82,7 @@ local undo_SetCustomUndoText = undo.SetCustomUndoText
 local undo_AddEntity = undo.AddEntity
 local undo_Finish = undo.Finish
 local Vector = Vector
+local tonumber = tonumber
 local util_TraceHull = util.TraceHull
 
 -- Check if a vector is within the player's FOV
@@ -180,39 +180,47 @@ local function SpawnNPC( class, caller, amount )
 	end)
 end
 
-
-
-local function SpawnRandomZombie(caller)
-
-	SpawnNPC( "z_common", caller, 1 )
+local function SpawnRandomZombie( caller, command, arguments )
+	local amount = 1 -- Default amount
+	if #arguments > 0 then
+		amount = tonumber( arguments[ 1 ] ) or 1 -- If a number is provided, use it. Otherwise, default to 1.
+	end
+	SpawnNPC( "z_common", caller, amount )
 end
 
 concommand.Add( "l4d_nb_z_spawn", SpawnRandomZombie, nil, "Spawn a Zombie at a random Navmesh area")
 
-local function SpawnMob(caller)
-	if IsValid(caller) then
-		local soundPath = Z_Music_Germs[math.random(#Z_Music_Germs)]
-		caller:EmitSound(soundPath,75,100,1)
-		PrintMessage(HUD_PRINTCENTER, "[Incoming Attack!]")
-		SpawnNPC( "z_common", caller, Rand( 8, 16 ) )
+local function SpawnMob( caller, command, arguments )
+	if IsValid( caller ) then
+		local amount = Rand( 8, 16 ) -- Default amount
+		if #arguments > 0 then
+			amount = tonumber( arguments[ 1 ] ) or Rand( 8, 16 )
+		end
+		local soundPath = Z_Music_Germs[ random( #Z_Music_Germs ) ]
+		caller:EmitSound( soundPath, 75, 100, 1 )
+		PrintMessage( HUD_PRINTCENTER, "[Incoming Attack!]" )
+		SpawnNPC( "z_common", caller, amount )
 	end
 end
 
-local function SpawnMegaMob(caller)
+local function SpawnMegaMob( caller, command, arguments )
+	if IsValid( caller ) then
+		local amount = Rand( 16, 24 ) -- Default amount
+		if #arguments > 0 then
+			amount = tonumber( arguments[ 1 ] ) or Rand( 16, 24 ) -- If a number is provided, use it. Otherwise, default to a random number between 16 and 24.
+		end
+		caller:EmitSound("left4dead/vocals/infected/sfx/megamob_" .. random( 2 ) .. ".mp3", 75, 100, 1 )
 
-	if IsValid(caller) then
-		caller:EmitSound("left4dead/vocals/infected/sfx/megamob_" .. random(2) .. ".mp3",75,100,1)
-
-		timer.Simple(math.Rand(1,3), function() 
-			local soundPath = Z_Music_Germs[math.random(#Z_Music_Germs)]
-			caller:EmitSound(soundPath,75,100,1)
-			SpawnNPC( "z_common", caller, Rand( 24, 30 ) )
+		timer.Simple(math.Rand( 1, 3 ), function() 
+			local soundPath = Z_Music_Germs[ random( #Z_Music_Germs ) ]
+			caller:EmitSound( soundPath, 75, 100, 1 )
+			SpawnNPC( "z_common", caller, amount )
 		end)
 	end
 end
 
-concommand.Add( "l4d_nb_z_spawn_mob", SpawnMob, nil, "Spawn a Mob at a random Navmesh area")
-concommand.Add( "l4d_nb_z_spawn_megamob", SpawnMegaMob, nil, "Spawn a Mob at a random Navmesh area")
+concommand.Add( "l4d_nb_z_spawn_mob", SpawnMob, nil, "Spawn a Mob at a random Navmesh area" )
+concommand.Add( "l4d_nb_z_spawn_megamob", SpawnMegaMob, nil, "Spawn a Megamob at a random Navmesh area" )
 
 -- Used for cleaning up stuff for debugging
 -- Credit to VJ Base
@@ -231,7 +239,7 @@ if SERVER then
 		allammo = "Removed All Your Ammo",
 	}
 	
-	concommand.Add("l4d_d_cleanup", function( ply, cmd, args )
+	concommand.Add("l4d_dev_cleanup", function( ply, cmd, args )
 		local plyValid = IsValid( ply )
 		if plyValid and !ply:IsAdmin() then return end
 		
