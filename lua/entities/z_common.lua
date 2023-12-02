@@ -528,7 +528,7 @@ function ENT:StartRun()
 	self:ResetSequence( anim )
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
-function ENT:Attack(target)
+--[[ function ENT:Attack(target)
 	local detectedEnemy = target
 	local directionToEnemy = (detectedEnemy:GetPos() - self:GetPos()):GetNormalized()
 	local distance = self:GetPos():Distance(detectedEnemy:GetPos())
@@ -561,11 +561,11 @@ function ENT:Attack(target)
 	end
 
 	return true
-end
+end ]]
 ---------------------------------------------------------------------------------------------------------------------------------------------
 -- New Rework for melee attack (Standing)
 -- needs some work, ie ci sometimes not playing animations
---[[ function ENT:Attack(target)
+function ENT:Attack(target)
 	local detectedEnemy = target
 	if !IsValid( detectedEnemy ) then return false end
 
@@ -618,7 +618,7 @@ end
 	end
 
 	return true
-end ]]
+end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:ChaseTarget( target )
 	self:StartRun()
