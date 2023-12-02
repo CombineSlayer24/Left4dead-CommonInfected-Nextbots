@@ -81,4 +81,8 @@ function PrecacheZombies()
 	end
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
---hook.Add( "PostGamemodeLoaded", "z_precache", PrecacheZombies )
+hook.Add("Initialize","Precache",function()
+	timer.Simple(3,function()
+		PrecacheZombies()
+	end)
+end)

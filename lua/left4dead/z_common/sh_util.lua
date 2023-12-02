@@ -74,7 +74,7 @@ function ENT:IsAirborne()
 
 		anim = "ACT_TERROR_FALL"
 
-		self:ResetSequence(anim)
+		self:ResetSequence( anim )
 		self.IsLanded = true
 	end
 end
@@ -99,7 +99,8 @@ function ENT:DoLandingAnimation()
 		PrintMessage( HUD_PRINTTALK, "I Landed!" )
 		self.PlayingAnimSeq = false
 
-		timer.Simple(self:SequenceDuration(anim) - 0.5, function()
+		timer.Simple( self:SequenceDuration( anim ) - 0.5, function()
+			if !IsValid( self ) then return end
 			self.PlayingAnimSeq = false
 			if self:IsOnGround() then
 				if IsValid( self:GetEnemy() ) then
@@ -136,18 +137,21 @@ end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 -- Set our current infected flameproof
 function ENT:SetFlameproof( dmginfo )
+	self.Flameproof = false
 	if dmginfo:IsDamageType( DMG_BURN ) then
-		dmginfo:SetDamage( 0 )
-		
+	
 		if SERVER then
+			dmginfo:SetDamage( 0 )
 			self:Extinguish()
 			self:StopSound( "General.BurningFlesh" )
+
 			if dmginfo:GetAttacker():GetClass() == "entityflame" then
 				self:StopSound( "General.BurningObject" )
 				dmginfo:GetAttacker():Fire( "kill", "", 0.1 )
 			end
 		end
 
+		self.Flameproof = true
 		return true
 	end
 

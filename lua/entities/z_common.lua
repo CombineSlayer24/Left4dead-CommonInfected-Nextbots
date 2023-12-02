@@ -11,6 +11,7 @@ ENT.Gender = nil
 ENT.IsLyingOrSitting = false
 ENT.IsClimbing = false
 ENT.HasLanded = false
+ENT.Flameproof = false
 
 --- Include files based on sv_ sh_ or cl_
 --- These will load z_common files for our common infected to use
@@ -57,6 +58,7 @@ local CurTime = CurTime
 local IsValid = IsValid
 local Vector = Vector
 local ents_GetAll = ents.GetAll
+local tostring = tostring
 
 local collisionmins = Vector( -16, -16, 0 )
 local collisionmaxs = Vector( 16, 16, 72 )
@@ -86,7 +88,8 @@ function ENT:SetUpZombie()
 
 	-- Now select a random model from the combined table
 	local spawnMdl = mdls[ random( #mdls ) ]
-	self:SetModel( spawnMdl )
+	--self:SetModel( spawnMdl )
+	self:SetModel( "models/infected/l4d2_nb/uncommon_male_ceda.mdl" )
 
 	-- Set Gender based on model
 	if table_HasValue( Z_MaleModels, spawnMdl ) then
@@ -234,7 +237,7 @@ function ENT:OnKilled( dmginfo )
 		ragdoll:EmitSound("left4dead/vocals/infected/death/ceda_suit_deflate_0" .. random( 3 ) .. ".wav", 75, random( 90, 100 ), 0.75 )
 	end
 
-	if dmginfo:IsDamageType( DMG_BURN ) then
+	if !self.Flameproof and dmginfo:IsDamageType( DMG_BURN ) then
 		local burnMat = "models/left4dead/ci_burning"
 		ragdoll:Ignite( 5, 0 )
 		ragdoll:SetMaterial( burnMat )
@@ -315,8 +318,10 @@ function ENT:OnInjured(dmginfo)
 		self:SetFlameproof( dmginfo )
 	end
 
+	PrintMessage(HUD_PRINTTALK, "Is Flameproof: " .. tostring( self.Flameproof ) )
+
 	-- Insta kill CI if on fire
-	if dmginfo:IsDamageType( DMG_BURN ) then
+	if !self.Flameproof and dmginfo:IsDamageType( DMG_BURN ) then
 		dmginfo:SetDamage( 20 )
 	end
 
