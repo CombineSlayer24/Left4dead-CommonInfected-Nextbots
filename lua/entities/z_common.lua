@@ -364,7 +364,7 @@ function ENT:FindNearestEnemy()
 
 	for _, enemy in pairs(enemies) do
 
-		if enemy:IsNPC() or (enemy:IsPlayer() and enemy:Alive()) or !ignorePlys or (enemy:IsNextBot() and not enemy.IsCommonInfected) then
+		if IsValid(enemy) and enemy:IsNPC() or (enemy:IsPlayer() and enemy:Alive()) or !ignorePlys or (enemy:IsNextBot() and not enemy.IsCommonInfected and not enemy.IsLambdaPlayer or enemy:IsNextBot() and enemy.IsLambdaPlayer and enemy:Alive())  then
 			local distance = self:GetPos():Distance(enemy:GetPos()) -- Calculating distance between zombie and target
 
 			if distance < nearestDistance then
@@ -377,23 +377,24 @@ function ENT:FindNearestEnemy()
 	return nearestEnemy -- Returning target for all purposes.
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
+
 function ENT:RunBehaviour()
-	while ( true ) do
+    while true do
 		local enemy = self:FindNearestEnemy()
-		if not IsValid( enemy ) then
-			self:StartWandering()
-		elseif IsValid( enemy ) then
-			local distance = self:GetPos():Distance( enemy:GetPos() )
-			if distance > 100 then
-				self:ChaseTarget(enemy)
-				PrintMessage(HUD_PRINTTALK, "Chasing!")
-			else
-				self:Attack(enemy)
-				PrintMessage(HUD_PRINTTALK, "Attacking!")
-			end
-		end
-		coroutine.yield()
-	end
+        if IsValid(enemy) then
+            local dist = self:GetPos():Distance(enemy:GetPos())
+
+            if dist > 100 then
+                self:ChaseTarget(enemy)
+            else
+                self:Attack(enemy)
+            end
+        else
+            self:StartWandering()
+        end
+
+        coroutine.yield()
+    end
 end
 
 ---------------------------------------------------------------------------------------------------------------------------------------------
@@ -416,11 +417,11 @@ end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:Attack(target)
 	local detectedEnemy = target
-	local directionToEnemy = (target:GetPos() - self:GetPos()):GetNormalized()
-	local distance = self:GetPos():Distance(target:GetPos())
+	local directionToEnemy = (detectedEnemy:GetPos() - self:GetPos()):GetNormalized()
+	local distance = self:GetPos():Distance(detectedEnemy:GetPos())
 	local AngleToEnemy = directionToEnemy:Angle()
 	AngleToEnemy.p = 0
-	if distance < 100 and (not self.AttackDelay or CurTime() - self.AttackDelay > 1.2) then
+	if distance < 100 and (not self.AttackDelay or CurTime() - self.AttackDelay > Rand( 0.7, 1.2 )) then
 		self:SetCycle(0)
 		self:SetPlaybackRate(1)
 		self:SetAngles(AngleToEnemy)
@@ -438,18 +439,20 @@ function ENT:Attack(target)
 		dmginfo:SetDamageType(DMG_DIRECT)
 		dmginfo:SetInflictor(self)
 		dmginfo:SetAttacker(self)
-		target:TakeDamageInfo(dmginfo)
+		detectedEnemy:TakeDamageInfo(dmginfo)
 		self:Vocalize( ZCommon_AttackSmack )
 		self:LookAtEntity()
 		self:PlayAttackAnimation()
 		self.AttackDelay = CurTime()
 	end
+
+	return true
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:ChaseTarget(target)
     self.loco:SetDesiredSpeed(300)
-    self.loco:SetAcceleration(5000)
-    self.loco:SetDeceleration(5000)
+    self.loco:SetAcceleration(500)
+    self.loco:SetDeceleration(1000)
     self.IsRunning = true
 
     local anim = self:GetActivity()
