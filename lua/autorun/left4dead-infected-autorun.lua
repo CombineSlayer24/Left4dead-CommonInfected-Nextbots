@@ -58,6 +58,10 @@ function InitializeAddon()
 	end
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------------------------------------------------
 InitializeAddon()
 
 concommand.Add( "l4d_dev_reloadaddon", InitializeAddon )
@@ -65,6 +69,11 @@ concommand.Add( "l4d_dev_reloadaddon", InitializeAddon )
 -- implement into our director. Will be here
 -- for now.
 
+---------------------------------------------------------------------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------------------------------------------------
 local IsValid = IsValid
 local random = math.random
 local Rand = math.Rand
@@ -85,34 +94,33 @@ local Vector = Vector
 local tonumber = tonumber
 local util_TraceHull = util.TraceHull
 
--- Check if a vector is within the player's FOV
-
-local function IsInFOV( player, vec )
+-- Check if a vector is within the player's FOV and visible from the player's perspective
+local function IsInFOVAndVisible( player, vec )
     local direction = ( vec - player:GetPos() ):GetNormalized()
     local dot = player:EyeAngles():Forward():Dot( direction )
     local fov_desired = GetConVar( "fov_desired" ):GetInt()
-    return dot > Cos( Rad( fov_desired / 2 ) )
+    local isInFOV = dot > Cos( Rad( fov_desired / 2 ) )
+
+    local plyradius = GetConVar( "l4d_z_spawn_radius" ):GetFloat()
+    local distance = player:GetPos():Distance( vec )
+    local isVisible = distance < plyradius  -- Consider points visible if they are within the spawn radius
+
+    print( "IsInFOV: " .. tostring( isInFOV ) )
+    print( "IsVisible: " .. tostring( isVisible ) )
+
+    return isInFOV and isVisible
 end
 
-
--- Check if a vector is visible from the player's perspective
-local function IsVisible( player, vec )
-    local tr = util.TraceLine({
-        start = player:EyePos(),
-        endpos = vec,
-        filter = player
-    })
-
-    if tr.HitWorld then
-        local material = tr.MatType
-        if material == MAT_GLASS or material == MAT_GRATE then return true end
-        return false
+local function IsNavMeshVisible( player, nav )
+    local point = nav:GetRandomPoint()
+    if nav:IsVisible( point ) and IsInFOVAndVisible( player, point ) then
+        return true
     end
 
-    return true
+    return false
 end
 
-CreateConVar( "l4d_nb_z_spawn_radius", 2000, FCVAR_ARCHIVE, "Zombie Spawn radius from player.", 250, 25000 )
+CreateConVar( "l4d_z_spawn_radius", 2000, FCVAR_ARCHIVE, "Zombie Spawn radius from player.", 250, 25000 )
 
 --Get's the same height level as player
 local function GetNavAreasNear( pos, radius, caller )
@@ -128,7 +136,7 @@ local function GetNavAreasNear( pos, radius, caller )
 		   nav:GetCenter().z >= playerZ - 250 and nav:GetCenter().z <= playerZ + 250 ) then
 
 			-- Check if the center of the nav area is visible to the player and within their FOV 
-			if ( !IsVisible( caller, nav:GetCenter() ) and !IsInFOV( caller, nav:GetCenter() )) then 
+			if !IsNavMeshVisible( caller, nav ) then 
 				local width = nav:GetSizeX()
 				local height = nav:GetSizeY()
 				local maxOffset = width <= 40 and height <= 40 and 1 or 20  -- Set the max offset based on the size of the navmesh area 
@@ -158,7 +166,7 @@ local function GetNavAreasNear( pos, radius, caller )
 end 
 
 local function SpawnNPC( class, caller, amount )
-	local plyradius = GetConVar( "l4d_nb_z_spawn_radius" )
+	local plyradius = GetConVar( "l4d_z_spawn_radius" )
 	if !IsValid( caller ) then return end
 
 	local areas = GetNavAreasNear( caller:GetPos(), plyradius:GetInt(), caller )
@@ -188,7 +196,7 @@ local function SpawnRandomZombie( caller, command, arguments )
 	SpawnNPC( "z_common", caller, amount )
 end
 
-concommand.Add( "l4d_nb_z_spawn", SpawnRandomZombie, nil, "Spawn a Zombie at a random Navmesh area")
+concommand.Add( "l4d_z_spawn", SpawnRandomZombie, nil, "Spawn a Zombie at a random Navmesh area")
 
 local function SpawnMob( caller, command, arguments )
 	if IsValid( caller ) then
@@ -219,8 +227,8 @@ local function SpawnMegaMob( caller, command, arguments )
 	end
 end
 
-concommand.Add( "l4d_nb_z_spawn_mob", SpawnMob, nil, "Spawn a Mob at a random Navmesh area" )
-concommand.Add( "l4d_nb_z_spawn_megamob", SpawnMegaMob, nil, "Spawn a Megamob at a random Navmesh area" )
+concommand.Add( "l4d_z_spawn_mob", SpawnMob, nil, "Spawn a Mob at a random Navmesh area" )
+concommand.Add( "l4d_z_spawn_megamob", SpawnMegaMob, nil, "Spawn a Megamob at a random Navmesh area" )
 
 -- Used for cleaning up stuff for debugging
 -- Credit to VJ Base
@@ -235,8 +243,8 @@ if SERVER then
 		groundweapons = "Ground Weapons",
 		props = "Props",
 		decals = "Removed All Decals",
-		allweapons = "Removed All Your Weapons",
-		allammo = "Removed All Your Ammo",
+		guns = "Removed Your Weapons",
+		ammo = "Removed Your Ammo",
 	}
 	
 	concommand.Add("l4d_dev_cleanup", function( ply, cmd, args )
@@ -252,9 +260,9 @@ if SERVER then
 			for _, v in ipairs( player_GetAll() ) do
 				v:ConCommand( "r_cleardecals" )
 			end
-		elseif plyValid and cType == "allweapons" then
+		elseif plyValid and cType == "guns" then
 			ply:StripWeapons()
-		elseif plyValid and cType == "allammo" then
+		elseif plyValid and cType == "ammo" then
 			ply:RemoveAllAmmo()
 		else
 			for _, v in ipairs( ents_GetAll() ) do
@@ -272,7 +280,7 @@ if SERVER then
 		if plyValid then
 			if !cType then
 				ply:SendLua( "GAMEMODE:AddNotify( \"Cleaned Up Everything!\", NOTIFY_CLEANUP, 5 )" )
-			elseif cType == "decals" or cType == "allweapons" or cType == "allammo" then
+			elseif cType == "decals" or cType == "guns" or cType == "ammo" then
 				ply:SendLua( "GAMEMODE:AddNotify( \""..cTypes[ cType ].."\", NOTIFY_CLEANUP, 5 )" )
 			else
 				ply:SendLua( "GAMEMODE:AddNotify( \"Removed "..i.." "..cTypes[ cType ].."\", NOTIFY_CLEANUP, 5 )" )
@@ -282,10 +290,10 @@ if SERVER then
 	end, nil, "", {FCVAR_DONTRECORD})
 end
 
-CreateConVar( "l4d_nb_z_drawcount", 1, FCVAR_ARCHIVE, "Show the amount of zombies on screen?", 0, 1 )
+CreateConVar( "l4d_z_drawcount", 1, FCVAR_ARCHIVE, "Show the amount of zombies on screen?", 0, 1 )
 
 local function DrawZombieCount()
-	if !GetConVar("l4d_nb_z_drawcount"):GetBool() then return end
+	if !GetConVar("l4d_z_drawcount"):GetBool() then return end
 	local count = 0
 	local color = Color(0, 255, 0) -- Placeholder "default" local color
 

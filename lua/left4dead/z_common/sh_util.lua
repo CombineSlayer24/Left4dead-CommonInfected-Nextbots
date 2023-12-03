@@ -97,6 +97,7 @@ function ENT:DoLandingAnimation()
 
 		self:PlaySequenceAndMove( anim )
 		PrintMessage( HUD_PRINTTALK, "I Landed!" )
+		self:EmitSound( "left4dead/player/jumplanding_zombie.mp3", 80, 100, 1 )
 		self.PlayingAnimSeq = false
 
 		timer.Simple( self:SequenceDuration( anim ) - 0.5, function()

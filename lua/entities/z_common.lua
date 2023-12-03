@@ -68,10 +68,8 @@ local crouchingcollisionmaxs = Vector( 16, 16, 36 )
 -- Convars
 local ignorePlys = GetConVar( "ai_ignoreplayers" )
 local sv_gravity = GetConVar( "sv_gravity" )
-local droppableProps = GetConVar( "l4d_nb_sv_createitems" )
+local droppableProps = GetConVar( "l4d_sv_createitems" )
 local developer = GetConVar( "developer" )
-
-if CLIENT then language.Add( "nb_common_infected", ENT.PrintName ) end
 
 local ci_BatonModels = 
 {
@@ -720,7 +718,5 @@ list.Set( "NPC", "z_common", {
 	Category = "Left 4 Dead NextBots"
 })
 
-if CLIENT then
-	language.Add( "z_common", "Common Infected" )
-end
+if CLIENT then language.Add( "z_common", "Common Infected" ) end
 ---------------------------------------------------------------------------------------------------------------------------------------------
