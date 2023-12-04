@@ -93,6 +93,7 @@ local undo_Finish = undo.Finish
 local Vector = Vector
 local tonumber = tonumber
 local util_TraceHull = util.TraceHull
+local SimpleTimer = timer.Simple
 
 -- Check if a vector is within the player's FOV and visible from the player's perspective
 local function IsInFOVAndVisible( player, vec )
@@ -119,8 +120,6 @@ local function IsNavMeshVisible( player, nav )
 
     return false
 end
-
-CreateConVar( "l4d_z_spawn_radius", 2000, FCVAR_ARCHIVE, "Zombie Spawn radius from player.", 250, 25000 )
 
 --Get's the same height level as player
 local function GetNavAreasNear( pos, radius, caller )
@@ -165,7 +164,7 @@ local function GetNavAreasNear( pos, radius, caller )
 	return foundareas 
 end 
 
-local function SpawnNPC( class, caller, amount )
+local function SpawnNPC( class, caller, amount, spawnAtCrosshair )
 	local plyradius = GetConVar( "l4d_z_spawn_radius" )
 	if !IsValid( caller ) then return end
 
@@ -173,10 +172,21 @@ local function SpawnNPC( class, caller, amount )
 	if !areas or #areas == 0 then return end
 	local spawnTimerName = "SpawnTimer_" .. caller:UserID() -- Unique timer name for each player
 
-	timer.Create(spawnTimerName, 0.05, amount, function()
-
+	local pos
+	if amount > 6 then
 		pos = areas[ random( #areas ) ]
+	end
 
+	timer.Create(spawnTimerName, 0.065, amount, function()
+		if amount <= 6 then
+			pos = areas[ random( #areas ) ]
+		end
+
+		if spawnAtCrosshair then
+			local trace = caller:GetEyeTrace()
+			pos = trace.HitPos
+		end
+		
 		local npc = ents_Create( class )
 		
 		-- Add a random offset to the spawn position
@@ -188,47 +198,39 @@ local function SpawnNPC( class, caller, amount )
 	end)
 end
 
-local function SpawnRandomZombie( caller, command, arguments )
-	local amount = 1 -- Default amount
-	if #arguments > 0 then
-		amount = tonumber( arguments[ 1 ] ) or 1 -- If a number is provided, use it. Otherwise, default to 1.
-	end
-	SpawnNPC( "z_common", caller, amount )
-end
-
-concommand.Add( "l4d_z_spawn", SpawnRandomZombie, nil, "Spawn a Zombie at a random Navmesh area")
-
-local function SpawnMob( caller, command, arguments )
+local function SpawnZombie( caller, command, arguments )
 	if IsValid( caller ) then
-		local amount = Rand( 8, 16 ) -- Default amount
-		if #arguments > 0 then
-			amount = tonumber( arguments[ 1 ] ) or Rand( 8, 16 )
+		if #arguments == 0 then
+			MsgC(Color(255, 255, 255), "Usage: l4d_z_spawn <common/mob/megamob> <amount> <optional spawn options>\nYou can also set amount to false to access the 3rd paramter\nEx: l4d_z_spawn mob false true\n")
+			return
 		end
-		local soundPath = Z_Music_Germs[ random( #Z_Music_Germs ) ]
-		caller:EmitSound( soundPath, 75, 100, 1 )
-		PrintMessage( HUD_PRINTCENTER, "[Incoming Attack!]" )
-		SpawnNPC( "z_common", caller, amount )
-	end
-end
 
-local function SpawnMegaMob( caller, command, arguments )
-	if IsValid( caller ) then
-		local amount = Rand( 16, 24 ) -- Default amount
-		if #arguments > 0 then
-			amount = tonumber( arguments[ 1 ] ) or Rand( 16, 24 ) -- If a number is provided, use it. Otherwise, default to a random number between 16 and 24.
-		end
-		caller:EmitSound("left4dead/vocals/infected/sfx/megamob_" .. random( 2 ) .. ".mp3", 75, 100, 1 )
+		local zombieType = arguments[ 1 ] or "common"
+		local amount = tonumber( arguments[ 2 ] ) or 1
+		local spawnAtCrosshair = arguments[ 3 ] or false
 
-		timer.Simple(math.Rand( 1, 3 ), function() 
+		local npcType = "z_common" -- Default to Common Infected
+
+		if zombieType == "mob" then
+			amount = tonumber( arguments[ 2 ] ) or Rand( 8, 16 )
 			local soundPath = Z_Music_Germs[ random( #Z_Music_Germs ) ]
 			caller:EmitSound( soundPath, 75, 100, 1 )
-			SpawnNPC( "z_common", caller, amount )
-		end)
+			PrintMessage( HUD_PRINTCENTER, "[Incoming Attack!]" )
+		elseif zombieType == "megamob" then
+			amount = tonumber( arguments[ 2 ] ) or Rand( 16, 24 )
+			caller:EmitSound("left4dead/vocals/infected/sfx/megamob_" .. random( 2 ) .. ".mp3", 75, 100, 1 )
+			SimpleTimer(Rand( 1, 3 ), function() 
+				local soundPath = Z_Music_Germs[ random( #Z_Music_Germs ) ]
+				caller:EmitSound( soundPath, 75, 100, 1 )
+			end)
+		end
+
+		SpawnNPC( npcType, caller, amount, spawnAtCrosshair )
 	end
 end
 
-concommand.Add( "l4d_z_spawn_mob", SpawnMob, nil, "Spawn a Mob at a random Navmesh area" )
-concommand.Add( "l4d_z_spawn_megamob", SpawnMegaMob, nil, "Spawn a Megamob at a random Navmesh area" )
+concommand.Add( "l4d_z_spawn", SpawnZombie, nil )
+CreateConVar( "l4d_z_spawn_radius", 2000, FCVAR_ARCHIVE, "Zombie Spawn radius from player.", 250, 25000 )
 
 -- Used for cleaning up stuff for debugging
 -- Credit to VJ Base

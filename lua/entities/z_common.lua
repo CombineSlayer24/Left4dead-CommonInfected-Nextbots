@@ -61,8 +61,8 @@ local Vector = Vector
 local ents_GetAll = ents.GetAll
 local tostring = tostring
 
-local collisionmins = Vector( -16, -16, 0 )
-local collisionmaxs = Vector( 16, 16, 72 )
+local collisionmins = Vector( -12, -12, 0 )
+local collisionmaxs = Vector( 8, 10, 72 )
 local crouchingcollisionmaxs = Vector( 16, 16, 36 )
 
 -- Convars
@@ -73,8 +73,8 @@ local developer = GetConVar( "developer" )
 
 local ci_BatonModels = 
 {
-	["models/infected/c_nb/common_male_police01.mdl"] = true,
-	["models/infected/c_nb/trs_common_male_police01.mdl"] = true
+	["models/infected/c_nb/common_male_police01.mdl"] = {true, true}, -- This model can have a prop and can be parented
+	["models/infected/c_nb/trs_common_male_police01.mdl"] = {true, false} -- This model can have a prop but cannot be parented
 }
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:SetUpZombie()
@@ -126,10 +126,12 @@ function ENT:Initialize()
 		self:SetShouldServerRagdoll( true )
 
 		if droppableProps:GetBool() then
-			local randomValue = random( 100 ) <= 15
+			local randomValue = random( 100 ) <= 100
 			
+			-- Because with TRS police, the baton floats a bit
+			-- so we disallow the TRS police baton to be parented
 			if ci_BatonModels[ mdl ] and randomValue then
-				self:CreateItem( "nightstick", true, "baton" )
+				self:CreateItem( "nightstick", ci_BatonModels[ mdl ] [ 2 ], "baton" )
 			elseif mdl == "models/infected/l4d2_nb/uncommon_male_ceda.mdl" and randomValue then
 				self:CreateItem( "bileJar", false, "grenade" )
 			end
@@ -180,8 +182,8 @@ function ENT:CreateItem( itemName, canparent, id )
 	item:Activate()
 	item:SetSolid( SOLID_BSP )
 
-	self.item = item
-	self.canparent = canparent
+	self.item = item 			-- The prop item
+	self.canparent = canparent 	-- Can this prop be parented to ragdoll on death?
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CreateItemOnDeath( ragdoll )
@@ -191,7 +193,7 @@ function ENT:CreateItemOnDeath( ragdoll )
 
 	if dropChance or !self.canparent then
 		item:SetParent( nil )
-		item:SetPos( self:GetPos() + Vector( 0, 0, 50 ) )
+			item:SetPos( self:GetPos() + Vector( 0, 0, 50 ) )
 		item:SetCollisionGroup( COLLISION_GROUP_DEBRIS )
 		item:PhysicsInit( SOLID_VPHYSICS )
 
@@ -525,6 +527,7 @@ function ENT:StartRun()
 
 	self:ResetSequence( anim )
 end
+
 ---------------------------------------------------------------------------------------------------------------------------------------------
 --[[ function ENT:Attack(target)
 	local detectedEnemy = target
@@ -571,6 +574,7 @@ function ENT:Attack(target)
 	local distance = self:GetPos():Distance( detectedEnemy:GetPos() )
 	local AngleToEnemy = directionToEnemy:Angle()
 	AngleToEnemy.p = 0
+	
 	if distance < 100 and ( !self.AttackDelay or CurTime() - self.AttackDelay > Rand( 0.7, 1.2 ) ) then
 		self:SetCycle( 0 )
 		self:SetPlaybackRate( 1 )
@@ -583,40 +587,40 @@ function ENT:Attack(target)
 			self.SpeakDelay = CurTime()
 		end
 
-		local anim = "ACT_TERROR_ATTACK_CONTINUOUSLY"
-		if self:GetActivity() != self:LookupSequence( anim ) then
-			self:ResetSequence( anim )
-			self.AttackDelay = CurTime() + self:SequenceDuration( anim )
+		local anim = self:GetActivity()
+		anim = "ACT_TERROR_ATTACK_CONTINUOUSLY"
+		self:ResetSequence( anim )
+		self.AttackDelay = CurTime() + self:SequenceDuration( anim )
 
-			-- Create a timer to apply damage at a random interval between 0.75 and 1.25 seconds
-			-- Lets add the delays based from the Convars
-			local timerName = "AttackDamage"..self:EntIndex()
-			timer.Create( timerName, Rand( 0.7, 1.2 ), self:SequenceDuration( anim ) / Rand( 0.7, 1.2 ), function()
-				if IsValid( detectedEnemy ) and IsValid( self ) then
-					local distance = self:GetPos():Distance( detectedEnemy:GetPos() )
-					if distance > 100 then
-						PrintMessage( HUD_PRINTTALK, "Attack Timer Killed" )
-						timer.Remove( timerName )
-						self.AttackDelay = nil
-						return
-					end
-
-					local dmginfo = DamageInfo()
-					dmginfo:SetDamage( 5 )
-					dmginfo:SetDamageType( DMG_DIRECT )
-					dmginfo:SetInflictor( self )
-					dmginfo:SetAttacker( self )
-					detectedEnemy:TakeDamageInfo( dmginfo )
-					self:Vocalize( ZCommon_AttackSmack )
+		-- Create a timer to apply damage at a random interval between 0.75 and 1.25 seconds
+		-- Lets add the delays based from the Convars
+		local timerName = "AttackDamage"..self:EntIndex()
+		timer.Create( timerName, Rand( 0.7, 1.2 ), self:SequenceDuration( anim ) / Rand( 0.7, 1.2 ), function()
+			if IsValid( detectedEnemy ) and IsValid( self ) then
+				local distance = self:GetPos():Distance( detectedEnemy:GetPos() )
+				if distance > 100 then
+					PrintMessage( HUD_PRINTTALK, "Attack Timer Killed" )
+					timer.Remove( timerName )
+					self.AttackDelay = nil
+					return
 				end
-			end)
-		end
+
+				local dmginfo = DamageInfo()
+				dmginfo:SetDamage( 5 )
+				dmginfo:SetDamageType( DMG_DIRECT )
+				dmginfo:SetInflictor( self )
+				dmginfo:SetAttacker( self )
+				detectedEnemy:TakeDamageInfo( dmginfo )
+				self:Vocalize( ZCommon_AttackSmack, true )
+			end
+		end)
 
 		self:LookAtEntity()
 	end
 
 	return true
 end
+
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:ChaseTarget( target )
 	self:StartRun()

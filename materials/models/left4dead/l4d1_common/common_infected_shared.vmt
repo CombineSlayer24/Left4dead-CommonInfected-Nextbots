@@ -15,7 +15,7 @@
 	$phongfresnelranges "[1 0 .05]"
 
 	// Rim light info
-	$rimlight 1
-	$rimlightexponent 80
-	$rimlightboost .5
+//	$rimlight 1
+//	$rimlightexponent 80
+//	$rimlightboost .5
 }

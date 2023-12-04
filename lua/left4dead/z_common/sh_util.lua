@@ -169,17 +169,21 @@ end
 -- Play the requested voiceline
 -- Action = the global voiceset
 -- Need to make a check for IsSpeaking
-function ENT:Vocalize( action )
+function ENT:Vocalize( action, isSFX )
 	local pitch
 	local Snd = action[ random( #action ) ]
 
-	if self.Gender == "Female" then
-		pitch = random( 100, 112 )
-		self:EmitSound( Snd, 80, pitch )
-	elseif self.Gender == "Male" then
-		pitch = random( 94, 104 )
-		self:EmitSound( Snd, 80, pitch )
+	if isSFX == true then
+		pitch = 100
+	else
+		if self.Gender == "Female" then
+			pitch = random( 100, 112 )
+		elseif self.Gender == "Male" then
+			pitch = random( 94, 104 )
+		end
 	end
+
+	self:EmitSound( Snd, 80, pitch )
 end
 
 ---------------------------------------------------------------------------------------------------------------------------------------------
