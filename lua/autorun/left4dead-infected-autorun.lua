@@ -242,7 +242,7 @@ if SERVER then
 	
 	local cTypes = {
 		infected = "Infected",
-		groundweapons = "Ground Weapons",
+		droppedguns = "Ground Weapons",
 		props = "Props",
 		decals = "Removed All Decals",
 		guns = "Removed Your Weapons",
@@ -255,8 +255,12 @@ if SERVER then
 		
 		local cType = args[ 1 ]
 		local i = 0
-		
+
 		if !cType then
+			MsgC(Color(255, 255, 255), "Usage: l4d_dev_cleanup <all|infected|droppedguns|props|decals|guns|ammo>\n")
+			return
+
+		elseif cType == "all" then
 			game.CleanUpMap()
 		elseif cType == "decals" then
 			for _, v in ipairs( player_GetAll() ) do
@@ -280,7 +284,7 @@ if SERVER then
 		end
 		
 		if plyValid then
-			if !cType then
+			if cType == "all" then
 				ply:SendLua( "GAMEMODE:AddNotify( \"Cleaned Up Everything!\", NOTIFY_CLEANUP, 5 )" )
 			elseif cType == "decals" or cType == "guns" or cType == "ammo" then
 				ply:SendLua( "GAMEMODE:AddNotify( \""..cTypes[ cType ].."\", NOTIFY_CLEANUP, 5 )" )

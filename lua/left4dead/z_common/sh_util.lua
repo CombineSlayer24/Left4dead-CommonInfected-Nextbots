@@ -8,6 +8,7 @@ local EmitSound = EmitSound
 local timer_Create = timer.Create
 local timer_Adjust = timer.Adjust
 local timer_Remove = timer.Remove
+local SimpleTimer = timer.Simple
 local table_Random = table.Random
 local IsValid = IsValid
 local ipairs = ipairs
@@ -48,7 +49,7 @@ local _Z_Running_Footsteps = _Z_Running_Footsteps
 function ENT:PlayStepSound( volume )
 	local stepMat = QuickTrace( self:WorldSpaceCenter(), vector_up * -32756, self ).MatType
 	local selfPos = self:GetPos()
-	if RunHook( "LambdaFootStep", self, selfPos, stepMat ) == true then return end
+	if RunHook( "CommonFootStep", self, selfPos, stepMat ) == true then return end
 
 	local sndPitch, sndName = 100
 	local waterLvl = self:GetWaterLevel()
@@ -65,7 +66,7 @@ function ENT:PlayStepSound( volume )
 	self:EmitSound( sndName, 75, sndPitch, volume )
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
--- Checks if we are airborn
+-- Set our fall animation
 function ENT:IsAirborne()
 	if !self.IsLanded then
 		self:SetCycle( 0 )
@@ -95,12 +96,12 @@ function ENT:DoLandingAnimation()
 			end
 		end
 
-		self:PlaySequenceAndMove( anim )
+		self:PlaySequenceAndMove( anim ) 
 		PrintMessage( HUD_PRINTTALK, "I Landed!" )
 		self:EmitSound( "left4dead/player/jumplanding_zombie.mp3", 80, 100, 1 )
 		self.PlayingAnimSeq = false
 
-		timer.Simple( self:SequenceDuration( anim ) - 0.5, function()
+		SimpleTimer( self:SequenceDuration( anim ) - 0.5, function()
 			if !IsValid( self ) then return end
 			self.PlayingAnimSeq = false
 			if self:IsOnGround() then
@@ -108,7 +109,7 @@ function ENT:DoLandingAnimation()
 					self:StartRun()
 				else
 					-- No enemy, so transistion to idle
-					local anim = "ACT_TERROR_RUN_INTENSE_TO_STAND_ALERT"
+					anim = "ACT_TERROR_RUN_INTENSE_TO_STAND_ALERT"
 					self:PlaySequenceAndMove( anim )
 				end
 			end
