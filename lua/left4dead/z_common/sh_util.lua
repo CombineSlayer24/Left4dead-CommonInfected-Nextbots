@@ -206,6 +206,29 @@ function ENT:GetBoneTransformation( bone, target )
 	return { Pos = pos, Ang = ang, Bone = bone }
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
+-- Performs a Trace from ourselves or the overridestart to the postion
+function ENT:Trace( pos, overridestart, ignoreEnt )
+    tracetable.start = overridestart or self:WorldSpaceCenter()
+    tracetable.endpos = ( isentity( pos ) and IsValid( pos ) and pos:GetPos() or pos )
+    tracetable.filter = ( ignoreEnt and { self, ignoreEnt } or self ) 
+    return Trace( tracetable )
+end
+---------------------------------------------------------------------------------------------------------------------------------------------
+-- Returns if we can see the ent in question.
+-- Simple trace 
+function ENT:CanSee( ent )
+    if !IsValid( ent ) then return false end
+
+    visibilitytrace.start = self:GetAttachmentPoint( "eyes" ).Pos
+    visibilitytrace.endpos = ent:WorldSpaceCenter()
+    visibilitytrace.filter = self
+
+    local result = Trace( visibilitytrace )
+    if RunHook( "LambdaOnCanSeeEntity", self, ent, result ) == true then return false end
+
+    return ( result.Fraction == 1.0 )
+end
+---------------------------------------------------------------------------------------------------------------------------------------------
 -- Returns a table that contains a position and angle with the specified type. hand or eyes
 local eyeOffAng = Angle( 20, 0, 0 )
 function ENT:GetAttachmentPoint( pointtype )

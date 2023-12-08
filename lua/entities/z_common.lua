@@ -90,7 +90,7 @@ function ENT:SetUpZombie()
 	for k, v in pairs( Z_FemaleModels ) do table_insert( mdls, v ) end
 
 	-- Now select a random model from the combined table
-	--local spawnMdl = mdls[ random( #mdls ) ]
+	local spawnMdl = mdls[ random( #mdls ) ]
 	self:SetModel( spawnMdl )
 	-- Really need to work on a population manager :(
 	--self:SetModel( "models/infected/l4d2_nb/uncommon_male_fallen_survivor.mdl" )
@@ -119,7 +119,7 @@ function ENT:Initialize()
 	if SERVER then
 
 		self:SetUpZombie()
-		--self:InitSounds()
+		self:InitSounds()
 		local mdl = self:GetModel()
 
 		self.ci_BehaviorState = "Idle" -- The state for our behavior thread is currently running
