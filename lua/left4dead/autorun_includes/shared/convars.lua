@@ -11,6 +11,7 @@ CreateConVar( "l4d_sv_fightothers", 1, FCVAR_ARCHIVE, "Should Infected fight amo
 
 -- Combat Related
 CreateConVar( "l4d_sv_z_health", 50, FCVAR_ARCHIVE, "Infected max health" )
+CreateConVar( "l4d_sv_fallen_health_multiplier", 20.0, FCVAR_ARCHIVE, "" )
 CreateConVar( "l4d_sv_z_hit_interval_easy", 0.5, FCVAR_ARCHIVE, "Minimum time between damaging a target from an Infected", 0, 1.5 )
 CreateConVar( "l4d_sv_z_hit_interval_normal", 0.33, FCVAR_ARCHIVE, "Minimum time between damaging a target from an Infected", 0, 1.5 )
 CreateConVar( "l4d_sv_z_hit_interval_advanced", 0.5, FCVAR_ARCHIVE, "Minimum time between damaging a target from an Infected", 0, 1.5 )

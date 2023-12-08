@@ -52,6 +52,9 @@ local MathHuge = math.huge
 local table_insert = table.insert
 local table_Random = table.Random
 local table_HasValue = table.HasValue
+local table_remove = table.remove
+local string_gsub = string.gsub
+local string_Explode = string.Explode
 local Clamp = math.Clamp
 local coroutine_wait = coroutine.wait
 local ents_FindInSphere = ents.FindInSphere
@@ -70,8 +73,9 @@ local ignorePlys = GetConVar( "ai_ignoreplayers" )
 local sv_gravity = GetConVar( "sv_gravity" )
 local droppableProps = GetConVar( "l4d_sv_createitems" )
 local developer = GetConVar( "developer" )
+local z_Difficulty = GetConVar( "l4d_sv_difficulty" ):GetInt()
 
-local ci_BatonModels = 
+local ci_BatonModels =
 {
 	["models/infected/c_nb/common_male_police01.mdl"] = {true, true}, -- This model can have a prop and can be parented
 	["models/infected/c_nb/trs_common_male_police01.mdl"] = {true, false} -- This model can have a prop but cannot be parented
@@ -86,10 +90,10 @@ function ENT:SetUpZombie()
 	for k, v in pairs( Z_FemaleModels ) do table_insert( mdls, v ) end
 
 	-- Now select a random model from the combined table
-	local spawnMdl = mdls[ random( #mdls ) ]
+	--local spawnMdl = mdls[ random( #mdls ) ]
 	self:SetModel( spawnMdl )
 	-- Really need to work on a population manager :(
-	--self:SetModel( "models/infected/l4d2_nb/uncommon_male_ceda.mdl" )
+	--self:SetModel( "models/infected/l4d2_nb/uncommon_male_fallen_survivor.mdl" )
 
 	-- Set Gender based on model
 	if table_HasValue( Z_MaleModels, spawnMdl ) then
@@ -110,29 +114,50 @@ function ENT:SetUpZombie()
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:Initialize()
-	game.AddParticles( "particles/boomer_fx.pcf" )
+	--game.AddParticles( "particles/boomer_fx.pcf" )
 
 	if SERVER then
 
 		self:SetUpZombie()
-		self:InitSounds()
+		--self:InitSounds()
 		local mdl = self:GetModel()
 
 		self.ci_BehaviorState = "Idle" -- The state for our behavior thread is currently running
 		self.ci_lastfootsteptime = 0 -- The last time we played a footstep sound
 		self.SpeakDelay = 0 -- the last time we spoke
 
-		self:SetHealth( 50 )
+		local z_Health
+		local z_FallenHealth = GetConVar( "l4d_sv_fallen_health_multiplier" ):GetInt()
+
+		if self:GetUncommonInf( "FALLEN" ) then
+			z_Health = 1000 * ( z_FallenHealth / 20 )
+		elseif self:GetUncommonInf( "JIMMYGIBBS" ) then
+			z_Health = 3000
+		elseif self:GetUncommonInf( "CEDA" ) or self:GetUncommonInf( "ROADCREW" ) then
+			if z_Difficulty == 0 then
+				z_Health = 50
+			else
+				z_Health = 150
+			end
+		else
+			z_Health = 50
+		end
+
+		print(z_Health)
+
+		self:SetMaxHealth( z_Health )
+		self:SetHealth( z_Health )
+
 		self:SetShouldServerRagdoll( true )
 
 		if droppableProps:GetBool() then
 			local randomValue = random( 100 ) <= 100
-			
+
 			-- Because with TRS police, the baton floats a bit
 			-- so we disallow the TRS police baton to be parented
 			if ci_BatonModels[ mdl ] and randomValue then
 				self:CreateItem( "nightstick", ci_BatonModels[ mdl ] [ 2 ], "baton" )
-			elseif mdl == "models/infected/l4d2_nb/uncommon_male_ceda.mdl" and randomValue then
+			elseif self:GetUncommonInf( "CEDA" ) and randomValue then
 				self:CreateItem( "bileJar", false, "grenade" )
 			end
 		end
@@ -193,7 +218,7 @@ function ENT:CreateItemOnDeath( ragdoll )
 
 	if dropChance or !self.canparent then
 		item:SetParent( nil )
-			item:SetPos( self:GetPos() + Vector( 0, 0, 50 ) )
+		item:SetPos( self:GetPos() + Vector( 0, 0, 50 ) )
 		item:SetCollisionGroup( COLLISION_GROUP_DEBRIS )
 		item:PhysicsInit( SOLID_VPHYSICS )
 
@@ -234,13 +259,13 @@ function ENT:PlaySequenceAndMove( seq, options, callback )
 	if options.gravity == nil then options.gravity = true end
 	if options.collisions == nil then options.collisions = true end
 	local previousCycle = 0
-	local previousPos = self:GetPos()  
+	local previousPos = self:GetPos()
 	self.loco:SetDesiredSpeed( self:GetSequenceGroundSpeed( seq ) )
 	local res = self:PlaySequenceAndWait2( seq, options.rate, function( self, cycle )
 		local success, vec, angles = self:GetSequenceMovement( seq, previousCycle, cycle )
 		if success then
 			vec = Vector( vec.x, vec.y, vec.z )
-			vec:Rotate( self:GetAngles() + angles )	
+			vec:Rotate( self:GetAngles() + angles )
 			self:SetAngles( self:LocalToWorldAngles( angles ) )
 			if ( self:IsInWorld() and self:IsOnGround() ) then
 				previousPos = self:GetPos() + vec * self:GetModelScale()
@@ -271,7 +296,7 @@ function ENT:PlaySequenceAndWait2( seq, rate, callback )
 	self.lastCycle = -1
 	self.callback = callback
 	timer.Create( "MoveAgain" .. self:EntIndex(), self:SequenceDuration( seq ) - 0.2, 1, function()
-		self.PlayingAnimSeq = false 
+		self.PlayingAnimSeq = false
 	end )
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
@@ -284,7 +309,7 @@ end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:OnInjured( dmginfo )
 	-- If uncommon infected are either CEDA, Fallen or Jimmy Gibbs Jr. will become flameproof
-	if self:GetUncommonInf( "CEDA" ) or self:GetUncommonInf( "FALLEN" ) or self:GetUncommonInf( "JIMMYGIBBS" )  then 
+	if self:GetUncommonInf( "CEDA" ) or self:GetUncommonInf( "FALLEN" ) or self:GetUncommonInf( "JIMMYGIBBS" )  then
 		self:SetFlameproof( dmginfo )
 	end
 
@@ -416,8 +441,8 @@ function ENT:DirectPoseParametersAt( pos, pitch, yaw, center )
 
 	if !isstring( yaw ) then
 		return self:DirectPoseParametersAt( pos, pitch.."_pitch", pitch.."_yaw", yaw )
-	elseif isentity( pos ) then 
-		pos = pos:WorldSpaceCenter() 
+	elseif isentity( pos ) then
+		pos = pos:WorldSpaceCenter()
 	end
 
 	if isvector(pos) then
@@ -454,7 +479,7 @@ end
 function ENT:FindNearestEnemy()
 	local enemies = ents_FindInSphere(self:GetPos(), 2500) -- Find potential targets
 	local nearestEnemy = nil -- Our enemy
-	local nearestDistance = MathHuge -- Limited to out range of FindInSphere, 
+	local nearestDistance = MathHuge -- Limited to out range of FindInSphere,
 
 	for _, enemy in pairs(enemies) do
 
@@ -495,7 +520,7 @@ function ENT:StartWandering()
 	self.loco:SetAcceleration( 500 )
 	self.loco:SetDeceleration( 1000 )
 	self.IsWalking = true
-	
+
 	local anim = self:GetActivity()
 	local maleAnims = { "ACT_TERROR_WALK_NEUTRAL", "ACT_TERROR_SHAMBLE", "ACT_TERROR_WALK_INTENSE" }
 
@@ -512,7 +537,7 @@ function ENT:StartWandering()
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:StartRun()
-	self.loco:SetDesiredSpeed(300)
+	self.loco:SetDesiredSpeed(280)
 	self.loco:SetAcceleration(500)
 	self.loco:SetDeceleration(1000)
 	self.IsRunning = true
@@ -574,7 +599,7 @@ function ENT:Attack(target)
 	local distance = self:GetPos():Distance( detectedEnemy:GetPos() )
 	local AngleToEnemy = directionToEnemy:Angle()
 	AngleToEnemy.p = 0
-	
+
 	if distance < 100 and ( !self.AttackDelay or CurTime() - self.AttackDelay > Rand( 0.7, 1.2 ) ) then
 		self:SetCycle( 0 )
 		self:SetPlaybackRate( 1 )
@@ -598,6 +623,7 @@ function ENT:Attack(target)
 		timer.Create( timerName, Rand( 0.7, 1.2 ), self:SequenceDuration( anim ) / Rand( 0.7, 1.2 ), function()
 			if IsValid( detectedEnemy ) and IsValid( self ) then
 				local distance = self:GetPos():Distance( detectedEnemy:GetPos() )
+
 				if distance > 100 then
 					PrintMessage( HUD_PRINTTALK, "Attack Timer Killed" )
 					timer.Remove( timerName )
@@ -605,13 +631,25 @@ function ENT:Attack(target)
 					return
 				end
 
+				local z_Dmg
 				local dmginfo = DamageInfo()
-				dmginfo:SetDamage( 5 )
+				local z_Difficulty = GetConVar( "l4d_sv_difficulty" ):GetInt()
+				if z_Difficulty == 0 then
+					z_Dmg = 1
+				elseif z_Difficulty == 1 then
+					z_Dmg = 2
+				elseif z_Difficulty == 2 then
+					z_Dmg = 5
+				elseif z_Difficulty == 3 then
+					z_Dmg = 20
+				end
+				dmginfo:SetDamage( z_Dmg )
 				dmginfo:SetDamageType( DMG_DIRECT )
 				dmginfo:SetInflictor( self )
 				dmginfo:SetAttacker( self )
 				detectedEnemy:TakeDamageInfo( dmginfo )
 				self:Vocalize( ZCommon_AttackSmack, true )
+				print(z_Dmg)
 			end
 		end)
 
@@ -648,7 +686,7 @@ function ENT:ChaseTarget( target )
 			self:HandleStuck()
 			return "stuck"
 		end
-		
+
 		coroutine.yield()
 	end
 

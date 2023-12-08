@@ -48,7 +48,7 @@ function InitializeAddon()
 			AddCSLuaFile( "left4dead/autorun_includes/client/" .. luafile )
 		elseif CLIENT then
 			include( "lambdaplayers/autorun_includes/client/" .. luafile )
-			
+
 			if FileLoaded() then
 				print( "Lambda Players: Included Client Side Lua File [ " .. luafile .. " ]" )
 			else
@@ -129,22 +129,22 @@ local function GetNavAreasNear( pos, radius, caller )
 
 	for i = 1, #navareas do
 		local nav = navareas[ i ]
-		if IsValid( nav ) and nav:GetSizeX() > 40 and nav:GetSizeY() > 40 and !nav:IsUnderwater() and 
-		   ( pos:DistToSqr( nav:GetClosestPointOnArea( pos ) ) < ( radius * radius ) and 
-		   pos:DistToSqr( nav:GetClosestPointOnArea( pos ) ) > ( ( radius / 3 ) * ( radius / 3 ) ) and 
+		if IsValid( nav ) and nav:GetSizeX() > 40 and nav:GetSizeY() > 40 and !nav:IsUnderwater() and
+		   ( pos:DistToSqr( nav:GetClosestPointOnArea( pos ) ) < ( radius * radius ) and
+		   pos:DistToSqr( nav:GetClosestPointOnArea( pos ) ) > ( ( radius / 3 ) * ( radius / 3 ) ) and
 		   nav:GetCenter().z >= playerZ - 250 and nav:GetCenter().z <= playerZ + 250 ) then
 
-			-- Check if the center of the nav area is visible to the player and within their FOV 
-			if !IsNavMeshVisible( caller, nav ) then 
+			-- Check if the center of the nav area is visible to the player and within their FOV
+			if !IsNavMeshVisible( caller, nav ) then
 				local width = nav:GetSizeX()
 				local height = nav:GetSizeY()
-				local maxOffset = width <= 40 and height <= 40 and 1 or 20  -- Set the max offset based on the size of the navmesh area 
-				local xyOffset = VectorRand() * maxOffset -- Randomize X and Y components, keep Z at 0 
+				local maxOffset = width <= 40 and height <= 40 and 1 or 20  -- Set the max offset based on the size of the navmesh area
+				local xyOffset = VectorRand() * maxOffset -- Randomize X and Y components, keep Z at 0
 				xyOffset.z = 25 -- In case if our tracehull doesn't work, spawn the entity up a bit
 
-				local spawnPos = nav:GetCenter() + xyOffset -- Add randomized offset to the center of the nav area 
+				local spawnPos = nav:GetCenter() + xyOffset -- Add randomized offset to the center of the nav area
 
-				-- Perform a trace hull from a point slightly above the spawn position to a point slightly higher 
+				-- Perform a trace hull from a point slightly above the spawn position to a point slightly higher
 				local tr = util_TraceHull({
 					start = spawnPos + Vector( 0, 0, 1 ),
 					endpos = spawnPos + Vector( 0, 0, 2 ),
@@ -154,15 +154,15 @@ local function GetNavAreasNear( pos, radius, caller )
 					filter = player.GetAll()
 				})
 
-				if !tr.Hit then 
-					foundareas[ #foundareas + 1 ] = spawnPos 
-				end 
-			end 
-		end 
-	end 
+				if !tr.Hit then
+					foundareas[ #foundareas + 1 ] = spawnPos
+				end
+			end
+		end
+	end
 
-	return foundareas 
-end 
+	return foundareas
+end
 
 local function SpawnNPC( class, caller, amount, spawnAtCrosshair )
 	local plyradius = GetConVar( "l4d_z_spawn_radius" )
@@ -186,13 +186,13 @@ local function SpawnNPC( class, caller, amount, spawnAtCrosshair )
 			local trace = caller:GetEyeTrace()
 			pos = trace.HitPos
 		end
-		
+
 		local npc = ents_Create( class )
-		
+
 		-- Add a random offset to the spawn position
 		local offset = Vector( Rand( -5, 5 ), Rand(- 5, 5 ), 0 )
 		npc:SetPos( pos + offset )
-		
+
 		npc:SetAngles( Angle( 0, math.random( -180, 180 ), 0 ) )
 		npc:Spawn()
 	end)
@@ -208,26 +208,35 @@ local function SpawnZombie( caller, command, arguments )
 		local zombieType = arguments[ 1 ] or "common"
 		local amount = tonumber( arguments[ 2 ] ) or 1
 		local spawnAtCrosshair = arguments[ 3 ] or false
+		local soundpath
 
-		local npcType = "z_common" -- Default to Common Infected
+		local npcType = "z_common" -- Ent Name
 
-		if zombieType == "mob" then
+		if zombieType == "common" then
+			amount = tonumber( arguments[ 2 ] ) or 1
+			SpawnNPC( npcType, caller, amount, spawnAtCrosshair )
+
+		-- Make these guys auto aggitated, same for megamob.
+		elseif zombieType == "mob" then
 			amount = tonumber( arguments[ 2 ] ) or Rand( 8, 16 )
-			local soundPath = Z_Music_Germs[ random( #Z_Music_Germs ) ]
+			soundPath = Z_Music_Germs[ random( #Z_Music_Germs ) ]
 			caller:EmitSound( soundPath, 75, 100, 1 )
 			PrintMessage( HUD_PRINTCENTER, "[Incoming Attack!]" )
+			SpawnNPC( npcType, caller, amount, spawnAtCrosshair )
+
 		elseif zombieType == "megamob" then
 			amount = tonumber( arguments[ 2 ] ) or Rand( 16, 24 )
 			caller:EmitSound("left4dead/vocals/infected/sfx/megamob_" .. random( 2 ) .. ".mp3", 75, 100, 1 )
-			SimpleTimer(Rand( 1, 3 ), function() 
-				local soundPath = Z_Music_Germs[ random( #Z_Music_Germs ) ]
+
+			SimpleTimer( 3, function()
+				soundPath = Z_Music_Germs[ random( #Z_Music_Germs ) ]
 				caller:EmitSound( soundPath, 75, 100, 1 )
+				SpawnNPC( npcType, caller, amount, spawnAtCrosshair )
 			end)
 		end
-
-		SpawnNPC( npcType, caller, amount, spawnAtCrosshair )
 	end
 end
+
 
 concommand.Add( "l4d_z_spawn", SpawnZombie, nil )
 CreateConVar( "l4d_z_spawn_radius", 2000, FCVAR_ARCHIVE, "Zombie Spawn radius from player.", 250, 25000 )
@@ -239,7 +248,7 @@ if SERVER then
 	local ipairs = ipairs
 	local ents_GetAll = ents.GetAll
 	local player_GetAll = player.GetAll
-	
+
 	local cTypes = {
 		infected = "Infected",
 		droppedguns = "Ground Weapons",
@@ -248,11 +257,11 @@ if SERVER then
 		guns = "Removed Your Weapons",
 		ammo = "Removed Your Ammo",
 	}
-	
+
 	concommand.Add("l4d_dev_cleanup", function( ply, cmd, args )
 		local plyValid = IsValid( ply )
 		if plyValid and !ply:IsAdmin() then return end
-		
+
 		local cType = args[ 1 ]
 		local i = 0
 
@@ -272,17 +281,17 @@ if SERVER then
 			ply:RemoveAllAmmo()
 		else
 			for _, v in ipairs( ents_GetAll() ) do
-				if ( v:IsNextBot() and ( cType == "infected" and v.IsCommonInfected ) ) 
-				or ( cType == "groundweapons" and v:IsWeapon() and !IsValid( v:GetOwner() ) ) 
-				or ( cType == "props" and v:GetClass() == "prop_physics" and ( !IsValid(v:GetParent() ) 
-				or ( IsValid( v:GetParent() ) and v:GetParent():Health() <= 0 and ( v:GetParent():IsNextBot() 
+				if ( v:IsNextBot() and ( cType == "infected" and v.IsCommonInfected ) )
+				or ( cType == "groundweapons" and v:IsWeapon() and !IsValid( v:GetOwner() ) )
+				or ( cType == "props" and v:GetClass() == "prop_physics" and ( !IsValid(v:GetParent() )
+				or ( IsValid( v:GetParent() ) and v:GetParent():Health() <= 0 and ( v:GetParent():IsNextBot()
 				or v:GetParent():IsPlayer() ) ) ) ) then
 					v:Remove()
 					i = i + 1
 				end
 			end
 		end
-		
+
 		if plyValid then
 			if cType == "all" then
 				ply:SendLua( "GAMEMODE:AddNotify( \"Cleaned Up Everything!\", NOTIFY_CLEANUP, 5 )" )
@@ -318,7 +327,7 @@ local function DrawZombieCount()
 	else
 		color = Color(255, 255, 255)
 	end
-	
+
 	if count > 0 then
 		draw.SimpleTextOutlined("Total Zombies Alive: " .. count, "DermaLarge", ScrW() / 2, 42, color, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER, 2, Color(0, 0, 0))
 	else

@@ -1,0 +1,8 @@
+patch
+{
+	include "materials/models/left4dead/l4d2_common/ci_body_shared_roadcrew.vmt"
+	insert
+	{
+		$baseTexture "models/left4dead/l4d2_common/uncommon/cim_roadcrew_01"
+	}
+}

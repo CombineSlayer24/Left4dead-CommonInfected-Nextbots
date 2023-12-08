@@ -11,9 +11,9 @@ VertexLitGeneric
 	$phongfresnelranges "[1 1 1]"
 
 	// Rim light info
-	$rimlight 1
-	$rimlightexponent 10
-	$rimlightboost 0.3
+//	$rimlight 1
+//	$rimlightexponent 10
+//	$rimlightboost 0.3
 
 	// Detail info
 	$detail "models/left4dead/l4d2_common/detail/ci_detail_dirt"

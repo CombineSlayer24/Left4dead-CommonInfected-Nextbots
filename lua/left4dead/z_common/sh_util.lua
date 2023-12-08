@@ -31,7 +31,7 @@ end
 -- Returns the time we will play our next footsteps ound
 function ENT:GetStepSoundTime()
 	local stepTime = 0.35
-	
+
 	if self:GetWaterLevel() != 2 then
 		local maxSpeed = self.loco:GetVelocity():Length2D()
 		stepTime = Clamp( stepTime * ( 200 / maxSpeed ), 0.25, 0.45 )
@@ -96,7 +96,7 @@ function ENT:DoLandingAnimation()
 			end
 		end
 
-		self:PlaySequenceAndMove( anim ) 
+		self:PlaySequenceAndMove( anim )
 		PrintMessage( HUD_PRINTTALK, "I Landed!" )
 		self:EmitSound( "left4dead/player/jumplanding_zombie.mp3", 80, 100, 1 )
 		self.PlayingAnimSeq = false
@@ -132,6 +132,8 @@ end
 function ENT:GetUncommonInf( model )
 	local modelTable = {
 		CEDA = { "models/infected/l4d2_nb/uncommon_male_ceda.mdl" },
+		ROADCREW = { "models/infected/l4d2_nb/uncommon_male_roadcrew.mdl","models/infected/l4d2_nb/uncommon_male_roadcrew_l4d1.mdl" },
+		FALLEN = { "models/infected/l4d2_nb/uncommon_male_fallen_survivor.mdl" },
 	}
 
 	if modelTable[ model ] then
@@ -150,7 +152,7 @@ end
 function ENT:SetFlameproof( dmginfo )
 	self.Flameproof = true
 	if dmginfo:IsDamageType( DMG_BURN ) then
-	
+
 		if SERVER then
 			dmginfo:SetDamage( 0 )
 			self:Extinguish()
@@ -200,7 +202,7 @@ function ENT:GetBoneTransformation( bone, target )
 			ang = matrix:GetAngles()
 		end
 	end
-	
+
 	return { Pos = pos, Ang = ang, Bone = bone }
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
@@ -224,7 +226,7 @@ function ENT:GetAttachmentPoint( pointtype )
 		local lookup = self:LookupAttachment( "eyes" )
 		local eyeAttach = self:GetAttachment( lookup )
 
-		if !eyeAttach then 
+		if !eyeAttach then
 			attachData.Pos = ( attachData.Pos + vector_up * 30 )
 			attachData.Ang = ( attachData.Ang + eyeOffAng )
 		else

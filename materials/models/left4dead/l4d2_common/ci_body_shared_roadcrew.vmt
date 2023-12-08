@@ -1,0 +1,27 @@
+VertexLitGeneric
+{
+	$bumpmap "models/left4dead/l4d2_common/ci_normal"
+	$halflambert 1
+
+	// Phong info
+	$phong 1
+	$phongboost 0.75
+	$phongexponent 10
+	$phongtint "[1 1 1]"
+	$phongfresnelranges "[1 1 1]"
+
+	// Rim light info
+//	$rimlight 1
+//	$rimlightexponent 10
+//	$rimlightboost 0.3
+
+	// Detail info
+	$detail "models/left4dead/l4d2_common/detail/ci_detail_dirt"
+	$detailframe 0
+	$detailscale 2
+	$detailblendfactor 0
+
+	// Glowing Reflect
+	"$selfillum" "1"
+	"$selfillummask" "models/left4dead/l4d2_common/uncommon/cim_roadcrew_reflect"
+}
