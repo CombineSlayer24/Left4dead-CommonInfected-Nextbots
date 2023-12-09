@@ -86,16 +86,18 @@ end
 -- Handles our Landing animations
 function ENT:DoLandingAnimation()
 	if self.IsLanded then
+		local landingAnims
 		local anim = self:GetActivity()
 
 		-- If they are after their prey, don't do long landing anims
 		if IsValid( self:FindNearestEnemy() ) then
-			local landingAnims = { "ACT_TERROR_JUMP_LANDING_HARD", "ACT_TERROR_JUMP_LANDING_HARD_NEUTRAL" }
+			landingAnims = { "ACT_TERROR_JUMP_LANDING_HARD", "ACT_TERROR_JUMP_LANDING_HARD_NEUTRAL", "ACT_TERROR_JUMP_LANDING" }
 			anim = table_Random(landingAnims)
 		else
 			-- If they are just wandering around with no enemies, then use the slow landing anim
 			if random( 4 ) == 1 then
-				anim = "ACT_TERROR_JUMP_LANDING_NEUTRAL" or "ACT_TERROR_JUMP_LANDING_HARD_NEUTRAL"
+				landingAnims = { "ACT_TERROR_JUMP_LANDING_NEUTRAL", "ACT_TERROR_JUMP_LANDING_HARD_NEUTRAL", "ACT_TERROR_JUMP_LANDING" }
+				anim = table_Random(landingAnims)
 			end
 		end
 
@@ -131,12 +133,15 @@ function ENT:PlaySequence( sequence )
 	end
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
--- Checks what type of Uncommon Infected we want
+-- Check for our uncommon infected type
 function ENT:GetUncommonInf( model )
 	local modelTable = {
 		CEDA = { "models/infected/l4d2_nb/uncommon_male_ceda.mdl" },
 		ROADCREW = { "models/infected/l4d2_nb/uncommon_male_roadcrew.mdl","models/infected/l4d2_nb/uncommon_male_roadcrew_l4d1.mdl" },
 		FALLEN = { "models/infected/l4d2_nb/uncommon_male_fallen_survivor.mdl" },
+		RIOT = { "models/infected/l4d2_nb/uncommon_male_riot.mdl" },
+		MUDMEN = { },
+		JIMMYGIBBS = { "models/infected/l4d2_nb/uncommon_male_jimmy.mdl" },
 	}
 
 	if modelTable[ model ] then
@@ -147,7 +152,7 @@ function ENT:GetUncommonInf( model )
 		end
 	end
 
-	-- Our specific model isn't a uncommon
+	-- Our specific model isn't a uncommon, :(
 	return false
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------

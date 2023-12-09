@@ -9,6 +9,25 @@ function ENT:InitSounds()
 		"left4dead/vocals/infected/sfx/gore/bullet_impact_07.mp3",
 		"left4dead/vocals/infected/sfx/gore/bullet_impact_08.mp3",
 	}
+
+	-- Get sounds later!
+	Zombie_BulletImpact_Riot = {
+		"physics/metal/metal_solid_impact_bullet1.wav",
+		"physics/metal/metal_solid_impact_bullet2.wav",
+		"physics/metal/metal_solid_impact_bullet3.wav",
+		"physics/metal/metal_solid_impact_bullet4.wav",
+		"physics/metal/metal_box_impact_bullet1.wav",
+		"physics/metal/metal_box_impact_bullet2.wav",
+		"physics/metal/metal_box_impact_bullet3.wav",
+		"physics/metal/golfclub_impact1.wav",
+		"physics/metal/golfclub_impact2.wav",
+		"physics/metal/golfclub_impact3.wav",
+		"physics/metal/golfclub_impact4.wav",
+		"physics/metal/blade_impact_soft1.wav",
+		"physics/metal/blade_impact_soft2.wav",
+		"physics/metal/blade_impact_soft3.wav",
+		"physics/metal/blade_impact_soft4.wav",
+	}
 	---------------------------------------------------------------------------------------------------------------------------------------------
 	-- Shared Sounds - COMMON INFECTED
 	---------------------------------------------------------------------------------------------------------------------------------------------

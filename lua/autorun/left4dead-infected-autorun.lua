@@ -104,7 +104,7 @@ local function IsInFOVAndVisible( player, vec )
 
     local plyradius = GetConVar( "l4d_z_spawn_radius" ):GetFloat()
     local distance = player:GetPos():Distance( vec )
-    local isVisible = distance < plyradius  -- Consider points visible if they are within the spawn radius
+    local isVisible = distance < plyradius   -- Consider points visible if they are within the spawn radius
 
     print( "IsInFOV: " .. tostring( isInFOV ) )
     print( "IsVisible: " .. tostring( isVisible ) )
@@ -311,12 +311,18 @@ local function DrawZombieCount()
 	if !GetConVar("l4d_z_drawcount"):GetBool() then return end
 	local count = 0
 	local color = Color(0, 255, 0) -- Placeholder "default" local color
+	local jimmyFound = false
 
 	for _, ent in pairs(ents.FindByClass("z_common")) do
 		count = count + 1
+		if ent:GetUncommonInf( "JIMMYGIBBS" ) then
+			jimmyFound = true
+		end
 	end
 
-	if count >= 1 and count <= 6 then
+	if jimmyFound then
+		color = Color(128, 0, 0) -- Red for JIMMY GIBBS
+	elseif count >= 1 and count <= 6 then
 		color = Color(0, 255, 0) -- Green
 	elseif count >= 7 and count <= 11 then
 		color = Color(255, 255, 0) -- Yellow
