@@ -244,7 +244,7 @@ if SERVER then
 
 				local snd = table_Random( alarmSnd )
 				local killAlarmTime = 15
-				self:EmitSound( snd, 125, 100, 1 )
+				self:EmitSound( snd, 150, 100, 1 )
 
 				SpawnMegaHorde( ent )
 				
@@ -314,25 +314,32 @@ if SERVER then
 	
 	function ENT:Think()
 		if !self.IsTriggered then
-			for i = 1, 4 do
-				local glow = ents_Create( "env_sprite" )
-				glow:SetKeyValue( "model", "sprites/glow1.vmt" )
-				glow:SetKeyValue( "scale", "0.5" )
-				glow:SetKeyValue( "rendermode", "5" )
-				glow:SetKeyValue( "rendercolor", "255 255 150" )
-				glow:AddEFlags( EFL_NO_THINK_FUNCTION )
-				glow:SetParent( self )
-				glow:SetPos( self:LocalToWorld( posTbl[ i ] ) )
-				glow:Spawn()
-				glow:Activate()
-				glow:Fire( "Hidesprite", "", 0.2 )
-				glow:Fire( "Showsprite", "", 0.4 )
-				glow:Fire( "Kill","", 0.6 )
-				self:DeleteOnRemove( glow )
-			end
+
+			-- Only chirp and flash warnings when close
+			for _, ply in ipairs( ents.FindInSphere( self:GetPos(), 500 ) ) do
+				if ply:IsPlayer() then
 			
-			if random( 2 ) == 1 then
-				self:EmitSound( chripSnd )
+					if random( 2 ) == 1 then
+						self:EmitSound( chripSnd, 150 )
+					end
+					
+					for i = 1, 4 do
+						local glow = ents_Create( "env_sprite" )
+						glow:SetKeyValue( "model", "sprites/glow1.vmt" )
+						glow:SetKeyValue( "scale", "0.5" )
+						glow:SetKeyValue( "rendermode", "5" )
+						glow:SetKeyValue( "rendercolor", "255 255 150" )
+						glow:AddEFlags( EFL_NO_THINK_FUNCTION )
+						glow:SetParent( self )
+						glow:SetPos( self:LocalToWorld( posTbl[ i ] ) )
+						glow:Spawn()
+						glow:Activate()
+						glow:Fire( "Hidesprite", "", 0.2 )
+						glow:Fire( "Showsprite", "", 0.4 )
+						glow:Fire( "Kill","", 0.6 )
+						self:DeleteOnRemove( glow )
+					end
+				end
 			end
 		end
 
