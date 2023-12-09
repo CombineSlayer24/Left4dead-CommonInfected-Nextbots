@@ -327,16 +327,16 @@ function ENT:OnTakeDamage( dmginfo )
 	local armorProtection = GetConVar( "l4d_sv_z_riot_armor_protection" ):GetBool()
 	local damageType = dmginfo:GetDamageType()
 	if IsValid( attacker ) then
-		if self:GetUncommonInf( "RIOT" ) then
+		if self:Health() > 0 then
+			if self:GetUncommonInf( "RIOT" ) then
 			-- Do something to prevent loops from happening
-			if self:Health() > 0 then
 				local direction = ( attacker:GetPos() - self:GetPos() ):GetNormalized()
 				local selfForward = self:GetForward()
 				local isAttackerInFront = direction:Dot( selfForward ) > 0
 
-				-- Block bullets, melee attacks
-				if isAttackerInFront and ( damageType == DMG_BULLET or damageType == DMG_CLUB ) then
-					
+				local DamageToBlock = { DMG_GENERIC, DMG_CLUB, DMG_SLASH, DMG_AIRBOAT, DMG_DIRECT, DMG_SNIPER, DMG_MISSLEDEFENCE, DMG_BUCKSHOT, DMG_BULLET}
+
+				if isAttackerInFront and DamageToBlock[damageType] then
 					if armorProtection then
 						-- Full protection
 						dmginfo:SetDamage( 0 )
@@ -348,16 +348,16 @@ function ENT:OnTakeDamage( dmginfo )
 					if random( 3 ) == 1 then
 						self:Vocalize( Zombie_BulletImpact_Riot, true )
 					end
-	
+
 					-- Easy there sparkplug
 					local effectdata = EffectData()
 					effectdata:SetOrigin( dmginfo:GetDamagePosition() )
 					util.Effect( "ManhackSparks", effectdata )
 				end
+			elseif self:GetUncommonInf( "ROADCREW" ) then
+				-- Small damage resistance
+				dmginfo:ScaleDamage( 0.9 )
 			end
-		elseif self:GetUncommonInf( "ROADCREW" ) then
-			-- Small damage resistance
-			dmginfo:ScaleDamage( 0.9 )
 		end
 	end
 
@@ -589,7 +589,7 @@ function ENT:StartWandering()
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:StartRun()
-	self.loco:SetDesiredSpeed(280)
+	self.loco:SetDesiredSpeed(300)
 	self.loco:SetAcceleration(500)
 	self.loco:SetDeceleration(1000)
 	self.IsRunning = true
@@ -604,7 +604,6 @@ function ENT:StartRun()
 
 	self:ResetSequence( anim )
 end
-
 ---------------------------------------------------------------------------------------------------------------------------------------------
 --[[ function ENT:Attack(target)
 	local detectedEnemy = target
@@ -695,6 +694,7 @@ function ENT:Attack(target)
 				elseif z_Difficulty == 3 then
 					z_Dmg = 20
 				end
+				
 				dmginfo:SetDamage( z_Dmg )
 				dmginfo:SetDamageType( DMG_DIRECT )
 				dmginfo:SetInflictor( self )
@@ -872,10 +872,10 @@ function ENT:Draw()
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 list.Set( "NPC", "z_common", {
-	Name = "Common Infected",
+	Name = "Infected",
 	Class = "z_common",
 	Category = "Left 4 Dead NextBots"
 })
 
-if CLIENT then language.Add( "z_common", "Common Infected" ) end
+if CLIENT then language.Add( "z_common", "Infected" ) end
 ---------------------------------------------------------------------------------------------------------------------------------------------

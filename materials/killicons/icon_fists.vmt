@@ -1,6 +1,6 @@
 UnlitGeneric
 {
-	"$baseTexture" 		"lambdaplayers/killicons/icon_fists"
+	"$baseTexture" 		"killicons/icon_fists"
 	"$vertexcolor" 		1
 	"$vertexalpha" 		1
 	"$nolod" 			1
