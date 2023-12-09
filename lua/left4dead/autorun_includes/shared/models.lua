@@ -37,10 +37,13 @@ Z_MaleModels =
 
 	-- L4D2
 	"models/infected/l4d2_nb/common_male_dressshirt_jeans.mdl",
+	"models/infected/l4d2_nb/common_male_tshirt_cargos.mdl",
 	"models/infected/l4d2_nb/uncommon_male_ceda.mdl",
 	"models/infected/l4d2_nb/uncommon_male_roadcrew.mdl",
 	"models/infected/l4d2_nb/uncommon_male_roadcrew_l4d1.mdl",
 	"models/infected/l4d2_nb/uncommon_male_fallen_survivor.mdl",
+	"models/infected/l4d2_nb/uncommon_male_riot.mdl",
+	"models/infected/l4d2_nb/uncommon_male_jimmy.mdl",
 }
 ---------------------------------------------------------------------------------------------------------------------------------------------
 Z_FemaleModels =
@@ -91,8 +94,13 @@ Z_FemaleModels =
 	{ "models/infected/c_nb/trs_common_male_pilot01.mdl", 15 },
 	{ "models/infected/c_nb/trs_common_male_baggagehandler01.mdl", 15 },
 	-- L4D2
-	{ "models/infected/l4d2_nb/common_male_dressshirt_jeans.mdl", 40 },
-	{ "models/infected/l4d2_nb/uncommon_male_ceda.mdl", 10 },
+	{ "models/infected/l4d2_nb/common_male_tshirt_cargos.mdl", 40 },
+	{ "models/infected/l4d2_nb/uncommon_male_ceda.mdl", 15 },
+	{ "models/infected/l4d2_nb/uncommon_male_roadcrew.mdl", 10 },
+	{ "models/infected/l4d2_nb/uncommon_male_roadcrew_l4d1.mdl", 10 },
+	{ "models/infected/l4d2_nb/uncommon_male_fallen_survivor.mdl", 5 },
+	{ "models/infected/l4d2_nb/uncommon_male_riot.mdl", 5 },
+}
 
 }
 ---------------------------------------------------------------------------------------------------------------------------------------------

@@ -77,8 +77,9 @@ local z_Difficulty = GetConVar( "l4d_sv_difficulty" ):GetInt()
 
 local ci_BatonModels =
 {
-	["models/infected/c_nb/common_male_police01.mdl"] = {true, true}, -- This model can have a prop and can be parented
-	["models/infected/c_nb/trs_common_male_police01.mdl"] = {true, false} -- This model can have a prop but cannot be parented
+	[ "models/infected/c_nb/common_male_police01.mdl" ] = { true, true }, -- This model can have a prop and can be parented
+	[ "models/infected/c_nb/trs_common_male_police01.mdl" ] = { true, false }, -- This model can have a prop but cannot be parented
+	[ "models/infected/l4d2_nb/uncommon_male_riot.mdl" ] = { true, false } -- This model can have a prop but cannot be parented
 }
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:SetUpZombie()
@@ -112,6 +113,7 @@ function ENT:SetUpZombie()
 	local skinCount = self:SkinCount()
 	if skinCount > 0 then self:SetSkin( random( 0, skinCount - 1 ) ) end
 end
+
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:Initialize()
 	--game.AddParticles( "particles/boomer_fx.pcf" )
@@ -127,12 +129,13 @@ function ENT:Initialize()
 		self.SpeakDelay = 0 -- the last time we spoke
 
 		local z_Health
-		local z_FallenHealth = GetConVar( "l4d_sv_fallen_health_multiplier" ):GetInt()
+		local z_FallenHealth = GetConVar( "l4d_sv_z_fallen_health_multiplier" ):GetInt()
+		local z_JimmyHealth = GetConVar( "l4d_sv_z_jimmy_health_multiplier" ):GetInt()
 
 		if self:GetUncommonInf( "FALLEN" ) then
 			z_Health = 1000 * ( z_FallenHealth / 20 )
 		elseif self:GetUncommonInf( "JIMMYGIBBS" ) then
-			z_Health = 3000
+			z_Health = 3000 * ( z_JimmyHealth / 20 )
 		elseif self:GetUncommonInf( "CEDA" ) or self:GetUncommonInf( "ROADCREW" ) then
 			if z_Difficulty == 0 then
 				z_Health = 50
@@ -151,7 +154,7 @@ function ENT:Initialize()
 		self:SetShouldServerRagdoll( true )
 
 		if droppableProps:GetBool() then
-			local randomValue = random( 100 ) <= 100
+			local randomValue = random( 100 ) <= 15
 
 			-- Because with TRS police, the baton floats a bit
 			-- so we disallow the TRS police baton to be parented
@@ -306,23 +309,73 @@ function ENT:PlayGesture( activity )
 		self:RestartGesture( self:GetSequenceActivity( seq ), true )
 	end
 end
+
+hook.Add("ScaleNPCDamage","InfectedDamage", function( npc, hitgroup, dmginfo )
+	if npc:GetClass() == "z_common" then
+		if npc:GetUncommonInf( "JIMMYGIBBS" ) then
+			-- Increase damage if HITGROUP_HEAD
+			if hitgroup == HITGROUP_HEAD then
+				dmginfo:ScaleDamage( 5 ) -- Increase the damage by 500%
+			end
+		end
+	end
+end)
 ---------------------------------------------------------------------------------------------------------------------------------------------
-function ENT:OnInjured( dmginfo )
+function ENT:OnTakeDamage( dmginfo )
+	local attacker = dmginfo:GetAttacker()
+
+	local armorProtection = GetConVar( "l4d_sv_z_riot_armor_protection" ):GetBool()
+	local damageType = dmginfo:GetDamageType()
+	if IsValid( attacker ) then
+		if self:GetUncommonInf( "RIOT" ) then
+			-- Do something to prevent loops from happening
+			if self:Health() > 0 then
+				local direction = ( attacker:GetPos() - self:GetPos() ):GetNormalized()
+				local selfForward = self:GetForward()
+				local isAttackerInFront = direction:Dot( selfForward ) > 0
+
+				-- Block bullets, melee attacks
+				if isAttackerInFront and ( damageType == DMG_BULLET or damageType == DMG_CLUB ) then
+					
+					if armorProtection then
+						-- Full protection
+						dmginfo:SetDamage( 0 )
+					else
+						-- Semi Protection
+						dmginfo:ScaleDamage( 0.05 )
+					end
+
+					if random( 3 ) == 1 then
+						self:Vocalize( Zombie_BulletImpact_Riot, true )
+					end
+	
+					-- Easy there sparkplug
+					local effectdata = EffectData()
+					effectdata:SetOrigin( dmginfo:GetDamagePosition() )
+					util.Effect( "ManhackSparks", effectdata )
+				end
+			end
+		elseif self:GetUncommonInf( "ROADCREW" ) then
+			-- Small damage resistance
+			dmginfo:ScaleDamage( 0.9 )
+		end
+	end
+
 	-- If uncommon infected are either CEDA, Fallen or Jimmy Gibbs Jr. will become flameproof
 	if self:GetUncommonInf( "CEDA" ) or self:GetUncommonInf( "FALLEN" ) or self:GetUncommonInf( "JIMMYGIBBS" )  then
 		self:SetFlameproof( dmginfo )
 	end
 
-	PrintMessage(HUD_PRINTTALK, "Is Flameproof: " .. tostring( self.Flameproof ) )
+	--PrintMessage(HUD_PRINTTALK, "Is Flameproof: " .. tostring( self.Flameproof ) )
 
 	-- Insta kill CI if on fire
 	if !self.Flameproof and dmginfo:IsDamageType( DMG_BURN ) then
-		dmginfo:SetDamage( 20 )
+		dmginfo:ScaleDamage( 1.5 )
 	end
 
 	-- Play Bullet impact sounds
 	if !dmginfo:IsDamageType( DMG_BURN ) and self:Health() > 0 and random( 5 ) == 1 then
-		self:Vocalize( Zombie_BulletImpact )
+		self:Vocalize( Zombie_BulletImpact, true )
 	end
 
 	-- Play pain sounds
@@ -330,10 +383,9 @@ function ENT:OnInjured( dmginfo )
 		self:Vocalize( ZCommon_Pain )
 	end
 
-	if !dmginfo:IsDamageType( DMG_BURN ) and self:Health() > 0 and random( 4 ) == 1 then
+	if !dmginfo:IsDamageType( DMG_BURN ) and self:Health() > 0 and random( 3 ) == 1 then
 		self:PlayGesture( "ACT_TERROR_FLINCH" )
 	end
-
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:OnKilled( dmginfo )
@@ -385,13 +437,13 @@ function ENT:Think()
 
 		if random( 50 ) == 1 then
 			if self.ci_BehaviorState == "ChasingVictim" then
-				if CurTime() - self.SpeakDelay > Rand(2.5, 4) then
+				if CurTime() - self.SpeakDelay > Rand( 2.5, 4 ) then
 					self:Vocalize( ZCommon_L4D1_RageAtVictim )
 					self.SpeakDelay = CurTime()
 				end
 
 			elseif self.ci_BehaviorState == "Idle" then
-				if CurTime() - self.SpeakDelay > Rand(2.8, 8) then
+				if CurTime() - self.SpeakDelay > Rand( 2.8, 8 ) then
 					self:Vocalize( ZCommon_Idle_Wander )
 					self.SpeakDelay = CurTime()
 				end
@@ -422,7 +474,7 @@ function ENT:Think()
 		else
 			-- Assume we landed.
 			self:DoLandingAnimation()
-		end
+		end	
 	end
 
 	self:NextThink(CurTime())
@@ -648,8 +700,13 @@ function ENT:Attack(target)
 				dmginfo:SetInflictor( self )
 				dmginfo:SetAttacker( self )
 				detectedEnemy:TakeDamageInfo( dmginfo )
+
+				if detectedEnemy:IsPlayer() then
+					detectedEnemy:ViewPunch( Angle( random( -1, 8 ), random( -1, 10 ),random( -1, 12 ) ) )
+				end
+				
+				self:SlowEntity( detectedEnemy )
 				self:Vocalize( ZCommon_AttackSmack, true )
-				print(z_Dmg)
 			end
 		end)
 
@@ -659,6 +716,66 @@ function ENT:Attack(target)
 	return true
 end
 
+
+function ENT:SlowEntity( ent )
+	-- Tested with 200 walk speed, 400 run speed.
+	-- May be wonky on modified values.
+
+	-- Start slowing the ent down
+	if !ent.IsSlowed and ( !ent.LastSlowTime or CurTime() - ent.LastSlowTime >= 0.75 ) then
+		ent.OriginalWalkSpeed = ent:GetWalkSpeed()
+		ent:SetWalkSpeed( ent.OriginalWalkSpeed * 0.8 )
+		ent.OriginalRunSpeed = ent:GetRunSpeed()
+		ent:SetRunSpeed( ent.OriginalRunSpeed * 0.65 )
+
+		ent.IsSlowed = true
+		ent.LastSlowTime = CurTime()
+
+		--ent:ChatPrint( "Max Walk Speed: " .. math.floor( ent.OriginalWalkSpeed ) .. ", Slowed Down Walk Speed: " .. math.floor( ent:GetWalkSpeed() ) )
+		--ent:ChatPrint( "Max Run Speed: " .. math.floor( ent.OriginalRunSpeed ) .. ", Slowed Down Run Speed: " .. math.floor( ent:GetRunSpeed() ) )
+	elseif ent.IsSlowed and ( !ent.LastSlowTime or CurTime() - ent.LastSlowTime >= 0.75 ) then
+		-- If the entity is already slowed, apply a minor additional slowdown
+		ent:SetWalkSpeed( ent:GetWalkSpeed() * 0.825 )
+		ent:SetRunSpeed( ent:GetRunSpeed() * 0.78 )
+		ent.LastSlowTime = CurTime()
+
+		--ent:ChatPrint( "Max Walk Speed: " .. math.floor( ent.OriginalWalkSpeed ) .. ", Further Slowed Down Walk Speed: " .. math.floor( ent:GetWalkSpeed() ) )
+		--ent:ChatPrint( "Max Run Speed: " .. math.floor( ent.OriginalRunSpeed ) .. ", Further Slowed Down Run Speed: " .. math.floor( ent:GetRunSpeed() ) )
+	end
+
+	-- Gradually restore the ent's speed
+	local restoreTimerName = "SpeedRestore" .. ent:EntIndex()
+	if timer.Exists( restoreTimerName ) then
+		timer_Remove( restoreTimerName )
+	end
+
+	timer_Create( restoreTimerName, 0.0425, 0, function()
+		if IsValid( ent ) then
+			local currentWalkSpeed = ent:GetWalkSpeed()
+			local currentRunSpeed = ent:GetRunSpeed()
+			-- Regen walk spped to normal
+			if currentWalkSpeed < ent.OriginalWalkSpeed then
+				ent:SetWalkSpeed( currentWalkSpeed + 1.2 )
+			else
+				ent:SetWalkSpeed( ent.OriginalWalkSpeed )
+			end
+
+			-- Regen Run speed to normal
+			if currentRunSpeed < ent.OriginalRunSpeed then
+				ent:SetRunSpeed( currentRunSpeed + 2.5 )
+			else
+				ent:SetRunSpeed( ent.OriginalRunSpeed )
+			end
+
+			if currentWalkSpeed >= ent.OriginalWalkSpeed and currentRunSpeed >= ent.OriginalRunSpeed then
+				ent.IsSlowed = false
+				timer_Remove( restoreTimerName )
+			end
+		else
+			timer_Remove( restoreTimerName )
+		end
+	end)
+end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:ChaseTarget( target )
 	self:StartRun()
