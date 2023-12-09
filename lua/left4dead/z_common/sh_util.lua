@@ -12,6 +12,9 @@ local SimpleTimer = timer.Simple
 local table_Random = table.Random
 local IsValid = IsValid
 local ipairs = ipairs
+if CLIENT then
+	killicon.Add("z_common", "killicons/icon_fists", Color(255, 255, 255))
+end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 -- expressionType must be typed in as ("idle" and "angry")
 function ENT:ZombieExpression( expressionType )
