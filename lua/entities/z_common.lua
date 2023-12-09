@@ -73,7 +73,7 @@ local ignorePlys = GetConVar( "ai_ignoreplayers" )
 local sv_gravity = GetConVar( "sv_gravity" )
 local droppableProps = GetConVar( "l4d_sv_createitems" )
 local developer = GetConVar( "developer" )
-local z_Difficulty = GetConVar( "l4d_sv_difficulty" ):GetInt()
+local z_Difficulty = GetConVar( "l4d_sv_difficulty" )
 
 local ci_BatonModels =
 {
@@ -137,7 +137,7 @@ function ENT:Initialize()
 		elseif self:GetUncommonInf( "JIMMYGIBBS" ) then
 			z_Health = 3000 * ( z_JimmyHealth / 20 )
 		elseif self:GetUncommonInf( "CEDA" ) or self:GetUncommonInf( "ROADCREW" ) then
-			if z_Difficulty == 0 then
+			if z_Difficulty:GetInt() == 0 then
 				z_Health = 50
 			else
 				z_Health = 150
