@@ -5,6 +5,7 @@ ENT.PrintName = "Common Infected"
 ENT.Author = "Pyri"
 ENT.IsCommonInfected = true
 ENT.IsUnCommonInfected = false
+ENT.UnCommonType = ""
 ENT.IsWalking = false
 ENT.IsRunning = false
 ENT.Gender = nil
@@ -36,6 +37,8 @@ for k, luafile in ipairs( ENT_CommonFiles ) do
 		end
 	end
 end
+
+include("left4dead/autorun_includes/server/netmessages.lua")
 
 -- This might seem reduntant, but trust me, it's not.
 -- We create locals of functions so GLua can access them faster
@@ -136,7 +139,13 @@ function ENT:Initialize()
 			z_Health = 1000 * ( z_FallenHealth / 20 )
 		elseif self:GetUncommonInf( "JIMMYGIBBS" ) then
 			z_Health = 3000 * ( z_JimmyHealth / 20 )
-		elseif self:GetUncommonInf( "CEDA" ) or self:GetUncommonInf( "ROADCREW" ) then
+		elseif self:GetUncommonInf( "CEDA" ) then
+			if z_Difficulty:GetInt() == 0 then
+				z_Health = 50
+			else
+				z_Health = 150
+			end
+		elseif self:GetUncommonInf( "ROADCREW" ) then
 			if z_Difficulty:GetInt() == 0 then
 				z_Health = 50
 			else
@@ -184,6 +193,18 @@ function ENT:Initialize()
 	elseif CLIENT then
 		self.ci_lastdraw = 0
 	end
+end
+
+function ENT:SetupDataTables()
+	self:NetworkVar( "Bool", 1, "IsDead" )
+end
+
+function ENT:Alive()
+	return !self:GetIsDead()
+end
+
+function ENT:Nick()
+	return self:GetClass()
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 -- Certain Common/Uncommon Infected will have
@@ -389,8 +410,8 @@ function ENT:OnTakeDamage( dmginfo )
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:OnKilled( dmginfo )
-	hook_Run( "OnNPCKilled", self, dmginfo:GetAttacker(), dmginfo:GetInflictor() )
-
+	--hook_Run( "OnNPCKilled", self, dmginfo:GetAttacker(), dmginfo:GetInflictor() )
+	AddZombieDeath(self, dmginfo:GetAttacker(),  dmginfo:GetInflictor())
 	local ragdoll = self:BecomeRagdoll( dmginfo )
 	ragdoll:SetCollisionGroup( COLLISION_GROUP_DEBRIS )
 

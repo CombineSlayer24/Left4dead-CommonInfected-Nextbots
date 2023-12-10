@@ -147,6 +147,7 @@ function ENT:GetUncommonInf( model )
 	if modelTable[ model ] then
 		for _, v in ipairs( modelTable[ model ] ) do
 			if self:GetModel() == v then
+				self.UnCommonType = model
 				return true
 			end
 		end
