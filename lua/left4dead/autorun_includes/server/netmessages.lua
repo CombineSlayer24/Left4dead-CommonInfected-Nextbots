@@ -16,8 +16,10 @@ if SERVER then
             if ent.UnCommonType == "FALLEN" then return "Fallen Survivor" end
             if ent.UnCommonType == "JIMMYGIBBS" then return "Jimmy Gibbs Jr." end
             if ent.UnCommonType == "CEDA" then return "CEDA Agent" end
-            if ent.UnCommonType == "ROADCREW" then return "Roadcrew" end
-
+            if ent.UnCommonType == "ROADCREW" then return "Worker Infected" end
+            if ent.UnCommonType == "RIOT" then return "Riot Infected" end
+            if ent.UnCommonType == "MUDMEN" then return "Mud Infected" end
+            if ent.UnCommonType == "CLOWN" then return "Clown Infected" end
         end
     
         if ent:IsVehicle() and ent.VehicleTable and ent.VehicleTable.Name then
@@ -46,14 +48,14 @@ if SERVER then
        
         if attacker.IsLambdaPlayer then
             victim.IsLambdaPlayer = true
-            net.Start("ZombieDeath")
-            net.WriteString( attackername )
-            net.WriteInt( attackerteam, 8 )
-            net.WriteString( victimname )
-            net.WriteInt( victimteam, 8 )
-            net.WriteString( inflictorname )
-            net.Broadcast()
         end
+        net.Start("ZombieDeath")
+        net.WriteString( attackername )
+        net.WriteInt( attackerteam, 8 )
+        net.WriteString( victimname )
+        net.WriteInt( victimteam, 8 )
+        net.WriteString( inflictorname )
+        net.Broadcast()
     end
 end
 

@@ -327,23 +327,6 @@ function ENT:PlaySequenceAndWait2( seq, rate, callback )
 	end )
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
-function ENT:PlayGesture( activity )
-	local seq = self:LookupSequence( activity )
-	if seq > 0 then
-		self:RestartGesture( self:GetSequenceActivity( seq ), true )
-	end
-end
-
-hook.Add("ScaleNPCDamage","InfectedDamage", function( npc, hitgroup, dmginfo )
-	if npc:GetClass() == "z_common" then
-		if npc:GetUncommonInf( "JIMMYGIBBS" ) then
-			-- Increase damage if HITGROUP_HEAD
-			if hitgroup == HITGROUP_HEAD then
-				dmginfo:ScaleDamage( 5 ) -- Increase the damage by 500%
-			end
-		end
-	end
-end)
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:OnTakeDamage( dmginfo )
 	local attacker = dmginfo:GetAttacker()
@@ -412,6 +395,17 @@ function ENT:OnTakeDamage( dmginfo )
 	end
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
+hook.Add("ScaleNPCDamage","InfectedDamage", function( npc, hitgroup, dmginfo )
+	if npc:GetClass() == "z_common" then
+		if npc:GetUncommonInf( "JIMMYGIBBS" ) then
+			-- Increase damage if HITGROUP_HEAD
+			if hitgroup == HITGROUP_HEAD then
+				dmginfo:ScaleDamage( 5 ) -- Increase the damage by 500%
+			end
+		end
+	end
+end)
+---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:OnKilled( dmginfo )
 	--hook_Run( "OnNPCKilled", self, dmginfo:GetAttacker(), dmginfo:GetInflictor() )
 	AddZombieDeath(self, dmginfo:GetAttacker(),  dmginfo:GetInflictor())
@@ -460,13 +454,13 @@ function ENT:Think()
 	if CurTime() >= self.SpeakDelay then
 
 		if random( 50 ) == 1 then
-			if self.ci_BehaviorState == "ChasingVictim" then
+			if self:GetCurrentBehavior() == "ChasingVictim" then
 				if CurTime() - self.SpeakDelay > Rand( 2.5, 4 ) then
 					self:Vocalize( ZCommon_L4D1_RageAtVictim )
 					self.SpeakDelay = CurTime()
 				end
 
-			elseif self.ci_BehaviorState == "Idle" then
+			elseif self:GetCurrentBehavior() == "Idle" then
 				if CurTime() - self.SpeakDelay > Rand( 2.8, 8 ) then
 					self:Vocalize( ZCommon_Idle_Wander )
 					self.SpeakDelay = CurTime()
@@ -476,7 +470,7 @@ function ENT:Think()
 	end
 
 	-- If we are chasing or attacking our prey, look at them.
-	if self.ci_BehaviorState == "ChasingVictim" or self.ci_BehaviorState == "AttackingVictim" then
+	if self:GetCurrentBehavior() == "ChasingVictim" or self:GetCurrentBehavior() == "AttackingVictim" then
 		self:LookAtEntity()
 	end
 
@@ -559,7 +553,7 @@ function ENT:FindNearestEnemy()
 
 	for _, enemy in pairs(enemies) do
 
-		if IsValid(enemy) and enemy:IsNPC() or (enemy:IsPlayer() and enemy:Alive()) or (enemy:IsNextBot() and not enemy.IsCommonInfected and not enemy.IsLambdaPlayer or enemy:IsNextBot() and enemy.IsLambdaPlayer and enemy:Alive())  then
+		if IsValid(enemy) and enemy:IsNPC() or (enemy:IsPlayer() and !ignorePlys:GetBool() and enemy:Alive()) or (enemy:IsNextBot() and not enemy.IsCommonInfected and not enemy.IsLambdaPlayer or enemy:IsNextBot() and enemy.IsLambdaPlayer and enemy:Alive())  then
 			local distance = self:GetPos():Distance(enemy:GetPos()) -- Calculating distance between zombie and target
 
 			if distance < nearestDistance then
@@ -590,7 +584,6 @@ function ENT:RunBehaviour()
 		coroutine.yield()
 	end
 end
-
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:StartWandering()
 	self.loco:SetAcceleration( 500 )
@@ -679,7 +672,7 @@ function ENT:Attack(target)
 		self:SetCycle( 0 )
 		self:SetPlaybackRate( 1 )
 		self:SetAngles( AngleToEnemy )
-		self.ci_BehaviorState = "AttackingVictim"
+		self:SetBehavior( "AttackingVictim" )
 
 		if random( 2 ) == 1 and ( !self.SpeakDelay or CurTime() - self.SpeakDelay > Rand( 0.2, 1 ) ) then
 			self:Vocalize( ZCommon_L4D1_BecomeEnraged )
@@ -727,9 +720,11 @@ function ENT:Attack(target)
 
 				if detectedEnemy:IsPlayer() then
 					detectedEnemy:ViewPunch( Angle( random( -1, 8 ), random( -1, 10 ),random( -1, 12 ) ) )
+
+					-- Slow down LambdaPlayers as well in future
+					self:SlowEntity( detectedEnemy )
 				end
-				
-				self:SlowEntity( detectedEnemy )
+
 				self:Vocalize( ZCommon_AttackSmack, true )
 			end
 		end)
@@ -803,7 +798,7 @@ end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:ChaseTarget( target )
 	self:StartRun()
-	self.ci_BehaviorState = "ChasingVictim"
+	self:SetBehavior( "ChasingVictim" )
 
 	local TargetToChase = target
 	local path = Path( "Follow" )

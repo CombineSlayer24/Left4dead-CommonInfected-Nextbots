@@ -1,7 +1,7 @@
 ENT.Type 			= "anim"
 ENT.Base 			= "base_anim"
 ENT.PrintName		= "Alarm Car"
-ENT.Category		= "Fun + Games"
+ENT.Category		= "Left 4 Dead NextBots"
 
 ENT.Spawnable		= true
 ENT.AdminOnly 		= true
@@ -26,17 +26,15 @@ if SERVER then
 	local Angle = Angle
 	
 	local chripSnd = "vehicles/car_alarm/car_alarm_chirp2.wav"
-	local glassMdl = "models/props_vehicles/cara_95sedan_glass.mdl"
 	local carMdl = "models/props_vehicles/cara_95sedan.mdl"
-
-	local matAlarm = "models/props_vehicles/cara_95sedan_glass_alarm"
-	local matAlarmExpired = "models/props_vehicles/4carz1024_glass"
+	local glassMdl = "models/props_vehicles/cara_95sedan_glass.mdl"
+	local matAlarm = "models/props_vehicles/cara_95sedan_glass_alarm" -- The car is primed and ready!
+	local matAlarmExpired = "models/props_vehicles/4carz1024_glass" -- The car is now "safe"
 	
-	local alarmSnd = {
-		"vehicles/car_alarm/car_alarm.wav",
-		"vehicles/car_alarm/car_alarm2.wav",
-		"vehicles/car_alarm/car_alarm3.wav",
-	}
+	local alarmSnd = { "vehicles/car_alarm/car_alarm.wav", "vehicles/car_alarm/car_alarm2.wav", "vehicles/car_alarm/car_alarm3.wav" }
+
+	local chirpDistance = GetConVar( "l4d_car_alarm_chirp_distance" ):GetInt()
+	local alarmDistance = GetConVar( "l4d_car_alarm_distance" ):GetInt()
 	
 	local posTbl = {
 		Vector( -106, -32, 31 ),
@@ -46,10 +44,10 @@ if SERVER then
 	}
 
 	local carColors = {
-		Color(200, 90, 45),  -- Orangish
-		Color(215, 110, 65),  -- Bright Orange
-		Color(200, 145, 45),  -- Yellowish
-		Color(175, 75, 20),  -- Redish
+		Color( 200, 90, 45 ),  -- Orangish
+		Color( 215, 110, 65 ),  -- Bright Orange
+		Color( 200, 145, 45 ),  -- Yellowish
+		Color( 175, 75, 20 ),  -- Redish
 	}
 
 
@@ -65,9 +63,8 @@ if SERVER then
 		local fov_desired = GetConVar( "fov_desired" ):GetInt()
 		local isInFOV = dot > Cos( Rad( fov_desired / 2 ) )
 	
-		local plyradius = GetConVar( "l4d_z_spawn_radius" ):GetFloat()
 		local distance = player:GetPos():Distance( vec )
-		local isVisible = distance < plyradius   -- Consider points visible if they are within the spawn radius
+		local isVisible = distance < 2000
 	
 		return isInFOV and isVisible
 	end
@@ -170,7 +167,7 @@ if SERVER then
 	function ENT:SpawnFunction( ply, tr )
 		if !tr.Hit then return end
 		local SpawnPos = tr.HitPos + tr.HitNormal * 20
-		local ent = ents_Create( "sent_car_alarm_95" )
+		local ent = ents_Create( "sent_alarmcar" )
 		local color = table_Random( carColors )
 		
 			-- Adjust the angle of the car to face the player
@@ -293,8 +290,12 @@ if SERVER then
 	
 	function ENT:OnTakeDamage( damage )
 		if IsValid( damage:GetAttacker() ) then
-			self:TakePhysicsDamage( damage )
-			self:TriggerAlarm( damage:GetAttacker() )
+			for _, ply in ipairs( ents.FindInSphere( self:GetPos(), alarmDistance ) ) do
+				if ply:IsPlayer() then
+					self:TakePhysicsDamage( damage )
+					self:TriggerAlarm( damage:GetAttacker() )
+				end
+			end
 		end
 	end
 	
@@ -316,7 +317,7 @@ if SERVER then
 		if !self.IsTriggered then
 
 			-- Only chirp and flash warnings when close
-			for _, ply in ipairs( ents.FindInSphere( self:GetPos(), 500 ) ) do
+			for _, ply in ipairs( ents.FindInSphere( self:GetPos(), chirpDistance ) ) do
 				if ply:IsPlayer() then
 			
 					if random( 2 ) == 1 then

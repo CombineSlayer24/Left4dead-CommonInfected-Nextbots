@@ -69,6 +69,13 @@ function ENT:PlayStepSound( volume )
 	self:EmitSound( sndName, 75, sndPitch, volume )
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
+function ENT:PlayGesture( activity )
+	local seq = self:LookupSequence( activity )
+	if seq > 0 then
+		self:RestartGesture( self:GetSequenceActivity( seq ), true )
+	end
+end
+---------------------------------------------------------------------------------------------------------------------------------------------
 -- Set our fall animation
 function ENT:IsAirborne()
 	if !self.IsLanded then
@@ -124,15 +131,6 @@ function ENT:DoLandingAnimation()
 	end
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
--- Play the requested animation sequence
-function ENT:PlaySequence( sequence )
-	local seq = self:LookupSequence( sequence )
-	if seq > 0 then
-		self:ResetSequence( seq )
-		self:SetSequence( seq )
-	end
-end
----------------------------------------------------------------------------------------------------------------------------------------------
 -- Check for our uncommon infected type
 function ENT:GetUncommonInf( model )
 	local modelTable = {
@@ -140,8 +138,9 @@ function ENT:GetUncommonInf( model )
 		ROADCREW = { "models/infected/l4d2_nb/uncommon_male_roadcrew.mdl","models/infected/l4d2_nb/uncommon_male_roadcrew_l4d1.mdl" },
 		FALLEN = { "models/infected/l4d2_nb/uncommon_male_fallen_survivor.mdl" },
 		RIOT = { "models/infected/l4d2_nb/uncommon_male_riot.mdl" },
-		MUDMEN = { },
 		JIMMYGIBBS = { "models/infected/l4d2_nb/uncommon_male_jimmy.mdl" },
+		MUDMEN = { },
+		CLOWN = { },
 	}
 
 	if modelTable[ model ] then
@@ -161,7 +160,6 @@ end
 function ENT:SetFlameproof( dmginfo )
 	self.Flameproof = true
 	if dmginfo:IsDamageType( DMG_BURN ) then
-
 		if SERVER then
 			dmginfo:SetDamage( 0 )
 			self:Extinguish()
@@ -176,6 +174,16 @@ function ENT:SetFlameproof( dmginfo )
 	end
 
 	return false
+end
+---------------------------------------------------------------------------------------------------------------------------------------------
+-- Get the current behavior
+function ENT:GetCurrentBehavior()
+	return self.ci_BehaviorState
+end
+---------------------------------------------------------------------------------------------------------------------------------------------
+-- Set our behavior
+function ENT:SetBehavior( action )
+	self.ci_BehaviorState = action
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 -- Play the requested voiceline
@@ -228,12 +236,12 @@ end
 function ENT:CanSee( ent )
     if !IsValid( ent ) then return false end
 
-    visibilitytrace.start = self:GetAttachmentPoint( "eyes" ).Pos
+    visibilitytrace.start = self:GetAttachmentPoint( "foward" ).Pos
     visibilitytrace.endpos = ent:WorldSpaceCenter()
     visibilitytrace.filter = self
 
     local result = Trace( visibilitytrace )
-    if RunHook( "LambdaOnCanSeeEntity", self, ent, result ) == true then return false end
+    if RunHook( "CanSeeEntity", self, ent, result ) == true then return false end
 
     return ( result.Fraction == 1.0 )
 end
@@ -273,7 +281,7 @@ end
 if SERVER then
 	---------------------------------------------------------------------------------------------------------------------------------------------
 	function ENT:GetWaterLevel()
-		return ( self:GetAttachmentPoint( "eyes" ).Pos:IsUnderwater() and 3 or self:WorldSpaceCenter():IsUnderwater() and 2 or self:GetPos():IsUnderwater() and 1 or 0 )
+		return ( self:GetAttachmentPoint( "foward" ).Pos:IsUnderwater() and 3 or self:WorldSpaceCenter():IsUnderwater() and 2 or self:GetPos():IsUnderwater() and 1 or 0 )
 	end
 	---------------------------------------------------------------------------------------------------------------------------------------------
 end
