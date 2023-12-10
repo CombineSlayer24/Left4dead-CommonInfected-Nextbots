@@ -38,6 +38,7 @@ for k, luafile in ipairs( ENT_CommonFiles ) do
 	end
 end
 
+--Handling Killfeed entries.
 include("left4dead/autorun_includes/server/netmessages.lua")
 
 -- This might seem reduntant, but trust me, it's not.
@@ -195,6 +196,8 @@ function ENT:Initialize()
 	end
 end
 
+--Bypass for Lambda Players, so there wont be duplicate entires caused by netmessages from both l4d2 nextbots and lambda players
+--TL:DR This suppresses lambda players DeathNotice hook overide.
 function ENT:SetupDataTables()
 	self:NetworkVar( "Bool", 1, "IsDead" )
 end
