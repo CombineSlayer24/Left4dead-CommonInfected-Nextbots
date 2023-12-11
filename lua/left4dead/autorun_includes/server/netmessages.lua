@@ -1,7 +1,9 @@
 if SERVER then
     util.AddNetworkString("ZombieDeath")
+    local KillfeedOverride = CreateConVar("l4d_sv_killfeed_override", 0, FCVAR_ARCHIVE + FCVAR_NOTIFY, "If L4D2 Nextbots should override killfeed so it wont display two killfeed entries?", 0, 1)
+    local CallNPCKilled = CreateConVar("l4d_sv_call_onnpckilled", 0, FCVAR_ARCHIVE + FCVAR_NOTIFY, "If L4D2 Nextbots should call 'OnNPCKilled' hook?", 0, 1)
 
-    local function GetDeathNoticeEntityName( ent )
+    local function GetDeathNoticeZombieName( ent )
         if ent:GetClass() == "npc_citizen" then
             if ent:GetModel() == "models/odessa.mdl" then return "Odessa Cubbage" end
     
@@ -35,10 +37,10 @@ if SERVER then
     function AddZombieDeath( victim, attacker, inflictor )
         if !attacker:IsWorld() and !IsValid( attacker ) then return end 
             
-        local victimname = ( ( victim.IsLambdaPlayer or victim:IsPlayer() ) and victim:Nick() or ( victim.IsZetaPlayer and victim.zetaname or GetDeathNoticeEntityName( victim ) ) )
+        local victimname = ( ( victim.IsLambdaPlayer or victim:IsPlayer() ) and victim:Nick() or ( victim.IsZetaPlayer and victim.zetaname or GetDeathNoticeZombieName( victim ) ) )
         
         local attackerclass = attacker:GetClass()
-        local attackername = ( ( attacker.IsLambdaPlayer or attacker:IsPlayer() ) and attacker:Nick() or ( attacker.IsZetaPlayer and attacker.zetaname or GetDeathNoticeEntityName( attacker ) ) )
+        local attackername = ( ( attacker.IsLambdaPlayer or attacker:IsPlayer() ) and attacker:Nick() or ( attacker.IsZetaPlayer and attacker.zetaname or GetDeathNoticeZombieName( attacker ) ) )
     
         local victimteam = ( ( victim.IsLambdaPlayer or victim:IsPlayer() ) and victim:Team() or -1 )
         local attackerteam = ( ( attacker.IsLambdaPlayer or attacker:IsPlayer() ) and attacker:Team() or -1 )
@@ -61,6 +63,18 @@ end
 
 
 if CLIENT then
+    local KillfeedOverrideClient = GetConVar("l4d_sv_killfeed_override"):GetBool()
+    
+    hook.Add( "Initialize", "l4d_killfeedoverride", function()
+        if !KillfeedOverrideClient:GetBool() then return end
+        local olddeathnoticehookfunc = GAMEMODE.AddDeathNotice
+
+        function GAMEMODE:AddDeathNotice( attacker, attackerTeam, inflictor, victim, victimTeam, flags )
+            if attacker == "#z_common" then return end
+            olddeathnoticehookfunc( self, attacker, attackerTeam, inflictor, victim, victimTeam, flags )
+        end
+    end)
+
     net.Receive("ZombieDeath", function()
         local attacker = net.ReadString()
         local attackerTeam = net.ReadInt(8)

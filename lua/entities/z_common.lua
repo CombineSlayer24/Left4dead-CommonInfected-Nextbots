@@ -40,6 +40,7 @@ end
 
 --Handling Killfeed entries.
 include("left4dead/autorun_includes/server/netmessages.lua")
+local OnNPCKilledHook = GetConVar("l4d_sv_call_onnpckilled")
 
 -- This might seem reduntant, but trust me, it's not.
 -- We create locals of functions so GLua can access them faster
@@ -407,8 +408,10 @@ hook.Add("ScaleNPCDamage","InfectedDamage", function( npc, hitgroup, dmginfo )
 end)
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:OnKilled( dmginfo )
-	--hook_Run( "OnNPCKilled", self, dmginfo:GetAttacker(), dmginfo:GetInflictor() )
+
 	AddZombieDeath(self, dmginfo:GetAttacker(),  dmginfo:GetInflictor())
+	if OnNPCKilledHook:GetBool() then RunHook("OnNPCKilled", self, dmginfo:GetAttacker(),  dmginfo:GetInflictor()) end
+
 	local ragdoll = self:BecomeRagdoll( dmginfo )
 	ragdoll:SetCollisionGroup( COLLISION_GROUP_DEBRIS )
 
