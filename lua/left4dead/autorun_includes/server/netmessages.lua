@@ -63,10 +63,10 @@ end
 
 
 if CLIENT then
-    local KillfeedOverrideClient = GetConVar("l4d_sv_killfeed_override")
+    local KillfeedOverrideClient = GetConVar("l4d_sv_killfeed_override"):GetBool()
     
     hook.Add( "Initialize", "l4d_killfeedoverride", function()
-        if !KillfeedOverrideClient:GetBool() then return end // 69
+        if !KillfeedOverrideClient then return end
         local olddeathnoticehookfunc = GAMEMODE.AddDeathNotice
 
         function GAMEMODE:AddDeathNotice( attacker, attackerTeam, inflictor, victim, victimTeam, flags )
