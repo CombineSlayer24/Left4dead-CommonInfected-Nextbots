@@ -20,7 +20,7 @@ Without these awesome people, this add-on would not be possible.
 
 Valve / TRS: Original content.
 
-[Pyri](https://steamcommunity.com/id/CarcerCityZMB/): Code, sounds, models arrangements.
+[Pyri](https://steamcommunity.com/id/CarcerCityZMB/): Code, sounds, models arrangements, textures
 
 [Aaron](https://steamcommunity.com/id/AaronTheShadowWolf_Steam): Contributor, code
 
