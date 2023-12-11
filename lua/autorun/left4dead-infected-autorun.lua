@@ -42,20 +42,20 @@ function InitializeAddon()
 		end
 	end
 	---------------------------------------------------------------------------------------------------------------------------------------------
-	local clientsidefiles = file_Find( "left4dead/autorun_includes/client/*", "LUA", "nameasc" )
+--[[ 	local clientsidefiles = file_Find( "left4dead/autorun_includes/client/*", "LUA", "nameasc" )
 	for k, luafile in ipairs( clientsidefiles ) do
 		if SERVER then
 			AddCSLuaFile( "left4dead/autorun_includes/client/" .. luafile )
 		elseif CLIENT then
-			include( "lambdaplayers/autorun_includes/client/" .. luafile )
+			include( "left4dead/autorun_includes/client/" .. luafile )
 
 			if FileLoaded() then
-				print( "Lambda Players: Included Client Side Lua File [ " .. luafile .. " ]" )
+				print( "Left 4 Dead Nextbots: Included Client Side Lua File [ " .. luafile .. " ]" )
 			else
 				print( "Failed to load Client Side Lua File [ " .. luafile .. " ]" )
 			end
 		end
-	end
+	end ]]
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------------------------------------------------------------------

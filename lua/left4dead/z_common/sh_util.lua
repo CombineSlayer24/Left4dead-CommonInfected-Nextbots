@@ -12,8 +12,10 @@ local SimpleTimer = timer.Simple
 local table_Random = table.Random
 local IsValid = IsValid
 local ipairs = ipairs
+local Color = Color
+
 if CLIENT then
-	killicon.Add("z_common", "killicons/z_claw", Color(255, 255, 255))
+	killicon.Add("z_common", "killicons/z_claw", Color( 255, 255, 255 ) )
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 -- expressionType must be typed in as ("idle" and "angry")
@@ -109,7 +111,7 @@ function ENT:DoLandingAnimation()
 		end
 
 		self:PlaySequenceAndMove( anim )
-		PrintMessage( HUD_PRINTTALK, "I Landed!" )
+		--PrintMessage( HUD_PRINTTALK, "I Landed!" )
 		self:EmitSound( "left4dead/player/jumplanding_zombie.mp3", 80, 100, 1 )
 		self.PlayingAnimSeq = false
 
@@ -152,7 +154,7 @@ function ENT:GetUncommonInf( model )
 		end
 	end
 
-	-- Our specific model isn't a uncommon, :(
+	-- Our specific model isn't a uncommon
 	return false
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
