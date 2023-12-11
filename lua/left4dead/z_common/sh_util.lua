@@ -13,7 +13,7 @@ local table_Random = table.Random
 local IsValid = IsValid
 local ipairs = ipairs
 if CLIENT then
-	killicon.Add("z_common", "killicons/icon_fists", Color(255, 255, 255))
+	killicon.Add("z_common", "killicons/z_claw", Color(255, 255, 255))
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 -- expressionType must be typed in as ("idle" and "angry")
