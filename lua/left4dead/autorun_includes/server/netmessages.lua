@@ -71,6 +71,7 @@ if CLIENT then
 
         function GAMEMODE:AddDeathNotice( attacker, attackerTeam, inflictor, victim, victimTeam, flags )
             if attacker == "#z_common" then return end
+            if attacker == "#npc_lambdaplayer" then return end --If user have lambdas, adding this wont break lambdas killfeed and cause broken override from Lambda Players.
             olddeathnoticehookfunc( self, attacker, attackerTeam, inflictor, victim, victimTeam, flags )
         end
     end)
