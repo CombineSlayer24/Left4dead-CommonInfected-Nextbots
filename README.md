@@ -33,6 +33,6 @@ Valve / TRS: Original content.
 
 [Viktor AKA Ed and Danny](https://steamcommunity.com/id/edwardanddanny): Various L4D2 fixed textures.
 
-[Coffe Man](https://steamcommunity.com/id/iplayhalflifeandstuff): Amazing physics replacement.
+[Coffee Man](https://steamcommunity.com/id/iplayhalflifeandstuff): Amazing physics replacement.
 
 [NextKuromeThe76Soldier](https://steamcommunity.com/id/Castor76TheSoldier): Car Alarm SENT. 
