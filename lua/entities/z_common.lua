@@ -136,6 +136,7 @@ function ENT:Initialize()
 		local z_Health
 		local z_FallenHealth = GetConVar( "l4d_sv_z_fallen_health_multiplier" ):GetInt()
 		local z_JimmyHealth = GetConVar( "l4d_sv_z_jimmy_health_multiplier" ):GetInt()
+		local z_CommonHealth = GetConVar( "l4d_sv_z_health" ):GetInt()
 
 		if self:GetUncommonInf( "FALLEN" ) then
 			z_Health = 1000 * ( z_FallenHealth / 20 )
@@ -154,7 +155,7 @@ function ENT:Initialize()
 				z_Health = 150
 			end
 		else
-			z_Health = 50
+			z_Health = z_CommonHealth
 		end
 
 		print(z_Health)
@@ -396,7 +397,7 @@ function ENT:OnTakeDamage( dmginfo )
 	end
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
-hook.Add("ScaleNPCDamage","InfectedDamage", function( npc, hitgroup, dmginfo )
+hook.Add( "ScaleNPCDamage","InfectedDamage", function( npc, hitgroup, dmginfo )
 	if npc:GetClass() == "z_common" then
 		if npc:GetUncommonInf( "JIMMYGIBBS" ) then
 			-- Increase damage if HITGROUP_HEAD
@@ -408,7 +409,7 @@ hook.Add("ScaleNPCDamage","InfectedDamage", function( npc, hitgroup, dmginfo )
 end)
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:OnKilled( dmginfo )
-
+	
 	AddZombieDeath(self, dmginfo:GetAttacker(),  dmginfo:GetInflictor())
 	if OnNPCKilledHook:GetBool() then RunHook("OnNPCKilled", self, dmginfo:GetAttacker(),  dmginfo:GetInflictor()) end
 

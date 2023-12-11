@@ -7,7 +7,6 @@ CreateConVar( "l4d_sv_voiceset", 0, FCVAR_ARCHIVE, "What voiceset should Common 
 CreateConVar( "l4d_sv_deathanims", 1, FCVAR_ARCHIVE, "Should Infected do Death Animations?", 0, 1 )
 CreateConVar( "l4d_sv_climb", 1, FCVAR_ARCHIVE, "Should Infected climb up obstacles?", 0, 1 )
 CreateConVar( "l4d_sv_createitems", 1, FCVAR_ARCHIVE, "Should Infected spawn with props/items?", 0, 1 )
-CreateConVar( "l4d_sv_fightothers", 1, FCVAR_ARCHIVE, "Should Infected fight amongst themselves?", 0, 1 )
 
 -- Car Alarm
 CreateConVar( "l4d_car_alarm_chirp_distance", 350, FCVAR_ARCHIVE, "The distance between the car and players for the car alarm to start emitting random chirping." )
@@ -15,6 +14,7 @@ CreateConVar( "l4d_car_alarm_distance", 750, FCVAR_ARCHIVE, "The distance at whi
 
 -- Combat Related
 CreateConVar( "l4d_sv_z_health", 50, FCVAR_ARCHIVE, "Infected max health" )
+CreateConVar( "l4d_sv_z_brawl_chance", 2, FCVAR_ARCHIVE, "Chance for when Common Infected fight eachother when bumped into", 0, 100 )
 CreateConVar( "l4d_sv_z_fallen_health_multiplier", 20.0, FCVAR_ARCHIVE, "Health multipled. 1000 Default, 20.0." )
 CreateConVar( "l4d_sv_z_jimmy_health_multiplier", 20.0, FCVAR_ARCHIVE, "Health multipled. 3000 deafult, 20.0" )
 CreateConVar( "l4d_sv_z_riot_armor_protection", 1, FCVAR_ARCHIVE, "Should Riot Infected have full immunity from attacks?" )
