@@ -595,7 +595,7 @@ function ENT:StartWandering()
 	self.IsWalking = true
 
 	local anim = self:GetActivity()
-	local maleAnims = { "ACT_TERROR_WALK_NEUTRAL", "ACT_TERROR_SHAMBLE", "ACT_TERROR_WALK_INTENSE" }
+	local maleAnims = { "ACT_TERROR_WALK_NEUTRAL", "ACT_TERROR_SHAMBLE", /* "ACT_TERROR_WALK_INTENSE" */ }
 
 	if self.Gender == "Female" then
 		anim = "ACT_WALK"
@@ -605,7 +605,7 @@ function ENT:StartWandering()
 
 	self:PlaySequenceAndMove( anim )
 
-	self.loco:SetDesiredSpeed( random( 15, 20 ) )
+	self.loco:SetDesiredSpeed( random( 15, 16 ) )
 	self:MoveToPos( self:GetPos() + VectorRand() * math.random( 150, 200 ) )
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
