@@ -66,31 +66,62 @@ if SERVER then
 		net.Broadcast()
 	end
 
-	function HandleVomitEvent( entity, type )
-			
-		net.Start( "Event_Vomited" )
-		net.WriteEntity( entity )
-		net.WriteString( type )
-		net.Broadcast()
+	function HandleVomitEvent( victim, type )
+		if IsValid( victim ) and ( !victim.NextVomitTime or victim.NextVomitTime < CurTime() ) then
+			victim.NextVomitTime = CurTime() + 2
+			victim.Is_Vomited = true
+			net.Start( "Event_Vomited" )
+			net.WriteEntity( victim )
+			net.WriteString( type )
+			net.Broadcast()
 
-		if type == "Infected" then 
-			entity:Vocalize( ZCommon_Pain )
-		end
-
-		if type == "HumanPlayer" then 
-			entity:ViewPunch( Angle( random( -1, 8 ), random( -1, 10 ), random( -1, 12 ) ) )
-		end
-
-		if type == "LambdaPlayer" then 
-			if random( 100 ) <= entity:GetVoiceChance() then
-				local soundFiles = { "death", "panic", "witness" }
-				entity:PlaySoundFile( soundFiles[random( 3 ) ] )
+			if type == "Infected" then 
+				victim:Vocalize( ZCommon_Pain )
+				victim:EmitSound( "left4dead/music/tags/pukricidehit.wav", 75, 100, 0.6 )
 			end
-			if random( 2 ) == 1 then
-				entity:RetreatFrom()
+
+			if type == "HumanPlayer" then 
+				victim:ViewPunch( Angle( random( -1, 8 ), random( -1, 10 ), random( -1, 12 ) ) )
+			end
+
+			if type == "LambdaPlayer" then
+				if random( 100 ) <= victim:GetVoiceChance() then
+					local soundFiles = { "death", "panic", "witness" }
+					victim:PlaySoundFile( soundFiles[random( 3 ) ] )
+				end
+
+				if random( 2 ) == 1 then
+					victim:RetreatFrom()
+				end
+
+				victim:EmitSound( "left4dead/music/tags/pukricidehit.wav", 75, 100, 0.6 )
 			end
 		end
 	end
+
+	concommand.Add("l4d_dev_check_vomit", function(ply, cmd, args)
+		local entity
+	
+		if args[1] == "self" then
+			entity = ply
+		else
+			local trace = ply:GetEyeTrace()
+			entity = trace.Entity
+		end
+	
+		if IsValid(entity) then
+			print("Classname: " .. entity:GetClass())
+	
+			if entity.Is_Vomited then
+				print("This entity has been vomited on.")
+			else
+				print("This entity has not been vomited on.")
+			end
+		else
+			print("No entity found.")
+		end
+	end)
+	
 end
 
 

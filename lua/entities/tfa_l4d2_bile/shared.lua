@@ -61,7 +61,6 @@ function ENT:JarExplode()
 	local entities = ents_FindInSphere( self:GetPos(), 200 )
 	for _, entity in pairs( entities ) do
 		if entity:IsNextBot() then
-			entity:EmitSound( "left4dead/music/tags/pukricidehit.wav", 75, 100, 0.6 )
 			--PrintMessage( HUD_PRINTTALK, "Boomer juice slopped on nextbot" )
 			
 			if entity.IsCommonInfected then HandleVomitEvent( entity, "Infected" ) end
@@ -97,7 +96,7 @@ function ENT:PhysicsCollide( data, phys )
 	-- If it's a direct hit, deal minor damage
 	local hitEntity = data.HitEntity
 	if hitEntity and hitEntity:IsValid() then
-		hitEntity:TakeDamage( 50, self:GetOwner(), self )
+		hitEntity:TakeDamage( 5, self:GetOwner(), self )
 	end
 
 	local ang = data.HitNormal:Angle()
