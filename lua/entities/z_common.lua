@@ -98,8 +98,6 @@ function ENT:SetUpZombie()
 	-- Now select a random model from the combined table
 	local spawnMdl = mdls[ random( #mdls ) ]
 	self:SetModel( spawnMdl )
-	-- Really need to work on a population manager :(
-	--self:SetModel( "models/infected/l4d2_nb/uncommon_male_fallen_survivor.mdl" )
 
 	-- Set Gender based on model
 	if table_HasValue( Z_MaleModels, spawnMdl ) then
@@ -108,7 +106,6 @@ function ENT:SetUpZombie()
 		self.Gender = "Female"
 	end
 
-	-- from Lambdaplayers
 	for _, v in ipairs( self:GetBodyGroups() ) do
 		local subMdls = #v.submodels
 		if subMdls == 0 then continue end
@@ -142,6 +139,16 @@ function ENT:Initialize()
 			z_Health = 1000 * ( z_FallenHealth / 20 )
 		elseif self:GetUncommonInf( "JIMMYGIBBS" ) then
 			z_Health = 3000 * ( z_JimmyHealth / 20 )
+			CreateGIHint("exclamation_red", "Jimmy Gibbs Jr has appeared!", self, "critical_event")
+				timer.Simple(5, function() 
+					RemoveGIHint(self) 
+				end)
+		elseif self:GetUncommonInf( "RIOT" ) then
+			z_Health = 50
+			CreateGIHint("info", "Shoot the back!", self, "beepclear")
+				timer.Simple(5, function() 
+					RemoveGIHint(self) 
+				end)
 		elseif self:GetUncommonInf( "CEDA" ) then
 			if z_Difficulty:GetInt() == 0 then
 				z_Health = 50
@@ -265,6 +272,15 @@ function ENT:CreateItemOnDeath( ragdoll )
 			phys:ApplyForceOffset( force, position )
 		end
 
+		if random( 2 ) == 1 then
+			if item:GetModel() == Z_itemModels[ "bileJar" ] then
+				CreateGIHint( "warning", "Bile may break!", item, "beepclear" )
+				SimpleTimer( 5, function() 
+					RemoveGIHint( item ) 
+				end)
+			end
+		end
+
 		SimpleTimer( 15, function()
 			if IsValid( item ) then
 				item:Remove()
@@ -329,11 +345,10 @@ function ENT:PlaySequenceAndWait2( seq, rate, callback )
 	end )
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
----------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:OnTakeDamage( dmginfo )
 	local attacker = dmginfo:GetAttacker()
 
-	local armorProtection = GetConVar( "l4d_sv_z_riot_armor_protection" ):GetBool()
+	local armorProtection = GetConVar( "l4d_sv_z_riot_armor_protection" )
 	local damageType = dmginfo:GetDamageType()
 	if IsValid( attacker ) then
 		if self:Health() > 0 then
@@ -346,7 +361,7 @@ function ENT:OnTakeDamage( dmginfo )
 				local DamageToBlock = { DMG_GENERIC, DMG_CLUB, DMG_SLASH, DMG_AIRBOAT, DMG_DIRECT, DMG_SNIPER, DMG_MISSLEDEFENCE, DMG_BUCKSHOT, DMG_BULLET}
 
 				if isAttackerInFront and DamageToBlock[damageType] then
-					if armorProtection then
+					if armorProtection:GetBool() then
 						-- Full protection
 						dmginfo:SetDamage( 0 )
 					else
@@ -514,7 +529,7 @@ function ENT:DirectPoseParametersAt( pos, pitch, yaw, center )
 	local WorldSpaceCenter = self.WorldSpaceCenter
 
 	if !isstring( yaw ) then
-		return self:DirectPoseParametersAt( pos, pitch.."_pitch", pitch.."_yaw", yaw )
+		return self:DirectPoseParametersAt( pos, pitch .. "_pitch", pitch .. "_yaw", yaw )
 	elseif isentity( pos ) then
 		pos = pos:WorldSpaceCenter()
 	end
@@ -525,8 +540,8 @@ function ENT:DirectPoseParametersAt( pos, pitch, yaw, center )
 		SetPoseParameter( self, pitch, AngleDifference( angle.p, GetAngles( self ).p ) )
 		SetPoseParameter( self, yaw, AngleDifference( angle.y, GetAngles( self ).y ) )
 	else
-		SetPoseParameter(self, pitch, 0)
-		SetPoseParameter(self, yaw, 0)
+		SetPoseParameter( self, pitch, 0 )
+		SetPoseParameter( self, yaw, 0 )
 	end
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
@@ -545,8 +560,7 @@ function ENT:LookAtEntity( ent )
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:HandleStuck()
-	self:TakeDamage(self:Health(), self, self)
-	self:Vocalize( Zombie_BulletImpact )
+	self:Remove()
 	print( "Infected was removed due to getting stuck" )
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
@@ -723,8 +737,7 @@ function ENT:Attack(target)
 				detectedEnemy:TakeDamageInfo( dmginfo )
 
 				if detectedEnemy:IsPlayer() then
-					detectedEnemy:ViewPunch( Angle( random( -1, 8 ), random( -1, 10 ),random( -1, 12 ) ) )
-
+					detectedEnemy:ViewPunch( Angle( random( -1, 8 ), random( -1, 10 ), random( -1, 12 ) ) )
 					-- Slow down LambdaPlayers as well in future
 					self:SlowEntity( detectedEnemy )
 				end
