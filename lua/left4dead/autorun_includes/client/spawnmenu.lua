@@ -1,4 +1,4 @@
-local function CreateLeft4DeadMenu()
+--[[ local function CreateLeft4DeadMenu()
 	spawnmenu.AddToolTab( "Left 4 Dead NextBots", "Left 4 Dead Next Bots", "l4d_icon.png" )
 end
 
@@ -33,4 +33,4 @@ local function AddLeft4DeadOptions()
 end
 
 hook.Add( "AddToolMenuTabs", "AddLambdaPlayertabs", CreateLeft4DeadMenu )
-hook.Add( "PopulateToolMenu", "AddLambdaPlayerPanels", AddLeft4DeadOptions )
+hook.Add( "PopulateToolMenu", "AddLambdaPlayerPanels", AddLeft4DeadOptions ) ]]

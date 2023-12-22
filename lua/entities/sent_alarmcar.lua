@@ -49,79 +49,8 @@ if SERVER then
 		Color( 200, 145, 45 ),  -- Yellowish
 		Color( 175, 75, 20 ),  -- Redish
 	}
-
-
-	local Rad = math.rad
-	local Cos = math.cos
-	local VectorRand = VectorRand
-	local util_TraceHull = util.TraceHull
 	
-	-- Check if a vector is within the player's FOV and visible from the player's perspective
-	local function IsInFOVAndVisible( player, vec )
-		local direction = ( vec - player:GetPos() ):GetNormalized()
-		local dot = player:EyeAngles():Forward():Dot( direction )
-		local fov_desired = GetConVar( "fov_desired" ):GetInt()
-		local isInFOV = dot > Cos( Rad( fov_desired / 2 ) )
-	
-		local distance = player:GetPos():Distance( vec )
-		local isVisible = distance < 2000
-	
-		return isInFOV and isVisible
-	end
-	
-	local function IsNavMeshVisible( player, nav )
-		local point = nav:GetRandomPoint()
-		if nav:IsVisible( point ) and IsInFOVAndVisible( player, point ) then
-			return true
-		end
-	
-		return false
-	end
-	
-	--Get's the same height level as player
-	local function GetNavAreasNear( pos, radius, ply )
-		local navareas = navmesh.GetAllNavAreas()
-		local foundareas = {}
-		local playerZ = pos.z
-	
-		for i = 1, #navareas do
-			local nav = navareas[ i ]
-			if IsValid( nav ) and nav:GetSizeX() > 40 and nav:GetSizeY() > 40 and !nav:IsUnderwater() and
-			   ( pos:DistToSqr( nav:GetClosestPointOnArea( pos ) ) < ( radius * radius ) and
-			   pos:DistToSqr( nav:GetClosestPointOnArea( pos ) ) > ( ( radius / 3 ) * ( radius / 3 ) ) and
-			   nav:GetCenter().z >= playerZ - 250 and nav:GetCenter().z <= playerZ + 250 ) then
-	
-				-- Check if the center of the nav area is visible to the player and within their FOV
-				if !IsNavMeshVisible( ply, nav ) then
-					local width = nav:GetSizeX()
-					local height = nav:GetSizeY()
-					local maxOffset = width <= 40 and height <= 40 and 1 or 20  -- Set the max offset based on the size of the navmesh area
-					local xyOffset = VectorRand() * maxOffset -- Randomize X and Y components, keep Z at 0
-					xyOffset.z = 25 -- In case if our tracehull doesn't work, spawn the entity up a bit
-	
-					local spawnPos = nav:GetCenter() + xyOffset -- Add randomized offset to the center of the nav area
-	
-					-- Perform a trace hull from a point slightly above the spawn position to a point slightly higher
-					local tr = util_TraceHull({
-						start = spawnPos + Vector( 0, 0, 1 ),
-						endpos = spawnPos + Vector( 0, 0, 2 ),
-						mins = Vector( -16, -16, 0 ),
-						maxs = Vector( 16, 16, 72 ),
-						mask = MASK_PLAYERSOLID_BRUSHONLY,
-						filter = player.GetAll()
-					})
-	
-					if !tr.Hit then
-						foundareas[ #foundareas + 1 ] = spawnPos
-					end
-				end
-			end
-		end
-	
-		return foundareas
-	end
-	
-	local function SpawnNPC( class, ply, amount )
+	local function CreateCommon( class, ply, amount )
 		if !IsValid( ply ) then return end
 	
 		local areas = GetNavAreasNear( ply:GetPos(), 2000, ply )
@@ -145,21 +74,21 @@ if SERVER then
 		end)
 	end
 
-	local function SpawnMegaHorde( ply )
-		if IsValid( ply ) then
+	local function SpawnMegaHorde( ent )
+		if IsValid( ent ) then
 	
 			local soundPath
 			local npcType = "z_common" -- Ent Name
 	
 			local amount = Rand( 12, 16 )
 			timer_Simple( 0.75, function()
-				ply:EmitSound("left4dead/vocals/infected/sfx/megamob_" .. random( 2 ) .. ".mp3", 75, 100, 1 )
+				ent:EmitSound("left4dead/vocals/infected/sfx/megamob_" .. random( 2 ) .. ".mp3", 75, 100, 1 )
 			end)
 
 			timer_Simple( 3, function()
 				soundPath = Z_Music_Germs[ random( #Z_Music_Germs ) ]
-				ply:EmitSound( soundPath, 75, 100, 1 )
-				SpawnNPC( npcType, ply, amount )
+				ent:EmitSound( soundPath, 75, 100, 1 )
+				CreateCommon( npcType, ent, amount )
 			end)
 		end
 	end
@@ -282,7 +211,6 @@ if SERVER then
 				end
 				
 				self:NextThink( CurTime() + killAlarmTime )
-				
 				timer_Create( "car_alarm" .. self:EntIndex(), 30, 1, function() end)
 			end
 		end

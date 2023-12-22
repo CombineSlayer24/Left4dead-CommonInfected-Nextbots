@@ -42,7 +42,7 @@ function InitializeAddon()
 		end
 	end
 	---------------------------------------------------------------------------------------------------------------------------------------------
---[[ 	local clientsidefiles = file_Find( "left4dead/autorun_includes/client/*", "LUA", "nameasc" )
+ 	local clientsidefiles = file_Find( "left4dead/autorun_includes/client/*", "LUA", "nameasc" )
 	for k, luafile in ipairs( clientsidefiles ) do
 		if SERVER then
 			AddCSLuaFile( "left4dead/autorun_includes/client/" .. luafile )
@@ -55,12 +55,18 @@ function InitializeAddon()
 				print( "Failed to load Client Side Lua File [ " .. luafile .. " ]" )
 			end
 		end
-	end ]]
+	end
+
+	PrecahceParticles()
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
----------------------------------------------------------------------------------------------------------------------------------------------
----------------------------------------------------------------------------------------------------------------------------------------------
----------------------------------------------------------------------------------------------------------------------------------------------
+function PrecahceParticles()
+	game.AddParticles("particles/bile_fx.pcf")
+	PrecacheParticleSystem("vomit_jar")
+	
+	game.AddParticles("particles/boomer_fx.pcf")
+	PrecacheParticleSystem("boomer_vomit_survivor_b")
+end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 InitializeAddon()
 
@@ -69,10 +75,6 @@ concommand.Add( "l4d_dev_reloadaddon", InitializeAddon )
 -- implement into our director. Will be here
 -- for now.
 
----------------------------------------------------------------------------------------------------------------------------------------------
----------------------------------------------------------------------------------------------------------------------------------------------
----------------------------------------------------------------------------------------------------------------------------------------------
----------------------------------------------------------------------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------------------------------------------------------------------
 local IsValid = IsValid
 local random = math.random
@@ -96,7 +98,7 @@ local util_TraceHull = util.TraceHull
 local SimpleTimer = timer.Simple
 
 -- Check if a vector is within the player's FOV and visible from the player's perspective
-local function IsInFOVAndVisible( player, vec )
+function IsInFOVAndVisible( player, vec )
     local direction = ( vec - player:GetPos() ):GetNormalized()
     local dot = player:EyeAngles():Forward():Dot( direction )
     local fov_desired = GetConVar( "fov_desired" ):GetInt()
@@ -112,7 +114,7 @@ local function IsInFOVAndVisible( player, vec )
     return isInFOV and isVisible
 end
 
-local function IsNavMeshVisible( player, nav )
+function IsNavMeshVisible( player, nav )
     local point = nav:GetRandomPoint()
     if nav:IsVisible( point ) and IsInFOVAndVisible( player, point ) then
         return true
@@ -122,7 +124,7 @@ local function IsNavMeshVisible( player, nav )
 end
 
 --Get's the same height level as player
-local function GetNavAreasNear( pos, radius, caller )
+function GetNavAreasNear( pos, radius, caller )
 	local navareas = navmesh.GetAllNavAreas()
 	local foundareas = {}
 	local playerZ = pos.z
@@ -164,7 +166,7 @@ local function GetNavAreasNear( pos, radius, caller )
 	return foundareas
 end
 
-local function SpawnNPC( class, caller, amount, spawnAtCrosshair )
+function SpawnNPC( class, caller, amount, spawnAtCrosshair )
 	local plyradius = GetConVar( "l4d_z_spawn_radius" )
 	if !IsValid( caller ) then return end
 
@@ -198,7 +200,7 @@ local function SpawnNPC( class, caller, amount, spawnAtCrosshair )
 	end)
 end
 
-local function SpawnZombie( caller, command, arguments )
+function SpawnZombie( caller, command, arguments )
 	if IsValid( caller ) then
 		if #arguments == 0 then
 			MsgC(Color(255, 255, 255), "Usage: l4d_z_spawn <common/mob/megamob> <amount> <optional spawn options>\nYou can also set amount to false to access the 3rd paramter\nEx: l4d_z_spawn mob false true\n")
@@ -266,7 +268,7 @@ if SERVER then
 		local i = 0
 
 		if !cType then
-			MsgC(Color(255, 255, 255), "Usage: l4d_dev_cleanup <all|infected|droppedguns|props|decals|guns|ammo>\n")
+			MsgC(Color(255, 255, 255), "Usage: l4d_dev_cleanup < all|infected|droppedguns|props|decals|guns|ammo|sound >\n")
 			return
 
 		elseif cType == "all" then
@@ -274,6 +276,10 @@ if SERVER then
 		elseif cType == "decals" then
 			for _, v in ipairs( player_GetAll() ) do
 				v:ConCommand( "r_cleardecals" )
+			end
+		elseif cType == "sound" then
+			for _, v in ipairs( player_GetAll() ) do
+				v:ConCommand( "stopsound" )
 			end
 		elseif plyValid and cType == "guns" then
 			ply:StripWeapons()
@@ -297,6 +303,8 @@ if SERVER then
 				ply:SendLua( "GAMEMODE:AddNotify( \"Cleaned Up Everything!\", NOTIFY_CLEANUP, 5 )" )
 			elseif cType == "decals" or cType == "guns" or cType == "ammo" then
 				ply:SendLua( "GAMEMODE:AddNotify( \""..cTypes[ cType ].."\", NOTIFY_CLEANUP, 5 )" )
+			elseif cType == "sound" then
+				ply:SendLua( "GAMEMODE:AddNotify( \"Stopped All Sounds!\", NOTIFY_CLEANUP, 5 )" )
 			else
 				ply:SendLua( "GAMEMODE:AddNotify( \"Removed "..i.." "..cTypes[ cType ].."\", NOTIFY_CLEANUP, 5 )" )
 			end
@@ -305,7 +313,7 @@ if SERVER then
 	end, nil, "", {FCVAR_DONTRECORD})
 end
 
-CreateConVar( "l4d_z_drawcount", 1, FCVAR_ARCHIVE, "Show the amount of zombies on screen?", 0, 1 )
+CreateConVar( "l4d_z_drawcount", 1, FCVAR_ARCHIVE, "Show the amount of zombies on screen? Useful for debugging with The Director", 0, 1 )
 
 local function DrawZombieCount()
 	if !GetConVar("l4d_z_drawcount"):GetBool() then return end

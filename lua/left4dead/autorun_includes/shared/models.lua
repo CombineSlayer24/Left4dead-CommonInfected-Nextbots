@@ -185,23 +185,33 @@ Z_itemModels =
 	painPills = "models/w_models/weapons/w_eq_painpills.mdl",
 	-- Add more items here as needed
 }
+local anims = {
+	"models/infected/anim_boomer.mdl",
+	"models/infected/anim_hunter.mdl",
+	"models/infected/anim_smoker.mdl",
+	"models/infected/anim_jockey.mdl",
+	"models/infected/anim_spitter.mdl",
+	"models/infected/anim_charger.mdl",
+	"models/infected/anim_hulk.mdl",
+	"models/infected/anim_witch.mdl",
+	"models/infected/anim_common.mdl",
+	"models/infected/anim_common_female.mdl",
+	"models/infected/anim_common_female_exp.mdl",
+	"models/infected/anim_common_male_exp.mdl",
+	"models/infected/anim_common_vomit.mdl",
+}
 ---------------------------------------------------------------------------------------------------------------------------------------------
-function PrecacheZombies()
-	for k, v in ipairs( Z_MaleModels ) do
-		util.PrecacheModel( v )
-	end
-
-	for k, v in ipairs( Z_FemaleModels ) do
-		util.PrecacheModel( v )
-	end
-
-	for k, v in ipairs( Z_itemModels ) do
-		util.PrecacheModel( v )
-	end
+function PrecacheAssets()
+    local assets = { Z_FemaleModels, Z_MaleModels, Z_itemModels, anims }
+    for _, modelList in ipairs( assets ) do
+        for _, model in ipairs( modelList ) do
+            util.PrecacheModel( model )
+        end
+    end
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 hook.Add( "Initialize"," Precache", function()
 	timer.Simple( 3, function()
-		PrecacheZombies()
+		PrecacheAssets()
 	end)
 end)

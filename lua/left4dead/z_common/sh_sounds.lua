@@ -122,22 +122,22 @@ function ENT:InitSounds()
 	}
 	
 	ZCommon_AttackSmack = {
-		"left4dead/vocals/infected/sfx/hit/hit_body_01.mp3",
-		"left4dead/vocals/infected/sfx/hit/hit_body_02.mp3",
-		"left4dead/vocals/infected/sfx/hit/hit_body_03.mp3",
-		"left4dead/vocals/infected/sfx/hit/hit_body_04.mp3",
-		"left4dead/vocals/infected/sfx/hit/hit_face_01.mp3",
-		"left4dead/vocals/infected/sfx/hit/hit_face_02.mp3",
-		"left4dead/vocals/infected/sfx/hit/hit_face_03.mp3",
-		"left4dead/vocals/infected/sfx/hit/hit_face_04.mp3",
-		"left4dead/vocals/infected/sfx/hit/hit_punch_01.mp3",
-		"left4dead/vocals/infected/sfx/hit/hit_punch_02.mp3",
-		"left4dead/vocals/infected/sfx/hit/hit_punch_03.mp3",
-		"left4dead/vocals/infected/sfx/hit/hit_punch_04.mp3",
-		"left4dead/vocals/infected/sfx/hit/hit_punch_05.mp3",
-		"left4dead/vocals/infected/sfx/hit/hit_punch_06.mp3",
-		"left4dead/vocals/infected/sfx/hit/hit_punch_07.mp3",
-		"left4dead/vocals/infected/sfx/hit/hit_punch_08.mp3",
+		"left4dead/player/survivor/hit/hit_body_01.mp3",
+		"left4dead/player/survivor/hit/hit_body_02.mp3",
+		"left4dead/player/survivor/hit/hit_body_03.mp3",
+		"left4dead/player/survivor/hit/hit_body_04.mp3",
+		"left4dead/player/survivor/hit/hit_face_01.mp3",
+		"left4dead/player/survivor/hit/hit_face_02.mp3",
+		"left4dead/player/survivor/hit/hit_face_03.mp3",
+		"left4dead/player/survivor/hit/hit_face_04.mp3",
+		"left4dead/player/survivor/hit/hit_punch_01.mp3",
+		"left4dead/player/survivor/hit/hit_punch_02.mp3",
+		"left4dead/player/survivor/hit/hit_punch_03.mp3",
+		"left4dead/player/survivor/hit/hit_punch_04.mp3",
+		"left4dead/player/survivor/hit/hit_punch_05.mp3",
+		"left4dead/player/survivor/hit/hit_punch_06.mp3",
+		"left4dead/player/survivor/hit/hit_punch_07.mp3",
+		"left4dead/player/survivor/hit/hit_punch_08.mp3",
 	}
 	---------------------------------------------------------------------------------------------------------------------------------------------
 	-- Left 4 Dead 1 Sounds
