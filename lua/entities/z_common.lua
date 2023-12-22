@@ -358,12 +358,12 @@ function ENT:OnTakeDamage( dmginfo )
 				local selfForward = self:GetForward()
 				local isAttackerInFront = direction:Dot( selfForward ) > 0
 
-				local DamageToBlock = { DMG_GENERIC, DMG_CLUB, DMG_SLASH, DMG_AIRBOAT, DMG_DIRECT, DMG_SNIPER, DMG_MISSLEDEFENCE, DMG_BUCKSHOT, DMG_BULLET}
+				local DamageToBlock = { DMG_GENERIC, DMG_CLUB, DMG_SLASH, DMG_AIRBOAT, DMG_DIRECT, DMG_SNIPER, DMG_MISSLEDEFENCE, DMG_BUCKSHOT, DMG_BULLET }
 
 				if isAttackerInFront and DamageToBlock[damageType] then
 					if armorProtection:GetBool() then
 						-- Full protection
-						dmginfo:SetDamage( 0 )
+						dmginfo:ScaleDamage( 0 )
 					else
 						-- Semi Protection
 						dmginfo:ScaleDamage( 0.05 )
