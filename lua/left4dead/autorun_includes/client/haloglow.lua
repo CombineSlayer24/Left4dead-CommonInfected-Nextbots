@@ -69,17 +69,19 @@ concommand.Add( "l4d_cl_reset_glowcolors", function()
 	MsgC(Color(255, 255, 255), "Glow colors have been reset!\n")
 end)
 ---------------------------------------------------------------------------------------------------------------------------------------------
-local function AddHalo( victim, color, time )
+function AddHalo( victim, color, time )
 	if !glow_enable:GetBool() then return end
 
 	if IsValid( victim ) then
 		local timerName = "victimHalo" .. victim:EntIndex()
 
 		hook_Add( "PreDrawHalos", timerName, function()
-			halo.Add( { victim }, color, 2, 2, 5, true, true )
+			if IsValid( victim ) then
+				halo.Add( { victim }, color, 2, 2, 5, true, true )
+			else
+				hook_Remove( "PreDrawHalos", timerName )
+			end
 		end)
-
-		ParticleEffect( "boomer_vomit_survivor_b", victim:GetPos() + Vector(0, 0, 0), victim:GetAngles() )
 
 		if timer.Exists( timerName ) then
 			timer.Adjust( timerName, time, 1, function()
