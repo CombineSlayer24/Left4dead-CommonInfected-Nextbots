@@ -27,5 +27,25 @@ CreateConVar( "l4d_sv_z_hit_interval_expert", 1.0, FCVAR_ARCHIVE, "Minimum time 
 CreateConVar( "l4d_sv_cull", 0, FCVAR_ARCHIVE, "If 1, Infected will be removed if they're far from players", 0, 1 )
 CreateConVar( "l4d_sv_cull_timeout", 5, FCVAR_ARCHIVE, "Grace period before Infected is culled for being far away", 0, 10 )
 
--- ClientSide Convars
+-- ClientSide Convars --
 CreateClientConVar( "l4d_cl_particles", 1, true, false, "Should Common Infected have particle effects? (Puking, blood)" )
+
+
+-- Glow
+CreateClientConVar( "l4d_cl_glow", 1, true, false, "Enable the glow system" )
+CreateClientConVar( "l4d_cl_glow_performance_mode", 1, true, false, "If enabled, will reduce the glow effects. Saves performance. " )
+
+-- Infected that's has been vomited on
+CreateClientConVar( "l4d_cl_glow_infected_vomit_r", 201, true, false, "Red color for Vomited Infected" )
+CreateClientConVar( "l4d_cl_glow_infected_vomit_g", 17, true, false, "green color for Vomited Infected" )
+CreateClientConVar( "l4d_cl_glow_infected_vomit_b", 183, true, false, "blue color for Vomited Infected" )
+
+-- NPC/NextBot/Players that's been vomited
+CreateClientConVar( "l4d_cl_glow_npc_vomit_r", 255, true, false, "Red color for Vomited npcs/players" )
+CreateClientConVar( "l4d_cl_glow_npc_vomit_g", 102, true, false, "green color for Vomited npcs/players" )
+CreateClientConVar( "l4d_cl_glow_npc_vomit_b", 0, true, false, "blue color for Vomited npcs/players" )
+
+-- NPC/NextBot/Players glow
+CreateClientConVar( "l4d_cl_glow_npc_r", 76, true, false, "Red color for npcs/players" )
+CreateClientConVar( "l4d_cl_glow_npc_g", 102, true, false, "green color for npcs/players" )
+CreateClientConVar( "l4d_cl_glow_npc_b", 255, true, false, "blue color for npcs/players" )
