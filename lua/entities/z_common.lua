@@ -82,20 +82,16 @@ local z_Difficulty = GetConVar( "l4d_sv_difficulty" )
 
 local ci_BatonModels =
 {
-	[ "models/infected/c_nb/common_male_police01.mdl" ] = { true, true }, -- This model can have a prop and can be parented
-	[ "models/infected/c_nb/trs_common_male_police01.mdl" ] = { true, false }, -- This model can have a prop but cannot be parented
+	[ "models/infected/c_nb/common_male_police01.mdl" ] = { true, true },
+	[ "models/infected/c_nb/trs_common_male_police01.mdl" ] = { true, true },
 	[ "models/infected/l4d2_nb/uncommon_male_riot.mdl" ] = { true, false } -- This model can have a prop but cannot be parented
 }
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:SetUpZombie()
-	-- When it comes down to models, we make all of the models available for the player/admins to customize.
-	-- Sorta similar to how the population is handled in L4D2.
-	-- Should the player only want Military, Police, Rural, Common, Hospital, or all of above? ect ect.
 	local mdls = {}
 	for k, v in pairs( Z_MaleModels ) do table_insert( mdls, v ) end
 	for k, v in pairs( Z_FemaleModels ) do table_insert( mdls, v ) end
 
-	-- Now select a random model from the combined table
 	local spawnMdl = mdls[ random( #mdls ) ]
 	self:SetModel( spawnMdl )
 
@@ -104,6 +100,15 @@ function ENT:SetUpZombie()
 		self.Gender = "Male"
 	elseif table_HasValue( Z_FemaleModels, spawnMdl ) then
 		self.Gender = "Female"
+	end
+
+	-- Check for uncommon type and set it
+	for model, modelList in pairs( Z_UnCommonModels ) do
+		if table_HasValue( modelList, spawnMdl ) then
+			self.UnCommonType = model
+			print( self.UnCommonType .. " SetUpZombie()" )
+			break
+		end
 	end
 
 	for _, v in ipairs( self:GetBodyGroups() ) do
@@ -115,7 +120,6 @@ function ENT:SetUpZombie()
 	local skinCount = self:SkinCount()
 	if skinCount > 0 then self:SetSkin( random( 0, skinCount - 1 ) ) end
 end
-
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:Initialize()
 	--game.AddParticles( "particles/boomer_fx.pcf" )
@@ -126,7 +130,7 @@ function ENT:Initialize()
 		self:InitSounds()
 		local mdl = self:GetModel()
 
-		self.ci_BehaviorState = "Idle" -- The state for our behavior thread is currently running
+		self:SetBehavior( "Idle" ) -- The state for our behavior thread is currently running
 		self.ci_lastfootsteptime = 0 -- The last time we played a footstep sound
 		self.SpeakDelay = 0 -- the last time we spoke
 
@@ -174,9 +178,6 @@ function ENT:Initialize()
 
 		if droppableProps:GetBool() then
 			local randomValue = random( 100 ) <= 15
-
-			-- Because with TRS police, the baton floats a bit
-			-- so we disallow the TRS police baton to be parented
 			if ci_BatonModels[ mdl ] and randomValue then
 				self:CreateItem( "nightstick", ci_BatonModels[ mdl ] [ 2 ], "baton" )
 			elseif self:GetUncommonInf( "CEDA" ) and randomValue then
@@ -347,20 +348,18 @@ end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:OnTakeDamage( dmginfo )
 	local attacker = dmginfo:GetAttacker()
-
 	local armorProtection = GetConVar( "l4d_sv_z_riot_armor_protection" )
 	local damageType = dmginfo:GetDamageType()
 	if IsValid( attacker ) then
 		if self:Health() > 0 then
 			if self:GetUncommonInf( "RIOT" ) then
-			-- Do something to prevent loops from happening
+
 				local direction = ( attacker:GetPos() - self:GetPos() ):GetNormalized()
 				local selfForward = self:GetForward()
 				local isAttackerInFront = direction:Dot( selfForward ) > 0
-
 				local DamageToBlock = { DMG_GENERIC, DMG_CLUB, DMG_SLASH, DMG_AIRBOAT, DMG_DIRECT, DMG_SNIPER, DMG_MISSLEDEFENCE, DMG_BUCKSHOT, DMG_BULLET }
 
-				if isAttackerInFront and DamageToBlock[damageType] then
+				if isAttackerInFront and DamageToBlock[ damageType ] then
 					if armorProtection:GetBool() then
 						-- Full protection
 						dmginfo:ScaleDamage( 0 )
@@ -380,7 +379,7 @@ function ENT:OnTakeDamage( dmginfo )
 				end
 			elseif self:GetUncommonInf( "ROADCREW" ) then
 				-- Small damage resistance
-				dmginfo:ScaleDamage( 0.9 )
+				dmginfo:ScaleDamage( 0.85 )
 			end
 		end
 	end
@@ -389,8 +388,6 @@ function ENT:OnTakeDamage( dmginfo )
 	if self:GetUncommonInf( "CEDA" ) or self:GetUncommonInf( "FALLEN" ) or self:GetUncommonInf( "JIMMYGIBBS" )  then
 		self:SetFlameproof( dmginfo )
 	end
-
-	--PrintMessage(HUD_PRINTTALK, "Is Flameproof: " .. tostring( self.Flameproof ) )
 
 	-- Insta kill CI if on fire
 	if !self.Flameproof and dmginfo:IsDamageType( DMG_BURN ) then
@@ -415,7 +412,6 @@ end
 hook.Add( "ScaleNPCDamage","InfectedDamage", function( npc, hitgroup, dmginfo )
 	if npc:GetClass() == "z_common" then
 		if npc:GetUncommonInf( "JIMMYGIBBS" ) then
-			-- Increase damage if HITGROUP_HEAD
 			if hitgroup == HITGROUP_HEAD then
 				dmginfo:ScaleDamage( 5 ) -- Increase the damage by 500%
 			end
@@ -459,7 +455,7 @@ function ENT:OnKilled( dmginfo )
 			local force = Vector( randX, randY, randZ )
 
 			-- Apply the force at a random point on the ragdoll.
-			local position = Vector( 0,0,0 )
+			local position = Vector( 0, 0, 0 )
 			phys:ApplyForceOffset( force, position )
 		end
 	end
@@ -488,11 +484,6 @@ function ENT:Think()
 		end
 	end
 
-	-- If we are chasing or attacking our prey, look at them.
-	if self:GetCurrentBehavior() == "ChasingVictim" or self:GetCurrentBehavior() == "AttackingVictim" then
-		self:LookAtEntity()
-	end
-
 	if SERVER then
 		local loco = self.loco
 		local locoVel = loco:GetVelocity()
@@ -511,52 +502,11 @@ function ENT:Think()
 		else
 			-- Assume we landed.
 			self:DoLandingAnimation()
-		end	
+		end
 	end
 
 	self:NextThink(CurTime())
 	return true
-end
----------------------------------------------------------------------------------------------------------------------------------------------
--- From DRGBase, function updated
-function ENT:DirectPoseParametersAt( pos, pitch, yaw, center )
-	local isstring = isstring
-	local isentity = isentity
-	local isvector = isvector
-	local AngleDifference = math.AngleDifference
-	local GetAngles = self.GetAngles
-	local SetPoseParameter = self.SetPoseParameter
-	local WorldSpaceCenter = self.WorldSpaceCenter
-
-	if !isstring( yaw ) then
-		return self:DirectPoseParametersAt( pos, pitch .. "_pitch", pitch .. "_yaw", yaw )
-	elseif isentity( pos ) then
-		pos = pos:WorldSpaceCenter()
-	end
-
-	if isvector(pos) then
-		center = center or WorldSpaceCenter( self )
-		local angle = ( pos - center ):Angle()
-		SetPoseParameter( self, pitch, AngleDifference( angle.p, GetAngles( self ).p ) )
-		SetPoseParameter( self, yaw, AngleDifference( angle.y, GetAngles( self ).y ) )
-	else
-		SetPoseParameter( self, pitch, 0 )
-		SetPoseParameter( self, yaw, 0 )
-	end
-end
----------------------------------------------------------------------------------------------------------------------------------------------
-function ENT:LookAtEntity( ent )
-	local enemy = self:FindNearestEnemy()
-	if IsValid( enemy ) and enemy:GetBonePosition( 1 ) then
-		local distance = self:GetPos():Distance( enemy:GetPos() )
-
-		-- Look at out prey
-		if distance < 700 then
-			self:DirectPoseParametersAt( enemy:GetBonePosition( 1 ), "body", self:EyePos() )
-		else -- If our prey is too far, don't look at them
-			self:DirectPoseParametersAt( nil, "body_pitch", "body_yaw", 0 )
-		end
-	end
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:HandleStuck()
@@ -717,27 +667,31 @@ function ENT:Attack(target)
 					return
 				end
 
-				local z_Dmg
+				local zSmackDMG
 				local dmginfo = DamageInfo()
 				local z_Difficulty = GetConVar( "l4d_sv_difficulty" ):GetInt()
+
 				if z_Difficulty == 0 then
-					z_Dmg = 1
+					zSmackDMG = 1
 				elseif z_Difficulty == 1 then
-					z_Dmg = 2
+					zSmackDMG = 2
 				elseif z_Difficulty == 2 then
-					z_Dmg = 5
+					zSmackDMG = 5
 				elseif z_Difficulty == 3 then
-					z_Dmg = 20
+					zSmackDMG = 20
 				end
 				
-				dmginfo:SetDamage( z_Dmg )
+				dmginfo:SetDamage( zSmackDMG )
 				dmginfo:SetDamageType( DMG_DIRECT )
 				dmginfo:SetInflictor( self )
 				dmginfo:SetAttacker( self )
 				detectedEnemy:TakeDamageInfo( dmginfo )
 
-				if detectedEnemy:IsPlayer() then
-					detectedEnemy:ViewPunch( Angle( random( -1, 8 ), random( -1, 10 ), random( -1, 12 ) ) )
+				if detectedEnemy:IsPlayer() or detectedEnemy.IsLambdaPlayer then
+					-- Players can only have this called on them
+					if detectedEnemy:IsPlayer() then
+						detectedEnemy:ViewPunch( Angle( random( -1, 8 ), random( -1, 10 ), random( -1, 12 ) ) )
+					end
 					-- Slow down LambdaPlayers as well in future
 					self:SlowEntity( detectedEnemy )
 				end

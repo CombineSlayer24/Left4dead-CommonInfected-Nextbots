@@ -100,28 +100,25 @@ local SimpleTimer = timer.Simple
 
 -- Check if a vector is within the player's FOV and visible from the player's perspective
 function IsInFOVAndVisible( player, vec )
-    local direction = ( vec - player:GetPos() ):GetNormalized()
-    local dot = player:EyeAngles():Forward():Dot( direction )
-    local fov_desired = GetConVar( "fov_desired" ):GetInt()
-    local isInFOV = dot > Cos( Rad( fov_desired / 2 ) )
+	local direction = ( vec - player:GetPos() ):GetNormalized()
+	local dot = player:EyeAngles():Forward():Dot( direction )
+	local fov_desired = GetConVar( "fov_desired" ):GetInt()
+	local isInFOV = dot > Cos( Rad( fov_desired / 2 ) )
 
-    local plyradius = GetConVar( "l4d_z_spawn_radius" ):GetFloat()
-    local distance = player:GetPos():Distance( vec )
-    local isVisible = distance < plyradius   -- Consider points visible if they are within the spawn radius
+	local plyradius = GetConVar( "l4d_z_spawn_radius" ):GetFloat()
+	local distance = player:GetPos():Distance( vec )
+	local isVisible = distance < plyradius   -- Consider points visible if they are within the spawn radius
 
-    print( "IsInFOV: " .. tostring( isInFOV ) )
-    print( "IsVisible: " .. tostring( isVisible ) )
-
-    return isInFOV and isVisible
+	return isInFOV and isVisible
 end
 
 function IsNavMeshVisible( player, nav )
-    local point = nav:GetRandomPoint()
-    if nav:IsVisible( point ) and IsInFOVAndVisible( player, point ) then
-        return true
-    end
+	local point = nav:GetRandomPoint()
+	if nav:IsVisible( point ) and IsInFOVAndVisible( player, point ) then
+		return true
+	end
 
-    return false
+	return false
 end
 
 --Get's the same height level as player

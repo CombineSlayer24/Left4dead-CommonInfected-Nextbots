@@ -44,6 +44,7 @@ Z_MaleModels =
 	"models/infected/l4d2_nb/uncommon_male_fallen_survivor.mdl",
 	"models/infected/l4d2_nb/uncommon_male_riot.mdl",
 	"models/infected/l4d2_nb/uncommon_male_jimmy.mdl",
+	"models/infected/l4d2_nb/uncommon_male_baggagehandler02.mdl", -- Cuba's BaggageHandler
 }
 ---------------------------------------------------------------------------------------------------------------------------------------------
 Z_FemaleModels =
@@ -62,6 +63,22 @@ Z_FemaleModels =
 	-- L4D2
 	"models/infected/l4d2_nb/common_female_tanktop_jeans.mdl",
 	"models/infected/l4d2_nb/common_female_tshirt_skirt.mdl",
+}
+
+Z_UnCommonModels = {
+	CEDA = {
+		"models/infected/l4d2_nb/uncommon_male_ceda.mdl" 
+	},
+	ROADCREW = { 
+		"models/infected/l4d2_nb/uncommon_male_roadcrew.mdl", 
+		"models/infected/l4d2_nb/uncommon_male_roadcrew_l4d1.mdl", 
+		"models/infected/l4d2_nb/uncommon_male_baggagehandler02.mdl" 
+	},
+	FALLEN = { "models/infected/l4d2_nb/uncommon_male_fallen_survivor.mdl" },
+	RIOT = { "models/infected/l4d2_nb/uncommon_male_riot.mdl" },
+	JIMMYGIBBS = { "models/infected/l4d2_nb/uncommon_male_jimmy.mdl" },
+	MUDMEN = { },
+	CLOWN = { },
 }
 -- JSON RELATED
 ---------------------------------------------------------------------------------------------------------------------------------------------
@@ -157,12 +174,12 @@ function InitJSONData()
 end
 
 concommand.Add("l4d_dev_jsonrefresh", function(ply, cmd, args)
-    if ply:IsAdmin() then -- Only allow admins to refresh the JSON data
-        InitJSONData()
-        print("JSON data refreshed!")
-    else
-        print("You must be an admin to use this command.")
-    end
+	if ply:IsAdmin() then -- Only allow admins to refresh the JSON data
+		InitJSONData()
+		print("JSON data refreshed!")
+	else
+		print("You must be an admin to use this command.")
+	end
 end)
 
 InitJSONData()  ]]
@@ -202,12 +219,12 @@ local anims = {
 }
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function PrecacheAssets()
-    local assets = { Z_FemaleModels, Z_MaleModels, Z_itemModels, anims }
-    for _, modelList in ipairs( assets ) do
-        for _, model in ipairs( modelList ) do
-            util.PrecacheModel( model )
-        end
-    end
+	local assets = { Z_FemaleModels, Z_MaleModels, Z_itemModels, anims }
+	for _, modelList in ipairs( assets ) do
+		for _, model in ipairs( modelList ) do
+			util.PrecacheModel( model )
+		end
+	end
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 hook.Add( "Initialize"," Precache", function()

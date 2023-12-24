@@ -18,18 +18,34 @@ if CLIENT then
 	killicon.Add("z_common", "killicons/z_claw", Color( 255, 255, 255 ) )
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
--- expressionType must be typed in as ("idle" and "angry")
+-- expressionType must be typed in as "idle" and "angry"
 function ENT:ZombieExpression( expressionType )
-	timer_Remove( "AnimationLayer" )
-	timer_Create( "AnimationLayer", 2, 0, function()
-		if !IsValid( self ) then return end
+	local timerName = "AnimationLayer" .. self:EntIndex()
 
+	-- Helper function to remove/reset the timer
+	local function RemoveTimer()
+		timer_Remove( timerName )
+	end
+
+	timer_Create( timerName, 2, 0, function()
+		if !IsValid( self ) then 
+			RemoveTimer()
+			return 
+		end
+
+		local anim
 		if SERVER then
-			local anim = self:LookupSequence( "exp_" .. expressionType .. "_0" .. random( 6 ) )
+			anim = self:LookupSequence( "exp_" .. expressionType .. "_0" .. random( 6 ) )
 			self:AddGestureSequence( anim, false )
 		end
 
-		timer_Adjust( "AnimationLayer", self:SequenceDuration( anim ) - 0.2 )
+		if anim then
+			timer_Adjust( timerName, self:SequenceDuration( anim ) - 0.2, 1, function()
+				if IsValid( self ) then
+					RemoveTimer()
+				end
+			end)
+		end
 	end)
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
@@ -92,6 +108,47 @@ function ENT:IsAirborne()
 	end
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
+-- From DRGBase, function updated
+function ENT:DirectPoseParametersAt( pos, pitch, yaw, center )
+	local isstring = isstring
+	local isentity = isentity
+	local isvector = isvector
+	local AngleDifference = math.AngleDifference
+	local GetAngles = self.GetAngles
+	local SetPoseParameter = self.SetPoseParameter
+	local WorldSpaceCenter = self.WorldSpaceCenter
+
+	if !isstring( yaw ) then
+		return self:DirectPoseParametersAt( pos, pitch .. "_pitch", pitch .. "_yaw", yaw )
+	elseif isentity( pos ) then
+		pos = pos:WorldSpaceCenter()
+	end
+
+	if isvector(pos) then
+		center = center or WorldSpaceCenter( self )
+		local angle = ( pos - center ):Angle()
+		SetPoseParameter( self, pitch, AngleDifference( angle.p, GetAngles( self ).p ) )
+		SetPoseParameter( self, yaw, AngleDifference( angle.y, GetAngles( self ).y ) )
+	else
+		SetPoseParameter( self, pitch, 0 )
+		SetPoseParameter( self, yaw, 0 )
+	end
+end
+---------------------------------------------------------------------------------------------------------------------------------------------
+function ENT:LookAtEntity( ent )
+	local enemy = self:FindNearestEnemy()
+	if IsValid( enemy ) and enemy:GetBonePosition( 1 ) then
+		local distance = self:GetPos():Distance( enemy:GetPos() )
+
+		-- Look at out prey
+		if distance < 700 then
+			self:DirectPoseParametersAt( enemy:GetBonePosition( 1 ), "body", self:EyePos() )
+		else -- If our prey is too far, don't look at them
+			self:DirectPoseParametersAt( nil, "body_pitch", "body_yaw", 0 )
+		end
+	end
+end
+---------------------------------------------------------------------------------------------------------------------------------------------
 -- Handles our Landing animations
 function ENT:DoLandingAnimation()
 	if self.IsLanded then
@@ -135,26 +192,14 @@ end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 -- Check for our uncommon infected type
 function ENT:GetUncommonInf( model )
-	local modelTable = {
-		CEDA = { "models/infected/l4d2_nb/uncommon_male_ceda.mdl" },
-		ROADCREW = { "models/infected/l4d2_nb/uncommon_male_roadcrew.mdl","models/infected/l4d2_nb/uncommon_male_roadcrew_l4d1.mdl" },
-		FALLEN = { "models/infected/l4d2_nb/uncommon_male_fallen_survivor.mdl" },
-		RIOT = { "models/infected/l4d2_nb/uncommon_male_riot.mdl" },
-		JIMMYGIBBS = { "models/infected/l4d2_nb/uncommon_male_jimmy.mdl" },
-		MUDMEN = { },
-		CLOWN = { },
-	}
-
-	if modelTable[ model ] then
-		for _, v in ipairs( modelTable[ model ] ) do
+	if Z_UnCommonModels[ model ] then
+		for _, v in ipairs( Z_UnCommonModels[ model ] ) do
 			if self:GetModel() == v then
-				self.UnCommonType = model
+				print( self.UnCommonType .. " GetUncommonInf()" )
 				return true
 			end
 		end
 	end
-
-	-- Our specific model isn't a uncommon
 	return false
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
@@ -207,7 +252,6 @@ function ENT:Vocalize( action, isSFX )
 
 	self:EmitSound( Snd, 80, pitch )
 end
-
 ---------------------------------------------------------------------------------------------------------------------------------------------
 -- Returns the position and angle of a specified bone
 function ENT:GetBoneTransformation( bone, target )
@@ -227,25 +271,25 @@ end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 -- Performs a Trace from ourselves or the overridestart to the postion
 function ENT:Trace( pos, overridestart, ignoreEnt )
-    tracetable.start = overridestart or self:WorldSpaceCenter()
-    tracetable.endpos = ( isentity( pos ) and IsValid( pos ) and pos:GetPos() or pos )
-    tracetable.filter = ( ignoreEnt and { self, ignoreEnt } or self ) 
-    return Trace( tracetable )
+	tracetable.start = overridestart or self:WorldSpaceCenter()
+	tracetable.endpos = ( isentity( pos ) and IsValid( pos ) and pos:GetPos() or pos )
+	tracetable.filter = ( ignoreEnt and { self, ignoreEnt } or self ) 
+	return Trace( tracetable )
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 -- Returns if we can see the ent in question.
 -- Simple trace 
 function ENT:CanSee( ent )
-    if !IsValid( ent ) then return false end
+	if !IsValid( ent ) then return false end
 
-    visibilitytrace.start = self:GetAttachmentPoint( "foward" ).Pos
-    visibilitytrace.endpos = ent:WorldSpaceCenter()
-    visibilitytrace.filter = self
+	visibilitytrace.start = self:GetAttachmentPoint( "foward" ).Pos
+	visibilitytrace.endpos = ent:WorldSpaceCenter()
+	visibilitytrace.filter = self
 
-    local result = Trace( visibilitytrace )
-    if RunHook( "CanSeeEntity", self, ent, result ) == true then return false end
+	local result = Trace( visibilitytrace )
+	if RunHook( "CanSeeEntity", self, ent, result ) == true then return false end
 
-    return ( result.Fraction == 1.0 )
+	return ( result.Fraction == 1.0 )
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 -- Returns a table that contains a position and angle with the specified type. hand or eyes

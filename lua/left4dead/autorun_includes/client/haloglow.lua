@@ -167,38 +167,38 @@ end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 -- Apply our halo glow effect.
 function AddHalo( victim, color, time )
-    if !glow_enable:GetBool() then return end
+	if !glow_enable:GetBool() then return end
 
-    local timerName = "victimHalo" .. victim:EntIndex()
+	local timerName = "victimHalo" .. victim:EntIndex()
 
-    local function RemoveHooks()
-        hook_Remove( "PostDrawEffects", timerName )
-        hook_Remove( "PreDrawHalos", timerName )
-        victim.Is_Vomited = false
-    end
+	local function RemoveHooks()
+		hook_Remove( "PostDrawEffects", timerName )
+		hook_Remove( "PreDrawHalos", timerName )
+		victim.Is_Vomited = false
+	end
 
-    hook_Add( "PostDrawEffects", timerName, function()
-        hook_Run( "PreDrawHalos" )
-        if IsValid( victim ) then
-            DrawHalo( victim, color )
-        else
-            RemoveHooks()
-        end
-    end)
+	hook_Add( "PostDrawEffects", timerName, function()
+		hook_Run( "PreDrawHalos" )
+		if IsValid( victim ) then
+			DrawHalo( victim, color )
+		else
+			RemoveHooks()
+		end
+	end)
 
-    if timer_Exists( timerName ) then
-        timer_Adjust( timerName, time, 1, function()
-            if IsValid( victim ) then
-                RemoveHooks()
-            end
-        end)
-    else
-        timer_Create( timerName, time, 1, function()
-            if IsValid( victim ) then
-                RemoveHooks()
-            end
-        end)
-    end
+	if timer_Exists( timerName ) then
+		timer_Adjust( timerName, time, 1, function()
+			if IsValid( victim ) then
+				RemoveHooks()
+			end
+		end)
+	else
+		timer_Create( timerName, time, 1, function()
+			if IsValid( victim ) then
+				RemoveHooks()
+			end
+		end)
+	end
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 net.Receive( "Event_Vomited", function()
