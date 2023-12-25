@@ -42,7 +42,9 @@ Z_MaleModels =
 	"models/infected/l4d2_nb/uncommon_male_roadcrew.mdl",
 	"models/infected/l4d2_nb/uncommon_male_roadcrew_l4d1.mdl",
 	"models/infected/l4d2_nb/uncommon_male_fallen_survivor.mdl",
+	"models/infected/l4d2_nb/uncommon_male_fallen_survivor_l4d1.mdl",
 	"models/infected/l4d2_nb/uncommon_male_riot.mdl",
+	"models/infected/l4d2_nb/uncommon_male_riot_l4d1.mdl",
 	"models/infected/l4d2_nb/uncommon_male_jimmy.mdl",
 	"models/infected/l4d2_nb/uncommon_male_baggagehandler02.mdl", -- Cuba's BaggageHandler
 }
@@ -63,6 +65,8 @@ Z_FemaleModels =
 	-- L4D2
 	"models/infected/l4d2_nb/common_female_tanktop_jeans.mdl",
 	"models/infected/l4d2_nb/common_female_tshirt_skirt.mdl",
+	"models/infected/l4d2_nb/uncommon_female_riot.mdl",
+	"models/infected/l4d2_nb/uncommon_female_riot_l4d1.mdl",
 }
 
 Z_UnCommonModels = {
@@ -74,8 +78,16 @@ Z_UnCommonModels = {
 		"models/infected/l4d2_nb/uncommon_male_roadcrew_l4d1.mdl", 
 		"models/infected/l4d2_nb/uncommon_male_baggagehandler02.mdl" 
 	},
-	FALLEN = { "models/infected/l4d2_nb/uncommon_male_fallen_survivor.mdl" },
-	RIOT = { "models/infected/l4d2_nb/uncommon_male_riot.mdl" },
+	FALLEN = { 
+		"models/infected/l4d2_nb/uncommon_male_fallen_survivor.mdl",
+		"models/infected/l4d2_nb/uncommon_male_fallen_survivor_l4d1.mdl",
+ 	},
+	RIOT = { 
+		"models/infected/l4d2_nb/uncommon_male_riot.mdl",
+		"models/infected/l4d2_nb/uncommon_male_riot_l4d1.mdl",
+		"models/infected/l4d2_nb/uncommon_female_riot.mdl",
+		"models/infected/l4d2_nb/uncommon_female_riot_l4d1.mdl",
+	},
 	JIMMYGIBBS = { "models/infected/l4d2_nb/uncommon_male_jimmy.mdl" },
 	MUDMEN = { },
 	CLOWN = { },
