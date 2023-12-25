@@ -193,6 +193,9 @@ function SpawnNPC( class, caller, amount, spawnAtCrosshair )
 		local offset = Vector( Rand( -5, 5 ), Rand(- 5, 5 ), 0 )
 		npc:SetPos( pos + offset )
 
+		CreateGIVectorHint("point", "Horde is coming from here!", pos, nil, "HordeIndicator")
+		timer.Simple(5, function() RemoveGIVectorHint("HordeIndicator") end)
+
 		npc:SetAngles( Angle( 0, math.random( -180, 180 ), 0 ) )
 		npc:Spawn()
 	end)
