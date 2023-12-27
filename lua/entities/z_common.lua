@@ -219,6 +219,8 @@ end
 function ENT:Nick()
 	return self:GetClass()
 end
+
+
 ---------------------------------------------------------------------------------------------------------------------------------------------
 -- Certain Common/Uncommon Infected will have
 -- props attached to them... Riot Cops, Cops
@@ -348,6 +350,7 @@ end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:OnTakeDamage( dmginfo )
 	local attacker = dmginfo:GetAttacker()
+	local inflictor = dmginfo:GetInflictor()
 	local armorProtection = GetConVar( "l4d_sv_z_riot_armor_protection" )
 	local damageType = dmginfo:GetDamageType()
 	if IsValid( attacker ) then
@@ -357,9 +360,9 @@ function ENT:OnTakeDamage( dmginfo )
 				local direction = ( attacker:GetPos() - self:GetPos() ):GetNormalized()
 				local selfForward = self:GetForward()
 				local isAttackerInFront = direction:Dot( selfForward ) > 0
-				local DamageToBlock = { DMG_GENERIC, DMG_CLUB, DMG_SLASH, DMG_AIRBOAT, DMG_DIRECT, DMG_SNIPER, DMG_MISSLEDEFENCE, DMG_BUCKSHOT, DMG_BULLET }
+				local DamageToBlock = { DMG_GENERIC, DMG_CLUB, DMG_SLASH, DMG_AIRBOAT, DMG_DIRECT, DMG_SNIPER, DMG_BUCKSHOT, DMG_BULLET }
 
-				if isAttackerInFront and DamageToBlock[ damageType ] then
+				if isAttackerInFront and DamageToBlock[ damageType ] and attacker == inflictor then
 					if armorProtection:GetBool() then
 						-- Full protection
 						dmginfo:ScaleDamage( 0 )
