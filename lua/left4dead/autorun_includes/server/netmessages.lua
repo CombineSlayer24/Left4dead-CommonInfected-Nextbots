@@ -4,6 +4,7 @@ local IsValid = IsValid
 if SERVER then
 	util.AddNetworkString("ZombieDeath")
 	util.AddNetworkString( "Event_Vomited" )
+	util.AddNetworkString( "Event_Highlight_Entity" )
 
 	local KillfeedOverride = CreateConVar("l4d_sv_killfeed_override", 0, FCVAR_ARCHIVE + FCVAR_NOTIFY, "If L4D2 Nextbots should override killfeed so it wont display two killfeed entries?", 0, 1)
 	local CallNPCKilled = CreateConVar("l4d_sv_call_onnpckilled", 0, FCVAR_ARCHIVE + FCVAR_NOTIFY, "If L4D2 Nextbots should call 'OnNPCKilled' hook?", 0, 1)
@@ -63,6 +64,13 @@ if SERVER then
 		net.WriteString( victimname )
 		net.WriteInt( victimteam, 8 )
 		net.WriteString( inflictorname )
+		net.Broadcast()
+	end
+
+	function HandleHaloEvent( entity, entityType )
+		net.Start( "Event_Highlight_Entity" )
+		net.WriteEntity( entity )
+		net.WriteString( entityType )
 		net.Broadcast()
 	end
 

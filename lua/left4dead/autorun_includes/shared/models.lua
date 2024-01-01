@@ -43,10 +43,7 @@ Z_MaleModels =
 	"models/infected/l4d2_nb/uncommon_male_roadcrew_l4d1.mdl",
 	"models/infected/l4d2_nb/uncommon_male_fallen_survivor.mdl",
 	"models/infected/l4d2_nb/uncommon_male_fallen_survivor_l4d1.mdl",
-	"models/infected/l4d2_nb/uncommon_male_riot.mdl",
-	"models/infected/l4d2_nb/uncommon_male_riot_l4d1.mdl",
-	"models/infected/l4d2_nb/uncommon_male_jimmy.mdl",
-	"models/infected/l4d2_nb/uncommon_male_baggagehandler02.mdl", -- Cuba's BaggageHandler
+	"models/infected/l4d2_nb/uncommon_male_parachutist.mdl",
 }
 ---------------------------------------------------------------------------------------------------------------------------------------------
 Z_FemaleModels =
@@ -81,6 +78,7 @@ Z_UnCommonModels = {
 	FALLEN = { 
 		"models/infected/l4d2_nb/uncommon_male_fallen_survivor.mdl",
 		"models/infected/l4d2_nb/uncommon_male_fallen_survivor_l4d1.mdl",
+		"models/infected/l4d2_nb/uncommon_male_parachutist.mdl",
  	},
 	RIOT = { 
 		"models/infected/l4d2_nb/uncommon_male_riot.mdl",
@@ -231,7 +229,7 @@ local anims = {
 }
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function PrecacheAssets()
-	local assets = { Z_FemaleModels, Z_MaleModels, Z_itemModels, anims }
+ 	local assets = { Z_FemaleModels, Z_MaleModels, Z_itemModels, anims }
 	for _, modelList in ipairs( assets ) do
 		for _, model in ipairs( modelList ) do
 			util.PrecacheModel( model )
@@ -244,3 +242,20 @@ hook.Add( "Initialize"," Precache", function()
 		PrecacheAssets()
 	end)
 end)
+
+
+if CLIENT then
+	local modelPath = "models/infected/specials/hunter_l4d1.mdl"
+
+	local modelEntity = ClientsideModel(modelPath, RENDERGROUP_OPAQUE)
+	modelEntity:Spawn()
+	modelEntity:SetNoDraw(true)
+	
+	local sequenceCount = modelEntity:GetSequenceCount()
+	
+	print("Animations of model: " .. modelPath)
+	for sequence = 0, sequenceCount - 1 do
+		print("Animation ID " .. sequence .. ": " .. modelEntity:GetSequenceName(sequence))
+	end
+	modelEntity:Remove()
+end
