@@ -23,6 +23,10 @@ local glow_npc_vomit_b = GetConVar( "l4d_cl_glow_npc_vomit_b" )
 local glow_npc_r = GetConVar( "l4d_cl_glow_npc_r" )
 local glow_npc_g = GetConVar( "l4d_cl_glow_npc_g" )
 local glow_npc_b = GetConVar( "l4d_cl_glow_npc_b" )
+
+local glow_item_r = GetConVar( "l4d_cl_glow_item_r" )
+local glow_item_g = GetConVar( "l4d_cl_glow_item_g" )
+local glow_item_b = GetConVar( "l4d_cl_glow_item_b" )
 ---------------------------------------------------------------------------------------------------------------------------------------------
 concommand.Add( "l4d_cl_reset_glowcolors", function()
 	local oldValues = {
@@ -34,7 +38,10 @@ concommand.Add( "l4d_cl_reset_glowcolors", function()
 		["l4d_cl_glow_npc_vomit_b"] = glow_npc_vomit_b:GetInt(),
 		["l4d_cl_glow_npc_r"] = glow_npc_r:GetInt(),
 		["l4d_cl_glow_npc_g"] = glow_npc_g:GetInt(),
-		["l4d_cl_glow_npc_b"] = glow_npc_b:GetInt()
+		["l4d_cl_glow_npc_b"] = glow_npc_b:GetInt(),
+		["l4d_cl_glow_item_r"] = glow_item_r:GetInt(),
+		["l4d_cl_glow_item_g"] = glow_item_g:GetInt(),
+		["l4d_cl_glow_item_b"] = glow_item_b:GetInt()
 	}
 
 	for convar, oldValue in pairs(oldValues) do
@@ -216,6 +223,35 @@ net.Receive( "Event_Vomited", function()
 			local g = glow_npc_vomit_g:GetInt()
 			local b = glow_npc_vomit_b:GetInt()
 			AddHalo( victim, Color( r, g, b ), 8 )
+		end
+	end
+end)
+
+net.Receive( "Event_Highlight_Entity", function()
+	local entity = net.ReadEntity()
+	local type = net.ReadString()
+
+	local r_close = glow_item_r:GetInt()
+	local g_close = glow_item_g:GetInt()
+	local b_close = glow_item_b:GetInt()
+
+	local r_far = glow_npc_r:GetInt()
+	local g_far = glow_npc_g:GetInt()
+	local b_far = glow_npc_b:GetInt()
+
+	if IsValid( entity ) then
+		local playerPos = LocalPlayer():GetPos()
+		local entityPos = entity:GetPos()
+		local distance = playerPos:Distance( entityPos )
+
+		-- Check if the player is looking at the entity
+		local trace = LocalPlayer():GetEyeTrace()
+		local isLookingAtEntity = trace.Entity == entity
+
+		if isLookingAtEntity or distance <= 300 then
+			AddHalo( entity, Color( r_close, g_close, b_close ), 999 )
+		else
+			AddHalo( entity, Color( r_far, g_far, b_far ), 999 )
 		end
 	end
 end)

@@ -82,10 +82,30 @@ local z_Difficulty = GetConVar( "l4d_sv_difficulty" )
 
 local ci_BatonModels =
 {
-	[ "models/infected/c_nb/common_male_police01.mdl" ] = { true, true },
-	[ "models/infected/c_nb/trs_common_male_police01.mdl" ] = { true, true },
-	[ "models/infected/l4d2_nb/uncommon_male_riot.mdl" ] = { true, false } -- This model can have a prop but cannot be parented
+	[ "models/infected/c_nb/common_male_police01.mdl" ] = true,
+	[ "models/infected/c_nb/trs_common_male_police01.mdl" ] = true,
+	[ "models/infected/l4d2_nb/uncommon_male_riot.mdl" ] = true,
+	[ "models/infected/l4d2_nb/uncommon_female_riot.mdl" ] 	= true,
+	[ "models/infected/l4d2_nb/uncommon_male_riot_l4d1.mdl" ] = true,
+	[ "models/infected/l4d2_nb/uncommon_female_riot_l4d1.mdl" ] = true
 }
+---------------------------------------------------------------------------------------------------------------------------------------------
+function ENT:SetUpUnCommonInfected()
+	for uncommonType, uncommonData in pairs( Z_UnCommonModels ) do
+		if table_HasValue( uncommonData, self:GetModel() ) then
+			self.UnCommonType = uncommonType
+			
+			if self:GetUncommonInf( "CEDA" ) or self:GetUncommonInf( "FALLEN" ) or self:GetUncommonInf( "JIMMYGIBBS" ) then
+				self.Flameproof = true
+			else
+				self.Flameproof = false
+			end
+			--print( self.UnCommonType .. " SetUpUnCommonInfected()" )
+			--print( "Flameproof: " .. tostring( self.Flameproof ) )
+			break
+		end
+	end
+end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:SetUpZombie()
 	local mdls = {}
@@ -102,14 +122,7 @@ function ENT:SetUpZombie()
 		self.Gender = "Female"
 	end
 
-	-- Check for uncommon type and set it
-	for model, modelList in pairs( Z_UnCommonModels ) do
-		if table_HasValue( modelList, spawnMdl ) then
-			self.UnCommonType = model
-			print( self.UnCommonType .. " SetUpZombie()" )
-			break
-		end
-	end
+	self:SetUpUnCommonInfected()
 
 	for _, v in ipairs( self:GetBodyGroups() ) do
 		local subMdls = #v.submodels
@@ -143,16 +156,8 @@ function ENT:Initialize()
 			z_Health = 1000 * ( z_FallenHealth / 20 )
 		elseif self:GetUncommonInf( "JIMMYGIBBS" ) then
 			z_Health = 3000 * ( z_JimmyHealth / 20 )
-			CreateGIHint("exclamation_red", "Jimmy Gibbs Jr has appeared!", self, "critical_event")
-				timer.Simple(5, function() 
-					RemoveGIHint(self) 
-				end)
 		elseif self:GetUncommonInf( "RIOT" ) then
 			z_Health = 50
-			CreateGIHint("info", "Shoot the back!", self, "beepclear")
-				timer.Simple(5, function() 
-					RemoveGIHint(self) 
-				end)
 		elseif self:GetUncommonInf( "CEDA" ) then
 			if z_Difficulty:GetInt() == 0 then
 				z_Health = 50
@@ -169,8 +174,6 @@ function ENT:Initialize()
 			z_Health = z_CommonHealth
 		end
 
-		print(z_Health)
-
 		self:SetMaxHealth( z_Health )
 		self:SetHealth( z_Health )
 
@@ -178,10 +181,13 @@ function ENT:Initialize()
 
 		if droppableProps:GetBool() then
 			local randomValue = random( 100 ) <= 15
+			
 			if ci_BatonModels[ mdl ] and randomValue then
-				self:CreateItem( "nightstick", ci_BatonModels[ mdl ] [ 2 ], "baton" )
+				self:CreateItem( "nightstick", "baton" )
 			elseif self:GetUncommonInf( "CEDA" ) and randomValue then
-				self:CreateItem( "bileJar", false, "grenade" )
+				self:CreateItem( "bileJar", "grenade" )
+			elseif self:GetUncommonInf( "FALLEN" ) and randomValue then
+				self:CreateItem( "healthKit", "medkit" )
 			end
 		end
 
@@ -227,9 +233,8 @@ end
 -- CEDA, ect. Create some props for them to carry
 
 -- itemName = Prop name in table
--- canparent = Should it parented to the ragdoll on death?
 -- id = id attachment name
-function ENT:CreateItem( itemName, canparent, id )
+function ENT:CreateItem( itemName, id )
 	local model = Z_itemModels[ itemName ]
 	if !model then return end
 
@@ -247,56 +252,71 @@ function ENT:CreateItem( itemName, canparent, id )
 	item:SetSolid( SOLID_BSP )
 
 	self.item = item 			-- The prop item
-	self.canparent = canparent 	-- Can this prop be parented to ragdoll on death?
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CreateItemOnDeath( ragdoll )
 	local item = self.item
 	-- Make this into a convar later
-	local dropChance = random( 100 ) <= 60
 
-	if dropChance or !self.canparent then
-		item:SetParent( nil )
-		item:SetPos( self:GetPos() + Vector( 0, 0, 50 ) )
-		item:SetCollisionGroup( COLLISION_GROUP_DEBRIS )
-		item:PhysicsInit( SOLID_VPHYSICS )
+	item:SetParent( nil )
+	item:SetPos( self:GetPos() + Vector( 0, 0, 25 ) )
+	item:SetCollisionGroup( COLLISION_GROUP_DEBRIS )
+	item:PhysicsInit( SOLID_VPHYSICS )
 
-		local phys = item:GetPhysicsObject()
+	local function FlyProp( phys )
 		if IsValid( phys ) then
 			phys:EnableGravity( true )
 			phys:Wake()
 
 			-- Apply a force so they fly up or around.
-			local randX = random( -1000, 1000 )
-			local randY = random( -1000, 1000 )
+			local randX = random( -250, 250 )
+			local randY = random( -250, 250 )
 			local randZ = random( 450, 1000 )
 			local force = Vector( randX, randY, randZ )
 			local position = item:WorldToLocal( item:OBBCenter() ) + Vector( Rand( 5, 10 ), Rand( 5, 10 ), Rand( -10, 60 ) )
 			phys:ApplyForceOffset( force, position )
 		end
+	end
 
-		if random( 2 ) == 1 then
-			if item:GetModel() == Z_itemModels[ "bileJar" ] then
-				CreateGIHint( "warning", "Bile may break!", item, "beepclear" )
-				SimpleTimer( 5, function() 
-					RemoveGIHint( item ) 
-				end)
-			end
-		end
+	if item:GetModel() == Z_itemModels[ "bileJar" ] then
+		-- Remove the bileJar prop
+		item:Remove()
+	
+		-- Create the weapon entity
+		local wep = ents_Create( "weapon_l4d2_boomer_bile" )
+		wep:SetPos( self:GetPos() )
+		wep:SetAngles( self:GetAngles() )
+		wep:Spawn()
+		wep:Activate()
+		wep:SetSolid( SOLID_VPHYSICS )  -- Set the weapon to have physics
+	
+		-- Initialize physics for the weapon
+		local phys = wep:GetPhysicsObject()
+		FlyProp( phys )
 
-		SimpleTimer( 15, function()
-			if IsValid( item ) then
-				item:Remove()
+		hook.Add( "Think", "HandleHaloEventThink", function()
+			local entities = ents.FindByClass( "weapon_l4d2_boomer_bile" )
+			
+			-- If there are no more entities, remove the hook
+			if #entities == 0 then
+				hook.Remove( "Think", "HandleHaloEventThink" )
+			else
+				for _, entity in pairs( entities ) do
+					HandleHaloEvent( entity, "weapon_l4d2_boomer_bile" )
+				end
 			end
 		end)
 	else
-		-- Parent to the model, don't drop.
-		if IsValid( ragdoll ) then
-			item:SetParent( ragdoll )
-		end
+		local phys = item:GetPhysicsObject()
+		FlyProp(phys)
 	end
-end
 
+	SimpleTimer( 15, function()
+		if IsValid( item ) then
+			item:Remove()
+		end
+	end)
+end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:PlaySequenceAndMove( seq, options, callback )
 	if isstring( seq ) then seq = self:LookupSequence( seq )
@@ -362,39 +382,37 @@ function ENT:OnTakeDamage( dmginfo )
 				local isAttackerInFront = direction:Dot( selfForward ) > 0
 				local DamageToBlock = { DMG_GENERIC, DMG_CLUB, DMG_SLASH, DMG_AIRBOAT, DMG_DIRECT, DMG_SNIPER, DMG_BUCKSHOT, DMG_BULLET }
 
+				-- Block incoming frontal damage, but not from the backside
 				if isAttackerInFront and DamageToBlock[ damageType ] and attacker == inflictor then
 					if armorProtection:GetBool() then
 						-- Full protection
 						dmginfo:ScaleDamage( 0 )
 					else
-						-- Semi Protection
-						dmginfo:ScaleDamage( 0.05 )
+						-- Semi Protection ( if l4d_sv_z_riot_armor_protection is set to 0 )
+						dmginfo:ScaleDamage( 0.075 )
 					end
 
-					if random( 3 ) == 1 then
-						self:Vocalize( Zombie_BulletImpact_Riot, true )
-					end
+					if random( 3 ) == 1 then self:Vocalize( Zombie_BulletImpact_Riot, true ) end
 
-					-- Easy there sparkplug
+					-- Sparkle effects
 					local effectdata = EffectData()
 					effectdata:SetOrigin( dmginfo:GetDamagePosition() )
-					util.Effect( "ManhackSparks", effectdata )
+					effectdata:SetScale( 2 )
+					util.Effect( "StunstickImpact", effectdata )
 				end
-			elseif self:GetUncommonInf( "ROADCREW" ) then
-				-- Small damage resistance
-				dmginfo:ScaleDamage( 0.85 )
 			end
 		end
 	end
 
-	-- If uncommon infected are either CEDA, Fallen or Jimmy Gibbs Jr. will become flameproof
-	if self:GetUncommonInf( "CEDA" ) or self:GetUncommonInf( "FALLEN" ) or self:GetUncommonInf( "JIMMYGIBBS" )  then
-		self:SetFlameproof( dmginfo )
+	-- Certain infected are flameproof.
+	-- Extinguish the fire.
+	if self.Flameproof then
+		self:ExtinguishFire( dmginfo )
 	end
 
 	-- Insta kill CI if on fire
 	if !self.Flameproof and dmginfo:IsDamageType( DMG_BURN ) then
-		dmginfo:ScaleDamage( 1.5 )
+		dmginfo:ScaleDamage( 2.0 )
 	end
 
 	-- Play Bullet impact sounds
@@ -407,6 +425,7 @@ function ENT:OnTakeDamage( dmginfo )
 		self:Vocalize( ZCommon_Pain )
 	end
 
+	-- Flinch upon damage
 	if !dmginfo:IsDamageType( DMG_BURN ) and self:Health() > 0 and random( 3 ) == 1 then
 		self:PlayGesture( "ACT_TERROR_FLINCH" )
 	end
@@ -424,6 +443,7 @@ end)
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:OnKilled( dmginfo )
 	
+	-- Hook related and killfeed related
 	AddZombieDeath(self, dmginfo:GetAttacker(),  dmginfo:GetInflictor())
 	if OnNPCKilledHook:GetBool() then RunHook("OnNPCKilled", self, dmginfo:GetAttacker(),  dmginfo:GetInflictor()) end
 
@@ -432,7 +452,6 @@ function ENT:OnKilled( dmginfo )
 
 	self:SetDeathExpression( ragdoll )
 	if IsValid( self.item ) then self:CreateItemOnDeath( ragdoll ) end
-
 	self:Vocalize( ZCommon_L4D1_Death )
 
 	-- Suit deflate sound
@@ -470,14 +489,12 @@ function ENT:Think()
 
 	-- Randomly make noises
 	if CurTime() >= self.SpeakDelay then
-
 		if random( 50 ) == 1 then
 			if self:GetCurrentBehavior() == "ChasingVictim" then
 				if CurTime() - self.SpeakDelay > Rand( 2.5, 4 ) then
 					self:Vocalize( ZCommon_L4D1_RageAtVictim )
 					self.SpeakDelay = CurTime()
 				end
-
 			elseif self:GetCurrentBehavior() == "Idle" then
 				if CurTime() - self.SpeakDelay > Rand( 2.8, 8 ) then
 					self:Vocalize( ZCommon_Idle_Wander )
@@ -593,41 +610,6 @@ function ENT:StartRun()
 	self:ResetSequence( anim )
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
---[[ function ENT:Attack(target)
-	local detectedEnemy = target
-	local directionToEnemy = (detectedEnemy:GetPos() - self:GetPos()):GetNormalized()
-	local distance = self:GetPos():Distance(detectedEnemy:GetPos())
-	local AngleToEnemy = directionToEnemy:Angle()
-	AngleToEnemy.p = 0
-	if distance < 100 and (not self.AttackDelay or CurTime() - self.AttackDelay > Rand( 0.7, 1.2 )) then
-		self:SetCycle(0)
-		self:SetPlaybackRate(1)
-		self:SetAngles(AngleToEnemy)
-		self.ci_BehaviorState = "AttackingVictim"
-
-		if random( 2 ) == 1 then
-			if !self.SpeakDelay or CurTime() - self.SpeakDelay > Rand( 0.2, 1 ) then
-				self:Vocalize( ZCommon_L4D1_BecomeEnraged )
-				PrintMessage( HUD_PRINTTALK, "Enraged!" )
-				self.SpeakDelay = CurTime()
-			end
-		end
-
-		local dmginfo = DamageInfo()
-		dmginfo:SetDamage(5)
-		dmginfo:SetDamageType(DMG_DIRECT)
-		dmginfo:SetInflictor(self)
-		dmginfo:SetAttacker(self)
-		detectedEnemy:TakeDamageInfo(dmginfo)
-		self:Vocalize( ZCommon_AttackSmack )
-		self:LookAtEntity()
-		self:PlayAttackAnimation()
-		self.AttackDelay = CurTime()
-	end
-
-	return true
-end ]]
----------------------------------------------------------------------------------------------------------------------------------------------
 -- New Rework for melee attack (Standing)
 -- needs some work, ie ci sometimes not playing animations
 function ENT:Attack(target)
@@ -674,14 +656,10 @@ function ENT:Attack(target)
 				local dmginfo = DamageInfo()
 				local z_Difficulty = GetConVar( "l4d_sv_difficulty" ):GetInt()
 
-				if z_Difficulty == 0 then
-					zSmackDMG = 1
-				elseif z_Difficulty == 1 then
-					zSmackDMG = 2
-				elseif z_Difficulty == 2 then
-					zSmackDMG = 5
-				elseif z_Difficulty == 3 then
-					zSmackDMG = 20
+				if z_Difficulty 		== 0 	 then zSmackDMG = 1
+					elseif z_Difficulty == 1 	 then zSmackDMG = 2
+					elseif z_Difficulty == 2 	 then zSmackDMG = 5
+					elseif z_Difficulty == 3 	 then zSmackDMG = 20 
 				end
 				
 				dmginfo:SetDamage( zSmackDMG )
@@ -692,10 +670,7 @@ function ENT:Attack(target)
 
 				if detectedEnemy:IsPlayer() or detectedEnemy.IsLambdaPlayer then
 					-- Players can only have this called on them
-					if detectedEnemy:IsPlayer() then
-						detectedEnemy:ViewPunch( Angle( random( -1, 8 ), random( -1, 10 ), random( -1, 12 ) ) )
-					end
-					-- Slow down LambdaPlayers as well in future
+					if detectedEnemy:IsPlayer() then detectedEnemy:ViewPunch( Angle( random( -1, 8 ), random( -1, 10 ), random( -1, 12 ) ) ) end
 					self:SlowEntity( detectedEnemy )
 				end
 
@@ -708,8 +683,7 @@ function ENT:Attack(target)
 
 	return true
 end
-
-
+---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:SlowEntity( ent )
 	-- Tested with 200 walk speed, 400 run speed.
 	-- May be wonky on modified values.
@@ -717,8 +691,8 @@ function ENT:SlowEntity( ent )
 	-- Start slowing the ent down
 	if !ent.IsSlowed and ( !ent.LastSlowTime or CurTime() - ent.LastSlowTime >= 0.75 ) then
 		ent.OriginalWalkSpeed = ent:GetWalkSpeed()
-		ent:SetWalkSpeed( ent.OriginalWalkSpeed * 0.8 )
 		ent.OriginalRunSpeed = ent:GetRunSpeed()
+		ent:SetWalkSpeed( ent.OriginalWalkSpeed * 0.8 )
 		ent:SetRunSpeed( ent.OriginalRunSpeed * 0.65 )
 
 		ent.IsSlowed = true
@@ -760,11 +734,13 @@ function ENT:SlowEntity( ent )
 				ent:SetRunSpeed( ent.OriginalRunSpeed )
 			end
 
+			-- We are no longer slow, remove the timer!
 			if currentWalkSpeed >= ent.OriginalWalkSpeed and currentRunSpeed >= ent.OriginalRunSpeed then
 				ent.IsSlowed = false
 				timer_Remove( restoreTimerName )
 			end
 		else
+			-- Our entity is no longer valid, remove me!
 			timer_Remove( restoreTimerName )
 		end
 	end)
@@ -803,11 +779,6 @@ function ENT:ChaseTarget( target )
 	return "ok"
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
-function ENT:PlayAttackAnimation()
-	coroutine.wait( 0.4 )
-	self:ResetSequence( "ACT_TERROR_ATTACK_CONTINUOUSLY" )
-end
----------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:BodyUpdate()
 	local velocity = self.loco:GetVelocity()
 	if !velocity:IsZero() then
@@ -839,19 +810,20 @@ function ENT:BodyUpdate()
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:SetDeathExpression( ragdoll )
-
 	local expressionKeys = {}
-	for key in pairs( _DeathExpressions ) do
-		table_insert( expressionKeys, key )
-	end
+	for key in pairs( _DeathExpressions ) do table_insert( expressionKeys, key ) end
 
 	local randomExpressionKey = expressionKeys[ random( #expressionKeys ) ]
 	local bonesToModify = _DeathExpressions[ randomExpressionKey ]
 
 	--PrintMessage(HUD_PRINTTALK, "Expression picked: " .. randomExpressionKey )
 
+	-- Let's do something from the Beta of L4D1.
+	-- Common Infected death expressions.
 	for _, boneData in pairs( bonesToModify ) do
+		
 		local boneIndex = ragdoll:LookupBone( boneData.boneName )
+
 		if boneIndex then
 			ragdoll:ManipulateBonePosition( boneIndex, boneData.positionOffset )
 			ragdoll:ManipulateBoneAngles( boneIndex, boneData.angleOffset )

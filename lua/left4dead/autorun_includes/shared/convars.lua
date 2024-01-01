@@ -49,3 +49,7 @@ CreateClientConVar( "l4d_cl_glow_npc_vomit_b", 0, true, false, "blue color for V
 CreateClientConVar( "l4d_cl_glow_npc_r", 76, true, false, "Red color for npcs/players" )
 CreateClientConVar( "l4d_cl_glow_npc_g", 102, true, false, "green color for npcs/players" )
 CreateClientConVar( "l4d_cl_glow_npc_b", 255, true, false, "blue color for npcs/players" )
+
+CreateClientConVar( "l4d_cl_glow_item_r", 178, true, false, "Red color for far items" )
+CreateClientConVar( "l4d_cl_glow_item_g", 178, true, false, "green color for far items" )
+CreateClientConVar( "l4d_cl_glow_item_b", 255, true, false, "blue color for far items" )
