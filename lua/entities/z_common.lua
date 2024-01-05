@@ -133,6 +133,7 @@ function ENT:Initialize()
 		self:SetBehavior( "Idle" ) -- The state for our behavior thread is currently running
 		self.ci_lastfootsteptime = 0 -- The last time we played a footstep sound
 		self.SpeakDelay = 0 -- the last time we spoke
+		self:AddFlags(FL_CLIENT)
 
 		local z_Health
 		local z_FallenHealth = GetConVar( "l4d_sv_z_fallen_health_multiplier" ):GetInt()
@@ -217,7 +218,19 @@ function ENT:Alive()
 end
 
 function ENT:Nick()
-	return self:GetClass()
+	return GetDeathNoticeZombieName(self)
+end
+
+function ENT:Name()
+	return GetDeathNoticeZombieName(self)
+end
+
+function ENT:IsPlayingTaunt()
+	return false
+end
+
+function ENT:GetState()
+	return "Nothing"
 end
 
 

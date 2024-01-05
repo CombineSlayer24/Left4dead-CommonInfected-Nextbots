@@ -8,7 +8,7 @@ if SERVER then
 	local KillfeedOverride = CreateConVar("l4d_sv_killfeed_override", 0, FCVAR_ARCHIVE + FCVAR_NOTIFY, "If L4D2 Nextbots should override killfeed so it wont display two killfeed entries?", 0, 1)
 	local CallNPCKilled = CreateConVar("l4d_sv_call_onnpckilled", 0, FCVAR_ARCHIVE + FCVAR_NOTIFY, "If L4D2 Nextbots should call 'OnNPCKilled' hook?", 0, 1)
 
-	local function GetDeathNoticeZombieName( ent )
+	function GetDeathNoticeZombieName( ent )
 		if ent:GetClass() == "npc_citizen" then
 			if ent:GetModel() == "models/odessa.mdl" then return "Odessa Cubbage" end
 	
