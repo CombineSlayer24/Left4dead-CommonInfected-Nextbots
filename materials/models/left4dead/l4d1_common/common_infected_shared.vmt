@@ -1,6 +1,6 @@
 "VertexLitGeneric"
 {
-	$bumpmap "models/left4dead/l4d2_common/ci_normal"
+	//$bumpmap "models/left4dead/l4d2_common/ci_normal"
 
 	$halflambert 0
 	$nodecal 1
@@ -9,10 +9,11 @@
 
 	// Phong info
 	$phong 1
-	$phongboost 0.1
-	$phongexponent 5
-	$phongtint "[.4 .8 1]"
+	$phongboost 1
+	$phongexponent 1
+	$phongtint "[.1 .1 .1]"
 	$phongfresnelranges "[1 0 .05]"
+	$allowdiffusemodulation 0
 
 	// Rim light info
 //	$rimlight 1

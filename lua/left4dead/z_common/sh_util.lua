@@ -204,7 +204,7 @@ function ENT:GetUncommonInf( model )
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 -- Set our current infected flameproof
-function ENT:SetFlameproof( dmginfo )
+function ENT:ExtinguishFire( dmginfo )
 	self.Flameproof = true
 	if dmginfo:IsDamageType( DMG_BURN ) then
 		if SERVER then

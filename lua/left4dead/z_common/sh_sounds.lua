@@ -68,7 +68,6 @@ function ENT:InitSounds()
 		"left4dead/vocals/infected/idle/mumbling/mumbling06.wav",
 		"left4dead/vocals/infected/idle/mumbling/mumbling07.wav",
 		"left4dead/vocals/infected/idle/mumbling/mumbling08.wav",
-		"left4dead/vocals/infected/idle/mumbling/mumbling09.wav",
 		"left4dead/vocals/infected/idle/breathing/breathing01.wav",
 		"left4dead/vocals/infected/idle/breathing/breathing08.wav",
 		"left4dead/vocals/infected/idle/breathing/breathing09.wav",

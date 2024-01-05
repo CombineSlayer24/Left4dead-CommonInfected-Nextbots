@@ -1,0 +1,31 @@
+VertexLitGeneric
+{
+	$baseTexture "models/left4dead/special/hunter/hunter_l4d1"
+	$shinyblood 1
+	$shinybloodexponent 8
+	$halflambert 1
+//	$bumpmap "effects/flat_normal"
+	$phong 1
+	$phongboost 1
+	$phongexponent 1
+	$phongfresnelranges "[1 0 .25]"
+	$allowdiffusemodulation 1
+	$detail "models/left4dead/special/hunter/hunter_01_detail.vtf"
+	$detailscale 4
+	$detailblendfactor .001
+	$detailblendmode 0
+	$detailAmount 0
+	$ambientocclusion 1
+	Proxies
+	{
+		BloodyHands
+		{
+			resultVar $detailAmount
+		}
+		Equals
+		{
+			srcVar1 $detailAmount
+			resultVar $detailblendfactor
+		}
+	}
+}
