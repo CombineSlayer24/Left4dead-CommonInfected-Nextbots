@@ -212,6 +212,7 @@ Z_itemModels =
 	painPills = "models/w_models/weapons/w_eq_painpills.mdl",
 	-- Add more items here as needed
 }
+
 local anims = {
 	"models/infected/anim_boomer.mdl",
 	"models/infected/anim_hunter.mdl",
@@ -229,12 +230,20 @@ local anims = {
 }
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function PrecacheAssets()
- 	local assets = { Z_FemaleModels, Z_MaleModels, Z_itemModels, anims }
+--[[ 	local assets = { Z_FemaleModels, Z_MaleModels, Z_itemModels, anims }
 	for _, modelList in ipairs( assets ) do
 		for _, model in ipairs( modelList ) do
 			util.PrecacheModel( model )
 		end
-	end
+	end ]]
+
+
+    for k,v in pairs( player_manager.AllValidModels() ) do util.PrecacheModel( v ) end
+    for k, data in pairs( _LAMBDAPLAYERSWEAPONS ) do
+        if data.model then
+            util.PrecacheModel( data.model )
+        end
+    end
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 hook.Add( "Initialize"," Precache", function()
@@ -244,7 +253,7 @@ hook.Add( "Initialize"," Precache", function()
 end)
 
 
-if CLIENT then
+--[[ if CLIENT then
 	local modelPath = "models/infected/specials/hunter_l4d1.mdl"
 
 	local modelEntity = ClientsideModel(modelPath, RENDERGROUP_OPAQUE)
@@ -258,4 +267,4 @@ if CLIENT then
 		print("Animation ID " .. sequence .. ": " .. modelEntity:GetSequenceName(sequence))
 	end
 	modelEntity:Remove()
-end
+end ]]

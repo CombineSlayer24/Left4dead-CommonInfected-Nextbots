@@ -1,3 +1,4 @@
+---------------------------------------------------------------------------------------------------------------------------------------------
 AddCSLuaFile()
 
 ENT.Base = "base_nextbot"
@@ -13,6 +14,7 @@ ENT.IsLyingOrSitting = false
 ENT.IsClimbing = false
 ENT.HasLanded = false
 ENT.Flameproof = false
+---------------------------------------------------------------------------------------------------------------------------------------------
 
 --- Include files based on sv_ sh_ or cl_
 --- These will load z_common files for our common infected to use
@@ -39,8 +41,8 @@ for k, luafile in ipairs( ENT_CommonFiles ) do
 end
 
 --Handling Killfeed entries.
-include("left4dead/autorun_includes/server/netmessages.lua")
-local OnNPCKilledHook = GetConVar("l4d_sv_call_onnpckilled")
+include( "left4dead/autorun_includes/server/netmessages.lua" )
+local OnNPCKilledHook = GetConVar( "l4d_sv_call_onnpckilled" )
 
 -- This might seem reduntant, but trust me, it's not.
 -- We create locals of functions so GLua can access them faster
@@ -146,7 +148,6 @@ function ENT:Initialize()
 		self:SetBehavior( "Idle" ) -- The state for our behavior thread is currently running
 		self.ci_lastfootsteptime = 0 -- The last time we played a footstep sound
 		self.SpeakDelay = 0 -- the last time we spoke
-		self:AddFlags(FL_CLIENT)
 
 		local z_Health
 		local z_FallenHealth = GetConVar( "l4d_sv_z_fallen_health_multiplier" ):GetInt()
@@ -192,6 +193,7 @@ function ENT:Initialize()
 			end
 		end
 
+		-- Adjust Step Height for climbing
 		self.loco:SetStepHeight( 22 )
 		self.loco:SetGravity( sv_gravity:GetFloat() )
 
@@ -202,7 +204,7 @@ function ENT:Initialize()
 		self:SetCollisionGroup( COLLISION_GROUP_INTERACTIVE )
 
 		self:SetLagCompensated( true )
-		self:AddFlags( FL_OBJECT + FL_NPC )
+		self:AddFlags( FL_OBJECT + FL_NPC + FL_CLIENT )
 		self:SetSolidMask( MASK_PLAYERSOLID )
 
 		-- Breathing Anims layer
@@ -212,7 +214,7 @@ function ENT:Initialize()
 		self.ci_lastdraw = 0
 	end
 end
-
+---------------------------------------------------------------------------------------------------------------------------------------------
 --Bypass for Lambda Players, so there wont be duplicate entires caused by netmessages from both l4d2 nextbots and lambda players
 --TL:DR This suppresses lambda players DeathNotice hook overide.
 function ENT:SetupDataTables()
@@ -224,11 +226,11 @@ function ENT:Alive()
 end
 
 function ENT:Nick()
-	return GetDeathNoticeZombieName(self)
+	return GetDeathNoticeZombieName( self )
 end
 
 function ENT:Name()
-	return GetDeathNoticeZombieName(self)
+	return GetDeathNoticeZombieName( self )
 end
 
 function ENT:IsPlayingTaunt()
@@ -238,7 +240,6 @@ end
 function ENT:GetState()
 	return "Nothing"
 end
-
 
 ---------------------------------------------------------------------------------------------------------------------------------------------
 -- Certain Common/Uncommon Infected will have
@@ -321,7 +322,7 @@ function ENT:CreateItemOnDeath( ragdoll )
 		end)
 	else
 		local phys = item:GetPhysicsObject()
-		FlyProp(phys)
+		FlyProp( phys )
 	end
 
 	SimpleTimer( 15, function()
@@ -342,7 +343,7 @@ function ENT:PlaySequenceAndMove( seq, options, callback )
 	local previousCycle = 0
 	local previousPos = self:GetPos()
 	self.loco:SetDesiredSpeed( self:GetSequenceGroundSpeed( seq ) )
-	local res = self:PlaySequenceAndWait2( seq, options.rate, function( self, cycle )
+	local res = self:PlaySequenceAndWait( seq, options.rate, function( self, cycle )
 		local success, vec, angles = self:GetSequenceMovement( seq, previousCycle, cycle )
 		if success then
 			vec = Vector( vec.x, vec.y, vec.z )
@@ -363,7 +364,7 @@ function ENT:PlaySequenceAndMove( seq, options, callback )
 	return res
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
-function ENT:PlaySequenceAndWait2( seq, rate, callback )
+function ENT:PlaySequenceAndWait( seq, rate, callback )
 	if isstring( seq ) then seq = self:LookupSequence( seq )
 	elseif not isnumber( seq ) then return end
 	if seq == -1 then return end
