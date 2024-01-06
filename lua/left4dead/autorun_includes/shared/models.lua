@@ -230,20 +230,12 @@ local anims = {
 }
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function PrecacheAssets()
---[[ 	local assets = { Z_FemaleModels, Z_MaleModels, Z_itemModels, anims }
+ 	local assets = { Z_FemaleModels, Z_MaleModels, Z_itemModels, anims }
 	for _, modelList in ipairs( assets ) do
 		for _, model in ipairs( modelList ) do
 			util.PrecacheModel( model )
 		end
-	end ]]
-
-
-    for k,v in pairs( player_manager.AllValidModels() ) do util.PrecacheModel( v ) end
-    for k, data in pairs( _LAMBDAPLAYERSWEAPONS ) do
-        if data.model then
-            util.PrecacheModel( data.model )
-        end
-    end
+	end
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 hook.Add( "Initialize"," Precache", function()

@@ -175,6 +175,14 @@ function SpawnNPC( class, caller, amount, spawnAtCrosshair )
 	local pos
 	if amount > 6 then
 		pos = areas[ random( #areas ) ]
+		if CLIENT then
+			if steamworks.IsSubscribed("3120802074") then
+				CreateGIVectorHint("point", "Incoming Horde!", pos, nil, "HordeIndicator")
+				timer.Simple(5, function() RemoveGIVectorHint("HordeIndicator") end)
+			else
+				MsgC(Color(255, 0, 0), "GIF is not installed / enabled currently\n")
+			end
+		end
 	end
 
 	timer.Create(spawnTimerName, 0.065, amount, function()
