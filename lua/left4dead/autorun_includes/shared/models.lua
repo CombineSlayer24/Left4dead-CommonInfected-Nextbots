@@ -47,6 +47,7 @@ Z_MaleModels =
 	"models/infected/l4d2_nb/common_male_polo_jeans.mdl",
 	"models/infected/l4d2_nb/common_male_formal.mdl",
 	"models/infected/l4d2_nb/common_male_biker.mdl",
+	"models/infected/l4d2_nb/common_male_shadertest.mdl",
 
 	-- Swamp
 	"models/infected/l4d2_nb/common_male_tanktop_overalls_swamp.mdl",
