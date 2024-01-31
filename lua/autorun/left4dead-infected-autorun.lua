@@ -260,7 +260,8 @@ if SERVER then
 	local cTypes = {
 		infected = "Infected",
 		droppedguns = "Ground Weapons",
-		props = "Props",
+		props = "Some Props",
+		allprops = "All Props",
 		decals = "Removed All Decals",
 		guns = "Removed Your Weapons",
 		ammo = "Removed Your Ammo",
@@ -295,7 +296,8 @@ if SERVER then
 			for _, v in ipairs( ents_GetAll() ) do
 				if ( v:IsNextBot() and ( cType == "infected" and v.IsCommonInfected ) )
 				or ( cType == "groundweapons" and v:IsWeapon() and !IsValid( v:GetOwner() ) )
-				or ( cType == "props" and v:GetClass() == "prop_physics" and ( !IsValid(v:GetParent() )
+				or ( cType == "props" and v:GetClass() == "prop_physics" and !IsValid(v:GetParent() ) )
+				or ( cType == "allprops" and (v:GetClass() == "prop_physics" or v:GetClass() == "prop_physics_multiplayer") and ( !IsValid(v:GetParent() )
 				or ( IsValid( v:GetParent() ) and v:GetParent():Health() <= 0 and ( v:GetParent():IsNextBot()
 				or v:GetParent():IsPlayer() ) ) ) ) then
 					v:Remove()

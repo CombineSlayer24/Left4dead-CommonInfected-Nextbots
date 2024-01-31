@@ -242,10 +242,7 @@ function ENT:GetState()
 end
 
 ---------------------------------------------------------------------------------------------------------------------------------------------
--- Certain Common/Uncommon Infected will have
--- props attached to them... Riot Cops, Cops
--- CEDA, ect. Create some props for them to carry
-
+-- Certain Infected can have props attached to them.
 -- itemName = Prop name in table
 -- id = id attachment name
 function ENT:CreateItem( itemName, id )
@@ -270,14 +267,12 @@ end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CreateItemOnDeath( ragdoll )
 	local item = self.item
-	-- Make this into a convar later
-
 	item:SetParent( nil )
 	item:SetPos( self:GetPos() + Vector( 0, 0, 25 ) )
 	item:SetCollisionGroup( COLLISION_GROUP_DEBRIS )
 	item:PhysicsInit( SOLID_VPHYSICS )
 
-	local function FlyProp( phys )
+	local function PropFling( phys )
 		if IsValid( phys ) then
 			phys:EnableGravity( true )
 			phys:Wake()
@@ -306,7 +301,7 @@ function ENT:CreateItemOnDeath( ragdoll )
 	
 		-- Initialize physics for the weapon
 		local phys = wep:GetPhysicsObject()
-		FlyProp( phys )
+		PropFling( phys )
 
 		hook.Add( "Think", "HandleHaloEventThink", function()
 			local entities = ents.FindByClass( "weapon_l4d2_boomer_bile" )
@@ -322,7 +317,7 @@ function ENT:CreateItemOnDeath( ragdoll )
 		end)
 	else
 		local phys = item:GetPhysicsObject()
-		FlyProp( phys )
+		PropFling( phys )
 	end
 
 	SimpleTimer( 15, function()
@@ -518,6 +513,11 @@ function ENT:Think()
 		end
 	end
 
+	-- If we are chasing or attacking our prey, look at them.
+	if self:GetCurrentBehavior() == "ChasingVictim" or self:GetCurrentBehavior() == "AttackingVictim" then
+		self:LookAtEntity()
+	end
+
 	if SERVER then
 		local loco = self.loco
 		local locoVel = loco:GetVelocity()
@@ -702,62 +702,63 @@ function ENT:SlowEntity( ent )
 	-- Tested with 200 walk speed, 400 run speed.
 	-- May be wonky on modified values.
 
-	-- Start slowing the ent down
-	if !ent.IsSlowed and ( !ent.LastSlowTime or CurTime() - ent.LastSlowTime >= 0.75 ) then
-		ent.OriginalWalkSpeed = ent:GetWalkSpeed()
-		ent.OriginalRunSpeed = ent:GetRunSpeed()
-		ent:SetWalkSpeed( ent.OriginalWalkSpeed * 0.8 )
-		ent:SetRunSpeed( ent.OriginalRunSpeed * 0.65 )
+	if ent:IsPlayer() or ent.IsLambdaPlayer then
 
-		ent.IsSlowed = true
-		ent.LastSlowTime = CurTime()
+		-- Start slowing the ent down
+		if !ent.IsSlowed and ( !ent.LastSlowTime or CurTime() - ent.LastSlowTime >= 0.75 ) then
+			ent.OriginalWalkSpeed = ent:GetWalkSpeed()
+			ent.OriginalRunSpeed = ent:GetRunSpeed()
+			ent:SetWalkSpeed( ent.OriginalWalkSpeed * 0.8 )
+			ent:SetRunSpeed( ent.OriginalRunSpeed * 0.65 )
 
-		--ent:ChatPrint( "Max Walk Speed: " .. math.floor( ent.OriginalWalkSpeed ) .. ", Slowed Down Walk Speed: " .. math.floor( ent:GetWalkSpeed() ) )
-		--ent:ChatPrint( "Max Run Speed: " .. math.floor( ent.OriginalRunSpeed ) .. ", Slowed Down Run Speed: " .. math.floor( ent:GetRunSpeed() ) )
-	elseif ent.IsSlowed and ( !ent.LastSlowTime or CurTime() - ent.LastSlowTime >= 0.75 ) then
-		-- If the entity is already slowed, apply a minor additional slowdown
-		ent:SetWalkSpeed( ent:GetWalkSpeed() * 0.825 )
-		ent:SetRunSpeed( ent:GetRunSpeed() * 0.78 )
-		ent.LastSlowTime = CurTime()
+			ent.IsSlowed = true
+			ent.LastSlowTime = CurTime()
 
-		--ent:ChatPrint( "Max Walk Speed: " .. math.floor( ent.OriginalWalkSpeed ) .. ", Further Slowed Down Walk Speed: " .. math.floor( ent:GetWalkSpeed() ) )
-		--ent:ChatPrint( "Max Run Speed: " .. math.floor( ent.OriginalRunSpeed ) .. ", Further Slowed Down Run Speed: " .. math.floor( ent:GetRunSpeed() ) )
-	end
+			--ent:ChatPrint( "Max Walk Speed: " .. math.floor( ent.OriginalWalkSpeed ) .. ", Slowed Down Walk Speed: " .. math.floor( ent:GetWalkSpeed() ) )
+			--ent:ChatPrint( "Max Run Speed: " .. math.floor( ent.OriginalRunSpeed ) .. ", Slowed Down Run Speed: " .. math.floor( ent:GetRunSpeed() ) )
+		elseif ent.IsSlowed and ( !ent.LastSlowTime or CurTime() - ent.LastSlowTime >= 0.75 ) then
+			-- If the entity is already slowed, apply a minor additional slowdown
+			ent:SetWalkSpeed( ent:GetWalkSpeed() * 0.825 )
+			ent:SetRunSpeed( ent:GetRunSpeed() * 0.78 )
+			ent.LastSlowTime = CurTime()
 
-	-- Gradually restore the ent's speed
-	local restoreTimerName = "SpeedRestore" .. ent:EntIndex()
-	if timer.Exists( restoreTimerName ) then
-		timer_Remove( restoreTimerName )
-	end
+			--ent:ChatPrint( "Max Walk Speed: " .. math.floor( ent.OriginalWalkSpeed ) .. ", Further Slowed Down Walk Speed: " .. math.floor( ent:GetWalkSpeed() ) )
+			--ent:ChatPrint( "Max Run Speed: " .. math.floor( ent.OriginalRunSpeed ) .. ", Further Slowed Down Run Speed: " .. math.floor( ent:GetRunSpeed() ) )
+		end
 
-	timer_Create( restoreTimerName, 0.0425, 0, function()
-		if IsValid( ent ) then
-			local currentWalkSpeed = ent:GetWalkSpeed()
-			local currentRunSpeed = ent:GetRunSpeed()
-			-- Regen walk spped to normal
-			if currentWalkSpeed < ent.OriginalWalkSpeed then
-				ent:SetWalkSpeed( currentWalkSpeed + 1.2 )
+		-- Gradually restore the ent's speed
+		local restoreTimerName = "SpeedRestore" .. ent:EntIndex()
+		if timer.Exists( restoreTimerName ) then timer_Remove( restoreTimerName ) end
+
+		timer_Create( restoreTimerName, 0.0425, 0, function()
+			if IsValid( ent ) then
+				local currentWalkSpeed = ent:GetWalkSpeed()
+				local currentRunSpeed = ent:GetRunSpeed()
+				-- Regen walk spped to normal
+				if currentWalkSpeed < ent.OriginalWalkSpeed then
+					ent:SetWalkSpeed( currentWalkSpeed + 1.2 )
+				else
+					ent:SetWalkSpeed( ent.OriginalWalkSpeed )
+				end
+
+				-- Regen Run speed to normal
+				if currentRunSpeed < ent.OriginalRunSpeed then
+					ent:SetRunSpeed( currentRunSpeed + 2.5 )
+				else
+					ent:SetRunSpeed( ent.OriginalRunSpeed )
+				end
+
+				-- We are no longer slow, remove the timer!
+				if currentWalkSpeed >= ent.OriginalWalkSpeed and currentRunSpeed >= ent.OriginalRunSpeed then
+					ent.IsSlowed = false
+					timer_Remove( restoreTimerName )
+				end
 			else
-				ent:SetWalkSpeed( ent.OriginalWalkSpeed )
-			end
-
-			-- Regen Run speed to normal
-			if currentRunSpeed < ent.OriginalRunSpeed then
-				ent:SetRunSpeed( currentRunSpeed + 2.5 )
-			else
-				ent:SetRunSpeed( ent.OriginalRunSpeed )
-			end
-
-			-- We are no longer slow, remove the timer!
-			if currentWalkSpeed >= ent.OriginalWalkSpeed and currentRunSpeed >= ent.OriginalRunSpeed then
-				ent.IsSlowed = false
+				-- Our entity is no longer valid, remove me!
 				timer_Remove( restoreTimerName )
 			end
-		else
-			-- Our entity is no longer valid, remove me!
-			timer_Remove( restoreTimerName )
-		end
-	end)
+		end)
+	end
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:ChaseTarget( target )

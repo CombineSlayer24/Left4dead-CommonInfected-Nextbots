@@ -5,15 +5,10 @@ VertexLitGeneric
 
 	// Phong info
 	$phong 1
-	$phongboost 0.3
-	$phongexponent 10
+	$phongboost 1.2
+	$phongexponent 150
 	$phongtint "[.62 .72 1]"
-	$phongfresnelranges "[0.75 0.25 1]"
-
-	// Rim light info
-	$rimlight 1
-	$rimlightexponent 10
-	$rimlightboost 0.3
+	$phongfresnelranges "[0.75 0.25 30]"
 
 	// Eye Glow info
 	$detail "models/left4dead/l4d2_common/cim_glowing_eyes"

@@ -1,0 +1,8 @@
+patch
+{
+	include "materials/models/left4dead/l4d2_common/ci_body_shared_ceda_l4d1.vmt"
+	insert
+	{
+		$baseTexture "models/left4dead/l4d2_common/l4d1/cim_ceda_full_l4d1_03"
+	}
+}
