@@ -102,6 +102,8 @@ function ENT:SetUpUnCommonInfected()
 			else
 				self.Flameproof = false
 			end
+
+			self.IsUnCommonInfected = true
 			--print( self.UnCommonType .. " SetUpUnCommonInfected()" )
 			--print( "Flameproof: " .. tostring( self.Flameproof ) )
 			break
@@ -160,13 +162,7 @@ function ENT:Initialize()
 			z_Health = 3000 * ( z_JimmyHealth / 20 )
 		elseif self:GetUncommonInf( "RIOT" ) then
 			z_Health = 50
-		elseif self:GetUncommonInf( "CEDA" ) then
-			if z_Difficulty:GetInt() == 0 then
-				z_Health = 50
-			else
-				z_Health = 150
-			end
-		elseif self:GetUncommonInf( "ROADCREW" ) then
+		elseif self:GetUncommonInf( "CEDA" ) or self:GetUncommonInf( "ROADCREW" ) or self:GetUncommonInf( "CLOWN" ) or self:GetUncommonInf( "MUDMEN" ) then
 			if z_Difficulty:GetInt() == 0 then
 				z_Health = 50
 			else
@@ -451,10 +447,9 @@ hook.Add( "ScaleNPCDamage","InfectedDamage", function( npc, hitgroup, dmginfo )
 end)
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:OnKilled( dmginfo )
-	
 	-- Hook related and killfeed related
-	AddZombieDeath(self, dmginfo:GetAttacker(),  dmginfo:GetInflictor())
-	if OnNPCKilledHook:GetBool() then RunHook("OnNPCKilled", self, dmginfo:GetAttacker(),  dmginfo:GetInflictor()) end
+	AddZombieDeath( self, dmginfo:GetAttacker(),  dmginfo:GetInflictor() )
+	if OnNPCKilledHook:GetBool() then RunHook( "OnNPCKilled", self, dmginfo:GetAttacker(),  dmginfo:GetInflictor() ) end
 
 	local ragdoll = self:BecomeRagdoll( dmginfo )
 	ragdoll:SetCollisionGroup( COLLISION_GROUP_DEBRIS )
@@ -468,6 +463,7 @@ function ENT:OnKilled( dmginfo )
 		ragdoll:EmitSound("left4dead/vocals/infected/death/ceda_suit_deflate_0" .. random( 3 ) .. ".wav", 75, random( 90, 100 ), 0.75 )
 	end
 
+	-- Set burn material if killed by fire.
 	if !self.Flameproof and dmginfo:IsDamageType( DMG_BURN ) then
 		local burnMat = "models/left4dead/ci_burning"
 		ragdoll:Ignite( 5, 0 )
@@ -608,14 +604,16 @@ function ENT:StartWandering()
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:StartRun()
-	self.loco:SetDesiredSpeed(300)
-	self.loco:SetAcceleration(500)
-	self.loco:SetDeceleration(1000)
+	self.loco:SetDesiredSpeed( 300 )
+	self.loco:SetAcceleration( 500 )
+	self.loco:SetDeceleration( 1000 )
 	self.IsRunning = true
 
 	local anim = self:GetActivity()
 
-	if self.Gender == "Female" then
+	if self:GetUncommonInf( "MUDMEN" ) then
+		anim = "ACT_TERROR_CRAWL_RUN"
+	elseif self.Gender == "Female" then
 		anim = "ACT_RUN"
 	else
 		anim = "ACT_TERROR_RUN_INTENSE"
@@ -626,6 +624,7 @@ end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 -- New Rework for melee attack (Standing)
 -- needs some work, ie ci sometimes not playing animations
+-- TODO: Rework this again :/
 function ENT:Attack(target)
 	local detectedEnemy = target
 	if !IsValid( detectedEnemy ) then return false end
@@ -832,9 +831,6 @@ function ENT:SetDeathExpression( ragdoll )
 	local bonesToModify = _DeathExpressions[ randomExpressionKey ]
 
 	--PrintMessage(HUD_PRINTTALK, "Expression picked: " .. randomExpressionKey )
-
-	-- Let's do something from the Beta of L4D1.
-	-- Common Infected death expressions.
 	for _, boneData in pairs( bonesToModify ) do
 		
 		local boneIndex = ragdoll:LookupBone( boneData.boneName )

@@ -44,10 +44,10 @@ if SERVER then
 	}
 
 	local carColors = {
-		Color( 200, 90, 45 ),  -- Orangish
+		Color( 200, 90, 45 ),   -- Orangish
 		Color( 215, 110, 65 ),  -- Bright Orange
 		Color( 200, 145, 45 ),  -- Yellowish
-		Color( 175, 75, 20 ),  -- Redish
+		Color( 175, 75, 20 ),   -- Redish
 	}
 	
 	local function CreateCommon( class, ply, amount )

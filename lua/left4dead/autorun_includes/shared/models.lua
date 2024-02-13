@@ -8,7 +8,7 @@ local string_Explode = string.Explode
 ---------------------------------------------------------------------------------------------------------------------------------------------
 Z_MaleModels =
 {
-	-- Cuba's Common Infected
+	-- Cuba's Common Infected --
 
 	-- L4D1 --
 	"models/infected/c_nb/common_male_police01.mdl",
@@ -72,7 +72,7 @@ Z_MaleModels =
 ---------------------------------------------------------------------------------------------------------------------------------------------
 Z_FemaleModels =
 {
-	-- Cuba's Common Infected
+	-- Cuba's Common Infected --
 	
 	-- L4D1 --
 	"models/infected/c_nb/common_female01.mdl",
@@ -85,17 +85,17 @@ Z_FemaleModels =
 	"models/infected/c_nb/trs_common_female_nurse01.mdl",
 	"models/infected/c_nb/trs_common_female_suit01.mdl",
 
-	-- L4D2
+	-- L4D2 --
 	-- Females
 	"models/infected/l4d2_nb/common_female_tanktop_jeans.mdl",
 	"models/infected/l4d2_nb/common_female_tshirt_skirt.mdl",
 	"models/infected/l4d2_nb/common_female_formal.mdl",
 
-	-- uncommon
+	-- Uncommon
 	"models/infected/l4d2_nb/uncommon_female_riot.mdl",
 	"models/infected/l4d2_nb/uncommon_female_ceda.mdl",
 
-	-- uncommon l4d1
+	-- Uncommon l4d1
 	"models/infected/l4d2_nb/uncommon_female_riot_l4d1.mdl",
 	"models/infected/l4d2_nb/uncommon_female_ceda_l4d1.mdl",
 }

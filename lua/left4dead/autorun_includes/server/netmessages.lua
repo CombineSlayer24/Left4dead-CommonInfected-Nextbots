@@ -28,6 +28,8 @@ if SERVER then
 			if ent.UnCommonType == "RIOT" then return "Riot Infected" end
 			if ent.UnCommonType == "MUDMEN" then return "Mud Infected" end
 			if ent.UnCommonType == "CLOWN" then return "Clown Infected" end
+			--if ent.UnCommonType == "CLOWN_L4D1" then return "Noisemaker Infected" end
+			-- Need permission to use Noisemaker infected before we can use it
 		end
 	
 		if ent:IsVehicle() and ent.VehicleTable and ent.VehicleTable.Name then
@@ -85,7 +87,6 @@ if SERVER then
 
 			if type == "Infected" then 
 				victim:Vocalize( ZCommon_Pain )
-				victim:EmitSound( "left4dead/music/tags/pukricidehit.wav", 75, 100, 0.6 )
 			end
 
 			if type == "HumanPlayer" then 
@@ -101,8 +102,13 @@ if SERVER then
 				if random( 2 ) == 1 then
 					victim:RetreatFrom()
 				end
+			end
 
+			-- The vomit soundeffect to play 
+			if type != "HumanPlayer" then
 				victim:EmitSound( "left4dead/music/tags/pukricidehit.wav", 75, 100, 0.6 )
+			else
+				--TODO: Play the puke music on clientside only for human players!
 			end
 		end
 	end

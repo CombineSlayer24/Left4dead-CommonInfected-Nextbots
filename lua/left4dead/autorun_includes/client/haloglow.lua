@@ -212,17 +212,21 @@ net.Receive( "Event_Vomited", function()
 	local victim = net.ReadEntity()
 	local type = net.ReadString()
 
+	local r_it_inf = glow_infected_vomit_r:GetInt()
+	local g_it_inf = glow_infected_vomit_g:GetInt()
+	local b_it_inf = glow_infected_vomit_b:GetInt()
+
+	local r_it_npc = glow_npc_vomit_r:GetInt()
+	local g_it_npc = glow_npc_vomit_g:GetInt()
+	local b_it_npc = glow_npc_vomit_b:GetInt()
+
 	if IsValid( victim ) then
+		-- If it's an infected, use infected specific color
 		if type == "Infected" then
-			local r = glow_infected_vomit_r:GetInt()
-			local g = glow_infected_vomit_g:GetInt()
-			local b = glow_infected_vomit_b:GetInt()
-			AddHalo( victim, Color( r, g, b ), 20 )
+			AddHalo( victim, Color( r_it_inf, g_it_inf, b_it_inf ), 20 )
+		-- If not infected, use "NPC" specific color
 		elseif type == "LambdaPlayer" or type == "GenericNextBot" or type == "HumanPlayer" or type == "NPC" then
-			local r = glow_npc_vomit_r:GetInt()
-			local g = glow_npc_vomit_g:GetInt()
-			local b = glow_npc_vomit_b:GetInt()
-			AddHalo( victim, Color( r, g, b ), 8 )
+			AddHalo( victim, Color( r_it_npc, g_it_npc, b_it_npc ), 8 )
 		end
 	end
 end)

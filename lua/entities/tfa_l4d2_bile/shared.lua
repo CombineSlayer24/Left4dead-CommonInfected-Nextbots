@@ -51,7 +51,7 @@ function ENT:JarExplode()
 	
 	self:SetMoveType( MOVETYPE_NONE )
 	self:SetSolid( SOLID_NONE )
-	self:PhysicsInit( SOLID_NONE )
+	--self:PhysicsInit( SOLID_NONE )
 	self:SetCollisionGroup( COLLISION_GROUP_NONE )
 	self:SetRenderMode( RENDERMODE_TRANSALPHA )
 	self:SetColor( Color( 255, 255, 255, 0 ) )
