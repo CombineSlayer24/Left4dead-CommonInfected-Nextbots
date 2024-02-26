@@ -193,7 +193,8 @@ function ENT:Initialize()
 		self.loco:SetStepHeight( 22 )
 		self.loco:SetGravity( sv_gravity:GetFloat() )
 
-		self:SetCollisionBounds( collisionmins, collisionmaxs )
+		-- self:SetCollisionBounds( collisionmins, collisionmaxs )
+		self:SetCollisionBounds(self:OBBMins(), self:OBBMaxs())
 		self:PhysicsInitShadow()
 		self:SetSolid( SOLID_BBOX )
 

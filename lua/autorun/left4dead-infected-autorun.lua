@@ -209,7 +209,7 @@ end
 function SpawnZombie( caller, command, arguments )
 	if IsValid( caller ) then
 		if #arguments == 0 then
-			MsgC(Color(255, 255, 255), "Usage: l4d_z_spawn <common/mob/megamob> <amount> <optional spawn options>\nYou can also set amount to false to access the 3rd paramter\nEx: l4d_z_spawn mob false true\n")
+			MsgC(Color(255, 255, 255), "Usage: l4d_z_spawn <common/mob/megamob> <amount> <optional spawn options>\n\nYou can also set amount to false to access the 3rd paramter\nEx: l4d_z_spawn mob false true\n")
 			return
 		end
 
@@ -228,8 +228,8 @@ function SpawnZombie( caller, command, arguments )
 		elseif zombieType == "mob" then
 			amount = tonumber( arguments[ 2 ] ) or Rand( 8, 16 )
 			soundPath = Z_Music_Germs[ random( #Z_Music_Germs ) ]
-			caller:EmitSound( soundPath, 75, 100, 1 )
-			PrintMessage( HUD_PRINTCENTER, "[Incoming Attack!]" )
+			caller:EmitSound( soundPath, 75, 100, 0.75 )
+			PrintMessage( HUD_PRINTCENTER, "TEMP TEXT: [Incoming Attack!]" )
 			SpawnNPC( npcType, caller, amount, spawnAtCrosshair )
 
 		elseif zombieType == "megamob" then

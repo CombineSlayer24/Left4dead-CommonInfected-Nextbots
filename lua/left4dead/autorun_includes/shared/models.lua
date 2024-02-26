@@ -68,6 +68,7 @@ Z_MaleModels =
 	"models/infected/l4d2_nb/uncommon_male_roadcrew_l4d1.mdl",
 	"models/infected/l4d2_nb/uncommon_male_baggagehandler02.mdl",
 	"models/infected/l4d2_nb/uncommon_male_fallen_survivor_l4d1.mdl",
+	"models/infected/l4d2_nb/common_male_mud_l4d1.mdl",
 }
 ---------------------------------------------------------------------------------------------------------------------------------------------
 Z_FemaleModels =
