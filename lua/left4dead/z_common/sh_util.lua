@@ -149,6 +149,69 @@ function ENT:LookAtEntity( ent )
 	end
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
+function ENT:SlowEntity( ent )
+	-- Tested with 200 walk speed, 400 run speed.
+	-- May be wonky on modified values.
+
+	if ent:IsPlayer() or ent.IsLambdaPlayer then
+
+		-- Start slowing the ent down
+		if !ent.IsSlowed and ( !ent.LastSlowTime or CurTime() - ent.LastSlowTime >= 0.75 ) then
+			ent.OriginalWalkSpeed = ent:GetWalkSpeed()
+			ent.OriginalRunSpeed = ent:GetRunSpeed()
+			ent:SetWalkSpeed( ent.OriginalWalkSpeed * 0.8 )
+			ent:SetRunSpeed( ent.OriginalRunSpeed * 0.65 )
+
+			ent.IsSlowed = true
+			ent.LastSlowTime = CurTime()
+
+			--ent:ChatPrint( "Max Walk Speed: " .. math.floor( ent.OriginalWalkSpeed ) .. ", Slowed Down Walk Speed: " .. math.floor( ent:GetWalkSpeed() ) )
+			--ent:ChatPrint( "Max Run Speed: " .. math.floor( ent.OriginalRunSpeed ) .. ", Slowed Down Run Speed: " .. math.floor( ent:GetRunSpeed() ) )
+		elseif ent.IsSlowed and ( !ent.LastSlowTime or CurTime() - ent.LastSlowTime >= 0.75 ) then
+			-- If the entity is already slowed, apply a minor additional slowdown
+			ent:SetWalkSpeed( ent:GetWalkSpeed() * 0.825 )
+			ent:SetRunSpeed( ent:GetRunSpeed() * 0.78 )
+			ent.LastSlowTime = CurTime()
+
+			--ent:ChatPrint( "Max Walk Speed: " .. math.floor( ent.OriginalWalkSpeed ) .. ", Further Slowed Down Walk Speed: " .. math.floor( ent:GetWalkSpeed() ) )
+			--ent:ChatPrint( "Max Run Speed: " .. math.floor( ent.OriginalRunSpeed ) .. ", Further Slowed Down Run Speed: " .. math.floor( ent:GetRunSpeed() ) )
+		end
+
+		-- Gradually restore the ent's speed
+		local restoreTimerName = "SpeedRestore" .. ent:EntIndex()
+		if timer.Exists( restoreTimerName ) then timer_Remove( restoreTimerName ) end
+
+		timer_Create( restoreTimerName, 0.0425, 0, function()
+			if IsValid( ent ) then
+				local currentWalkSpeed = ent:GetWalkSpeed()
+				local currentRunSpeed = ent:GetRunSpeed()
+				-- Regen walk spped to normal
+				if currentWalkSpeed < ent.OriginalWalkSpeed then
+					ent:SetWalkSpeed( currentWalkSpeed + 1.2 )
+				else
+					ent:SetWalkSpeed( ent.OriginalWalkSpeed )
+				end
+
+				-- Regen Run speed to normal
+				if currentRunSpeed < ent.OriginalRunSpeed then
+					ent:SetRunSpeed( currentRunSpeed + 2.5 )
+				else
+					ent:SetRunSpeed( ent.OriginalRunSpeed )
+				end
+
+				-- We are no longer slow, remove the timer!
+				if currentWalkSpeed >= ent.OriginalWalkSpeed and currentRunSpeed >= ent.OriginalRunSpeed then
+					ent.IsSlowed = false
+					timer_Remove( restoreTimerName )
+				end
+			else
+				-- Our entity is no longer valid, remove me!
+				timer_Remove( restoreTimerName )
+			end
+		end)
+	end
+end
+---------------------------------------------------------------------------------------------------------------------------------------------
 -- Handles our Landing animations
 function ENT:DoLandingAnimation()
 	if self.IsLanded then

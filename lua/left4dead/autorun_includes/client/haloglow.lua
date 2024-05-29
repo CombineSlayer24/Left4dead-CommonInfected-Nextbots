@@ -1,51 +1,54 @@
-local hook_Run		= hook.Run
-local hook_Add 		= hook.Add
-local hook_Remove 	= hook.Remove
-local timer_Exists 	= timer.Exists
-local timer_Adjust 	= timer.Adjust
-local timer_Create 	= timer.Create
-local IsValid 		= IsValid
-local CurTime 		= CurTime
-local Color 		= Color
+local hook_Run					= hook.Run
+local hook_Add 					= hook.Add
+local hook_Remove 				= hook.Remove
+local timer_Exists 				= timer.Exists
+local timer_Adjust 				= timer.Adjust
+local timer_Create 				= timer.Create
+local IsValid 					= IsValid
+local CurTime 					= CurTime
+local Color 					= Color
 
-local glow_Item = Color( 178, 178, 255 )
+local net_Receive 				= net.Receive
+local net_ReadEntity 			= net.ReadEntity
+local net_ReadString 			= net.ReadString
 
-local glow_enable = GetConVar( "l4d_cl_glow" )
-local glow_performance_mode = GetConVar( "l4d_cl_glow_performance_mode" )
-local glow_infected_vomit_r = GetConVar( "l4d_cl_glow_infected_vomit_r" )
-local glow_infected_vomit_g = GetConVar( "l4d_cl_glow_infected_vomit_g" )
-local glow_infected_vomit_b = GetConVar( "l4d_cl_glow_infected_vomit_b" )
+local glow_Item 				= Color( 178, 178, 255 )
+local glow_enable 				= GetConVar( "l4d_cl_glow" )
+local glow_performance_mode 	= GetConVar( "l4d_cl_glow_performance_mode" )
+local glow_infected_vomit_r 	= GetConVar( "l4d_cl_glow_infected_vomit_r" )
+local glow_infected_vomit_g 	= GetConVar( "l4d_cl_glow_infected_vomit_g" )
+local glow_infected_vomit_b 	= GetConVar( "l4d_cl_glow_infected_vomit_b" )
 
-local glow_npc_vomit_r = GetConVar( "l4d_cl_glow_npc_vomit_r" )
-local glow_npc_vomit_g = GetConVar( "l4d_cl_glow_npc_vomit_g" )
-local glow_npc_vomit_b = GetConVar( "l4d_cl_glow_npc_vomit_b" )
+local glow_npc_vomit_r 			= GetConVar( "l4d_cl_glow_npc_vomit_r" )
+local glow_npc_vomit_g 			= GetConVar( "l4d_cl_glow_npc_vomit_g" )
+local glow_npc_vomit_b 			= GetConVar( "l4d_cl_glow_npc_vomit_b" )
 
-local glow_npc_r = GetConVar( "l4d_cl_glow_npc_r" )
-local glow_npc_g = GetConVar( "l4d_cl_glow_npc_g" )
-local glow_npc_b = GetConVar( "l4d_cl_glow_npc_b" )
+local glow_npc_r 				= GetConVar( "l4d_cl_glow_npc_r" )
+local glow_npc_g 				= GetConVar( "l4d_cl_glow_npc_g" )
+local glow_npc_b 				= GetConVar( "l4d_cl_glow_npc_b" )
 
-local glow_item_r = GetConVar( "l4d_cl_glow_item_r" )
-local glow_item_g = GetConVar( "l4d_cl_glow_item_g" )
-local glow_item_b = GetConVar( "l4d_cl_glow_item_b" )
+local glow_item_r 				= GetConVar( "l4d_cl_glow_item_r" )
+local glow_item_g 				= GetConVar( "l4d_cl_glow_item_g" )
+local glow_item_b 				= GetConVar( "l4d_cl_glow_item_b" )
 ---------------------------------------------------------------------------------------------------------------------------------------------
 concommand.Add( "l4d_cl_reset_glowcolors", function()
 	local oldValues = {
-		["l4d_cl_glow_infected_vomit_r"] = glow_infected_vomit_r:GetInt(),
-		["l4d_cl_glow_infected_vomit_g"] = glow_infected_vomit_g:GetInt(),
-		["l4d_cl_glow_infected_vomit_b"] = glow_infected_vomit_b:GetInt(),
-		["l4d_cl_glow_npc_vomit_r"] = glow_npc_vomit_r:GetInt(),
-		["l4d_cl_glow_npc_vomit_g"] = glow_npc_vomit_g:GetInt(),
-		["l4d_cl_glow_npc_vomit_b"] = glow_npc_vomit_b:GetInt(),
-		["l4d_cl_glow_npc_r"] = glow_npc_r:GetInt(),
-		["l4d_cl_glow_npc_g"] = glow_npc_g:GetInt(),
-		["l4d_cl_glow_npc_b"] = glow_npc_b:GetInt(),
-		["l4d_cl_glow_item_r"] = glow_item_r:GetInt(),
-		["l4d_cl_glow_item_g"] = glow_item_g:GetInt(),
-		["l4d_cl_glow_item_b"] = glow_item_b:GetInt()
+		["l4d_cl_glow_infected_vomit_r"] 	= glow_infected_vomit_r:GetInt(),
+		["l4d_cl_glow_infected_vomit_g"] 	= glow_infected_vomit_g:GetInt(),
+		["l4d_cl_glow_infected_vomit_b"] 	= glow_infected_vomit_b:GetInt(),
+		["l4d_cl_glow_npc_vomit_r"] 		= glow_npc_vomit_r:GetInt(),
+		["l4d_cl_glow_npc_vomit_g"] 		= glow_npc_vomit_g:GetInt(),
+		["l4d_cl_glow_npc_vomit_b"] 		= glow_npc_vomit_b:GetInt(),
+		["l4d_cl_glow_npc_r"] 				= glow_npc_r:GetInt(),
+		["l4d_cl_glow_npc_g"] 				= glow_npc_g:GetInt(),
+		["l4d_cl_glow_npc_b"] 				= glow_npc_b:GetInt(),
+		["l4d_cl_glow_item_r"] 				= glow_item_r:GetInt(),
+		["l4d_cl_glow_item_g"] 				= glow_item_g:GetInt(),
+		["l4d_cl_glow_item_b"] 				= glow_item_b:GetInt()
 	}
 
-	for convar, oldValue in pairs(oldValues) do
-		MsgC(Color(255, 0, 0), "- " .. convar .. " has changed, old value " .. oldValue .. "\n")
+	for convar, oldValue in pairs( oldValues ) do
+		MsgC( Color( 255, 0, 0 ), "- " .. convar .. " has changed, old value " .. oldValue .. "\n" )
 	end
 
 	RunConsoleCommand( "l4d_cl_glow_infected_vomit_r", "201" )
@@ -60,49 +63,49 @@ concommand.Add( "l4d_cl_reset_glowcolors", function()
 	RunConsoleCommand( "l4d_cl_glow_npc_g", "102" )
 	RunConsoleCommand( "l4d_cl_glow_npc_b", "255" )
 
-	MsgC(Color(255, 255, 255), "Glow colors have been reset!\n")
+	MsgC( Color( 255, 255, 255 ), "Glow colors have been reset!\n" )
 end)
 ---------------------------------------------------------------------------------------------------------------------------------------------
 -- Set up our custom glow outline for entities.
-local function DrawHalo( victim, color )
+local function DrawHalo( ent, color )
 	local ScrW, ScrH = ScrW(), ScrH()
-	local CopyMat		= Material( "pp/copy" )
-	local mat_Sub		= Material( "pp/add" )
-	local OutlineMat	= CreateMaterial( "OutlineMat", "UnlitGeneric",{ [ "$ignorez" ] = 1,[ "$alphatest" ] = 1 } )
-	local StoreTexture	= render.GetScreenEffectTexture(0)
-	local DrawTexture	= render.GetScreenEffectTexture(1)
-	local render = render
-	local render_GetRenderTarget = render.GetRenderTarget
-	local render_CopyRenderTargetToTexture = render.CopyRenderTargetToTexture
-	local render_Clear = render.Clear
-	local render_SetStencilEnable = render.SetStencilEnable
-	local render_SetStencilWriteMask = render.SetStencilWriteMask
-	local render_SetStencilTestMask = render.SetStencilTestMask
-	local render_SetStencilCompareFunction = render.SetStencilCompareFunction
-	local render_SetStencilFailOperation = render.SetStencilFailOperation
-	local render_SetStencilZFailOperation = render.SetStencilZFailOperation
-	local render_SetStencilPassOperation = render.SetStencilPassOperation
-	local render_SetStencilReferenceValue = render.SetStencilReferenceValue
-	local render_SetMaterial = render.SetMaterial
-	local render_DrawScreenQuad = render.DrawScreenQuad
-	local render_DrawScreenQuadEx = render.DrawScreenQuadEx
-	local render_SetRenderTarget = render.SetRenderTarget
-	local render_SuppressEngineLighting = render.SuppressEngineLighting
-	local render_BlurRenderTarget = render.BlurRenderTarget
-	local render_ClearStencil = render.ClearStencil
-	local surface_SetDrawColor = surface.SetDrawColor
-	local surface_DrawRect = surface.DrawRect
-	local cam = cam
-	local cam_Start3D = cam.Start3D
-	local cam_End3D = cam.End3D
-	local cam_Start2D = cam.Start2D
-	local cam_End2D = cam.End2D
-	local cam_IgnoreZ = cam.IgnoreZ
-	local STENCIL_ALWAYS = STENCIL_ALWAYS
-	local STENCIL_REPLACE = STENCIL_REPLACE
-	local STENCIL_KEEP = STENCIL_KEEP
+	local CopyMat							= Material( "pp/copy" )
+	--local mat_Sub							= Material( "pp/add" )
+	local OutlineMat						= CreateMaterial( "OutlineMat", "UnlitGeneric",{ [ "$ignorez" ] = 1,[ "$alphatest" ] = 1 } )
+	local StoreTexture						= render.GetScreenEffectTexture( 0 )
+	local DrawTexture						= render.GetScreenEffectTexture( 1 )
+	local render 							= render
+	local render_GetRenderTarget 			= render.GetRenderTarget
+	local render_CopyRenderTargetToTexture 	= render.CopyRenderTargetToTexture
+	local render_Clear 						= render.Clear
+	local render_SetStencilEnable 			= render.SetStencilEnable
+	local render_SetStencilWriteMask		= render.SetStencilWriteMask
+	local render_SetStencilTestMask 		= render.SetStencilTestMask
+	local render_SetStencilCompareFunction 	= render.SetStencilCompareFunction
+	local render_SetStencilFailOperation 	= render.SetStencilFailOperation
+	local render_SetStencilZFailOperation 	= render.SetStencilZFailOperation
+	local render_SetStencilPassOperation 	= render.SetStencilPassOperation
+	local render_SetStencilReferenceValue 	= render.SetStencilReferenceValue
+	local render_SetMaterial 				= render.SetMaterial
+	local render_DrawScreenQuad 			= render.DrawScreenQuad
+	local render_DrawScreenQuadEx 			= render.DrawScreenQuadEx
+	local render_SetRenderTarget 			= render.SetRenderTarget
+	local render_SuppressEngineLighting 	= render.SuppressEngineLighting
+	local render_BlurRenderTarget 			= render.BlurRenderTarget
+	local render_ClearStencil 				= render.ClearStencil
+	local surface_SetDrawColor 				= surface.SetDrawColor
+	local surface_DrawRect 					= surface.DrawRect
+	local cam 								= cam
+	local cam_Start3D 						= cam.Start3D
+	local cam_End3D 						= cam.End3D
+	local cam_Start2D 						= cam.Start2D
+	local cam_End2D 						= cam.End2D
+	local cam_IgnoreZ 						= cam.IgnoreZ
+	local STENCIL_ALWAYS 					= STENCIL_ALWAYS
+	local STENCIL_REPLACE 					= STENCIL_REPLACE
+	local STENCIL_KEEP 						= STENCIL_KEEP
 
-	if !IsValid( victim ) then return end
+	if !IsValid( ent ) then return end
 
 	local scene = render_GetRenderTarget()
 	render_CopyRenderTargetToTexture( StoreTexture )
@@ -120,7 +123,7 @@ local function DrawHalo( victim, color )
 		
 		cam_Start3D()
 			render_SetStencilReferenceValue( 1 )
-			victim:DrawModel()
+			ent:DrawModel()
 		cam_End3D()
 		
 		render_SetStencilCompareFunction( STENCIL_EQUAL )
@@ -138,24 +141,28 @@ local function DrawHalo( victim, color )
 	render_CopyRenderTargetToTexture( DrawTexture )
 
 	-- While this will look like the glow in L4D2, it will hamper performance
-	if !glow_performance_mode:GetBool() then render_BlurRenderTarget( DrawTexture, 1, 1, 0 ) end
+--	if !glow_performance_mode:GetBool() then 
+--		render_BlurRenderTarget( DrawTexture, 2, 2, 0 )
+--	end
 
 	render_SetRenderTarget( scene )
 	CopyMat:SetTexture( "$basetexture", StoreTexture )
+	OutlineMat:SetTexture( "$basetexture", DrawTexture )
 	render_SetMaterial( CopyMat )
 	render_DrawScreenQuad()
 	
 	render_SetStencilEnable( true )
 		render_SetStencilReferenceValue( 0 )
 		render_SetStencilCompareFunction( STENCIL_EQUAL )
-		OutlineMat:SetTexture( "$basetexture", DrawTexture )
 
 		-- While this will look like the glow in L4D2, it will hamper performance
-		if !glow_performance_mode:GetBool() then
-			render_SetMaterial( mat_Sub )
-		else
-			render_SetMaterial( OutlineMat )
-		end
+--		if !glow_performance_mode:GetBool() then
+--			render_SetMaterial( mat_Sub )
+--		else
+--			render_SetMaterial( OutlineMat )
+--		end
+
+		render_SetMaterial( OutlineMat )
 		
 		for x = -1, 1 do
 			for y = -1, 1 do
@@ -173,21 +180,24 @@ local function DrawHalo( victim, color )
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 -- Apply our halo glow effect.
-function AddHalo( victim, color, time )
+-- ent: the entity to apply
+-- color: the color to apply halo
+-- time: optional for vomit (TODO, if it's not set, them make it to where it never gets removed.)
+function AddHalo( ent, color, time )
 	if !glow_enable:GetBool() then return end
 
-	local timerName = "victimHalo" .. victim:EntIndex()
+	local timerName = "victimHalo" .. ent:EntIndex()
 
 	local function RemoveHooks()
 		hook_Remove( "PostDrawEffects", timerName )
 		hook_Remove( "PreDrawHalos", timerName )
-		victim.Is_Vomited = false
+		ent.Is_Vomited = false
 	end
 
 	hook_Add( "PostDrawEffects", timerName, function()
 		hook_Run( "PreDrawHalos" )
-		if IsValid( victim ) then
-			DrawHalo( victim, color )
+		if IsValid( ent ) then
+			DrawHalo( ent, color )
 		else
 			RemoveHooks()
 		end
@@ -195,22 +205,22 @@ function AddHalo( victim, color, time )
 
 	if timer_Exists( timerName ) then
 		timer_Adjust( timerName, time, 1, function()
-			if IsValid( victim ) then
+			if IsValid( ent ) then
 				RemoveHooks()
 			end
 		end)
 	else
 		timer_Create( timerName, time, 1, function()
-			if IsValid( victim ) then
+			if IsValid( ent ) then
 				RemoveHooks()
 			end
 		end)
 	end
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
-net.Receive( "Event_Vomited", function()
-	local victim = net.ReadEntity()
-	local type = net.ReadString()
+net_Receive( "Event_Vomited", function()
+	local victim = net_ReadEntity()
+	local entType = net_ReadString()
 
 	local r_it_inf = glow_infected_vomit_r:GetInt()
 	local g_it_inf = glow_infected_vomit_g:GetInt()
@@ -222,31 +232,31 @@ net.Receive( "Event_Vomited", function()
 
 	if IsValid( victim ) then
 		-- If it's an infected, use infected specific color
-		if type == "Infected" then
+		if entType == "Infected" then
 			AddHalo( victim, Color( r_it_inf, g_it_inf, b_it_inf ), 20 )
 		-- If not infected, use "NPC" specific color
-		elseif type == "LambdaPlayer" or type == "GenericNextBot" or type == "HumanPlayer" or type == "NPC" then
+		elseif entType == "LambdaPlayer" or entType == "GenericNextBot" or entType == "HumanPlayer" or type == "NPC" then
 			AddHalo( victim, Color( r_it_npc, g_it_npc, b_it_npc ), 8 )
 		end
 	end
 end)
 
-net.Receive( "Event_Highlight_Entity", function()
-	local entity = net.ReadEntity()
-	local type = net.ReadString()
+net_Receive( "Event_Highlight_Entity", function()
+	local entity 		= net_ReadEntity()
+	local type 			= net_ReadString()
 
-	local r_close = glow_item_r:GetInt()
-	local g_close = glow_item_g:GetInt()
-	local b_close = glow_item_b:GetInt()
+	local r_close 		= glow_item_r:GetInt()
+	local g_close 		= glow_item_g:GetInt()
+	local b_close 		= glow_item_b:GetInt()
 
-	local r_far = glow_npc_r:GetInt()
-	local g_far = glow_npc_g:GetInt()
-	local b_far = glow_npc_b:GetInt()
+	local r_far 		= glow_npc_r:GetInt()
+	local g_far 		= glow_npc_g:GetInt()
+	local b_far 		= glow_npc_b:GetInt()
 
 	if IsValid( entity ) then
 		local playerPos = LocalPlayer():GetPos()
 		local entityPos = entity:GetPos()
-		local distance = playerPos:Distance( entityPos )
+		local distance 	= playerPos:Distance( entityPos )
 
 		-- Check if the player is looking at the entity
 		local trace = LocalPlayer():GetEyeTrace()

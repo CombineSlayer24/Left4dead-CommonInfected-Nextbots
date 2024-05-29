@@ -1,9 +1,9 @@
 
-local pairs = pairs
-local table_insert = table.insert
-local table_remove = table.remove
-local string_gsub = string.gsub
-local string_Explode = string.Explode
+local pairs 			= pairs
+local table_insert 		= table.insert
+local table_remove 		= table.remove
+local string_gsub 		= string.gsub
+local string_Explode 	= string.Explode
 
 ---------------------------------------------------------------------------------------------------------------------------------------------
 Z_MaleModels =
@@ -68,7 +68,18 @@ Z_MaleModels =
 	"models/infected/l4d2_nb/uncommon_male_roadcrew_l4d1.mdl",
 	"models/infected/l4d2_nb/uncommon_male_baggagehandler02.mdl",
 	"models/infected/l4d2_nb/uncommon_male_fallen_survivor_l4d1.mdl",
-	"models/infected/l4d2_nb/common_male_mud_l4d1.mdl",
+	"models/infected/l4d2_nb/uncommon_male_mud_l4d1.mdl",
+
+	"models/infected/laststand_nb/common_suit.mdl",
+	"models/infected/laststand_nb/common_suit.mdl",
+	"models/infected/laststand_nb/common_suit.mdl",
+	"models/infected/laststand_nb/common_suit.mdl",
+	"models/infected/laststand_nb/common_suit.mdl",
+	"models/infected/laststand_nb/common_male01.mdl",
+	"models/infected/laststand_nb/common_male01.mdl",
+	"models/infected/laststand_nb/common_male01.mdl",
+	"models/infected/laststand_nb/common_male01.mdl",
+	"models/infected/laststand_nb/common_male01.mdl",
 }
 ---------------------------------------------------------------------------------------------------------------------------------------------
 Z_FemaleModels =

@@ -18,7 +18,7 @@ ENT.Flameproof = false
 
 --- Include files based on sv_ sh_ or cl_
 --- These will load z_common files for our common infected to use
-local ENT_CommonFiles = file.Find( "left4dead/z_common/*", "LUA", "nameasc" )
+local ENT_CommonFiles 			= file.Find( "left4dead/z_common/*", "LUA", "nameasc" )
 
 for k, luafile in ipairs( ENT_CommonFiles ) do
 	if string.StartWith( luafile, "sv_" ) then -- Server Side Files
@@ -42,45 +42,45 @@ end
 
 --Handling Killfeed entries.
 include( "left4dead/autorun_includes/server/netmessages.lua" )
-local OnNPCKilledHook = GetConVar( "l4d_sv_call_onnpckilled" )
+local OnNPCKilledHook 			= GetConVar( "l4d_sv_call_onnpckilled" )
 
 -- This might seem reduntant, but trust me, it's not.
 -- We create locals of functions so GLua can access them faster
-local hook_Run = hook.Run
-local SimpleTimer = timer.Simple
-local timer_Create = timer.Create
-local timer_Adjust = timer.Adjust
-local timer_Stop = timer.Stop
-local timer_Remove = timer.Remove
-local ents_Create = ents.Create
-local random = math.random
-local Rand = math.Rand
-local MathHuge = math.huge
-local table_insert = table.insert
-local table_Random = table.Random
-local table_HasValue = table.HasValue
-local table_remove = table.remove
-local string_gsub = string.gsub
-local string_Explode = string.Explode
-local Clamp = math.Clamp
-local coroutine_wait = coroutine.wait
-local ents_FindInSphere = ents.FindInSphere
-local CurTime = CurTime
-local IsValid = IsValid
-local Vector = Vector
-local ents_GetAll = ents.GetAll
-local tostring = tostring
+local hook_Run 					= hook.Run
+local SimpleTimer 				= timer.Simple
+local timer_Create 				= timer.Create
+local timer_Adjust 				= timer.Adjust
+local timer_Stop 				= timer.Stop
+local timer_Remove 				= timer.Remove
+local ents_Create 				= ents.Create
+local random 					= math.random
+local Rand 						= math.Rand
+local MathHuge 					= math.huge
+local table_insert 				= table.insert
+local table_Random 				= table.Random
+local table_HasValue 			= table.HasValue
+local table_remove 				= table.remove
+local string_gsub 				= string.gsub
+local string_Explode 			= string.Explode
+local Clamp 					= math.Clamp
+local coroutine_wait 			= coroutine.wait
+local ents_FindInSphere 		= ents.FindInSphere
+local CurTime 					= CurTime
+local IsValid 					= IsValid
+local Vector 					= Vector
+local ents_GetAll 				= ents.GetAll
+local tostring 					= tostring
 
-local collisionmins = Vector( -12, -12, 0 )
-local collisionmaxs = Vector( 8, 10, 72 )
-local crouchingcollisionmaxs = Vector( 16, 16, 36 )
+local collisionmins 			= Vector( -12, -12, 0 )
+local collisionmaxs 			= Vector( 8, 10, 72 )
+local crouchingcollisionmaxs 	= Vector( 16, 16, 36 )
 
 -- Convars
-local ignorePlys = GetConVar( "ai_ignoreplayers" )
-local sv_gravity = GetConVar( "sv_gravity" )
-local droppableProps = GetConVar( "l4d_sv_createitems" )
-local developer = GetConVar( "developer" )
-local z_Difficulty = GetConVar( "l4d_sv_difficulty" )
+local ignorePlys 				= GetConVar( "ai_ignoreplayers" )
+local sv_gravity 				= GetConVar( "sv_gravity" )
+local droppableProps 			= GetConVar( "l4d_sv_createitems" )
+local developer 				= GetConVar( "developer" )
+local z_Difficulty 				= GetConVar( "l4d_sv_difficulty" )
 
 local ci_BatonModels =
 {
@@ -152,9 +152,9 @@ function ENT:Initialize()
 		self.SpeakDelay = 0 -- the last time we spoke
 
 		local z_Health
-		local z_FallenHealth = GetConVar( "l4d_sv_z_fallen_health_multiplier" ):GetInt()
-		local z_JimmyHealth = GetConVar( "l4d_sv_z_jimmy_health_multiplier" ):GetInt()
-		local z_CommonHealth = GetConVar( "l4d_sv_z_health" ):GetInt()
+		local z_FallenHealth 	= GetConVar( "l4d_sv_z_fallen_health_multiplier" ):GetInt()
+		local z_JimmyHealth 	= GetConVar( "l4d_sv_z_jimmy_health_multiplier" ):GetInt()
+		local z_CommonHealth 	= GetConVar( "l4d_sv_z_health" ):GetInt()
 
 		if self:GetUncommonInf( "FALLEN" ) then
 			z_Health = 1000 * ( z_FallenHealth / 20 )
@@ -275,11 +275,11 @@ function ENT:CreateItemOnDeath( ragdoll )
 			phys:Wake()
 
 			-- Apply a force so they fly up or around.
-			local randX = random( -250, 250 )
-			local randY = random( -250, 250 )
-			local randZ = random( 450, 1000 )
-			local force = Vector( randX, randY, randZ )
-			local position = item:WorldToLocal( item:OBBCenter() ) + Vector( Rand( 5, 10 ), Rand( 5, 10 ), Rand( -10, 60 ) )
+			local randX 			= random( -250, 250 )
+			local randY 			= random( -250, 250 )
+			local randZ 			= random( 450, 1000 )
+			local force 			= Vector( randX, randY, randZ )
+			local position 			= item:WorldToLocal( item:OBBCenter() ) + Vector( Rand( 5, 10 ), Rand( 5, 10 ), Rand( -10, 60 ) )
 			phys:ApplyForceOffset( force, position )
 		end
 	end
@@ -373,23 +373,25 @@ function ENT:PlaySequenceAndWait( seq, rate, callback )
 		self.PlayingAnimSeq = false
 	end )
 end
+
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:OnTakeDamage( dmginfo )
-	local attacker = dmginfo:GetAttacker()
-	local inflictor = dmginfo:GetInflictor()
-	local armorProtection = GetConVar( "l4d_sv_z_riot_armor_protection" )
-	local damageType = dmginfo:GetDamageType()
+	local attacker 							= dmginfo:GetAttacker()
+	local inflictor 						= dmginfo:GetInflictor()
+	local armorProtection					= GetConVar( "l4d_sv_z_riot_armor_protection" )
+	local damageType 						= dmginfo:GetDamageType()
+
 	if IsValid( attacker ) then
 		if self:Health() > 0 then
 			if self:GetUncommonInf( "RIOT" ) then
 
-				local direction = ( attacker:GetPos() - self:GetPos() ):GetNormalized()
-				local selfForward = self:GetForward()
-				local isAttackerInFront = direction:Dot( selfForward ) > 0
-				local DamageToBlock = { DMG_GENERIC, DMG_CLUB, DMG_SLASH, DMG_AIRBOAT, DMG_DIRECT, DMG_SNIPER, DMG_BUCKSHOT, DMG_BULLET }
+				local direction 			= ( attacker:GetPos() - self:GetPos() ):GetNormalized()
+				local selfForward 			= self:GetForward()
+				local isAttackerInFront 	= direction:Dot( selfForward ) > 0
+				local DamageToBlock 		= { DMG_GENERIC, DMG_CLUB, DMG_SLASH, DMG_AIRBOAT, DMG_DIRECT, DMG_SNIPER, DMG_BUCKSHOT, DMG_BULLET }
 
 				-- Block incoming frontal damage, but not from the backside
-				if isAttackerInFront and DamageToBlock[ damageType ] and attacker == inflictor then
+				if isAttackerInFront and DamageToBlock[ damageType ] then
 					if armorProtection:GetBool() then
 						-- Full protection
 						dmginfo:ScaleDamage( 0 )
@@ -666,17 +668,17 @@ function ENT:Attack(target)
 					return
 				end
 
-				local zSmackDMG
+				local smackDmg
 				local dmginfo = DamageInfo()
 				local z_Difficulty = GetConVar( "l4d_sv_difficulty" ):GetInt()
 
-				if z_Difficulty 		== 0 	 then zSmackDMG = 1
-					elseif z_Difficulty == 1 	 then zSmackDMG = 2
-					elseif z_Difficulty == 2 	 then zSmackDMG = 5
-					elseif z_Difficulty == 3 	 then zSmackDMG = 20 
+				if z_Difficulty 		== 0 	 then smackDmg = 1
+					elseif z_Difficulty == 1 	 then smackDmg = 2
+					elseif z_Difficulty == 2 	 then smackDmg = 5
+					elseif z_Difficulty == 3 	 then smackDmg = 20 
 				end
 				
-				dmginfo:SetDamage( zSmackDMG )
+				dmginfo:SetDamage( smackDmg )
 				dmginfo:SetDamageType( DMG_DIRECT )
 				dmginfo:SetInflictor( self )
 				dmginfo:SetAttacker( self )
@@ -698,69 +700,6 @@ function ENT:Attack(target)
 	return true
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
-function ENT:SlowEntity( ent )
-	-- Tested with 200 walk speed, 400 run speed.
-	-- May be wonky on modified values.
-
-	if ent:IsPlayer() or ent.IsLambdaPlayer then
-
-		-- Start slowing the ent down
-		if !ent.IsSlowed and ( !ent.LastSlowTime or CurTime() - ent.LastSlowTime >= 0.75 ) then
-			ent.OriginalWalkSpeed = ent:GetWalkSpeed()
-			ent.OriginalRunSpeed = ent:GetRunSpeed()
-			ent:SetWalkSpeed( ent.OriginalWalkSpeed * 0.8 )
-			ent:SetRunSpeed( ent.OriginalRunSpeed * 0.65 )
-
-			ent.IsSlowed = true
-			ent.LastSlowTime = CurTime()
-
-			--ent:ChatPrint( "Max Walk Speed: " .. math.floor( ent.OriginalWalkSpeed ) .. ", Slowed Down Walk Speed: " .. math.floor( ent:GetWalkSpeed() ) )
-			--ent:ChatPrint( "Max Run Speed: " .. math.floor( ent.OriginalRunSpeed ) .. ", Slowed Down Run Speed: " .. math.floor( ent:GetRunSpeed() ) )
-		elseif ent.IsSlowed and ( !ent.LastSlowTime or CurTime() - ent.LastSlowTime >= 0.75 ) then
-			-- If the entity is already slowed, apply a minor additional slowdown
-			ent:SetWalkSpeed( ent:GetWalkSpeed() * 0.825 )
-			ent:SetRunSpeed( ent:GetRunSpeed() * 0.78 )
-			ent.LastSlowTime = CurTime()
-
-			--ent:ChatPrint( "Max Walk Speed: " .. math.floor( ent.OriginalWalkSpeed ) .. ", Further Slowed Down Walk Speed: " .. math.floor( ent:GetWalkSpeed() ) )
-			--ent:ChatPrint( "Max Run Speed: " .. math.floor( ent.OriginalRunSpeed ) .. ", Further Slowed Down Run Speed: " .. math.floor( ent:GetRunSpeed() ) )
-		end
-
-		-- Gradually restore the ent's speed
-		local restoreTimerName = "SpeedRestore" .. ent:EntIndex()
-		if timer.Exists( restoreTimerName ) then timer_Remove( restoreTimerName ) end
-
-		timer_Create( restoreTimerName, 0.0425, 0, function()
-			if IsValid( ent ) then
-				local currentWalkSpeed = ent:GetWalkSpeed()
-				local currentRunSpeed = ent:GetRunSpeed()
-				-- Regen walk spped to normal
-				if currentWalkSpeed < ent.OriginalWalkSpeed then
-					ent:SetWalkSpeed( currentWalkSpeed + 1.2 )
-				else
-					ent:SetWalkSpeed( ent.OriginalWalkSpeed )
-				end
-
-				-- Regen Run speed to normal
-				if currentRunSpeed < ent.OriginalRunSpeed then
-					ent:SetRunSpeed( currentRunSpeed + 2.5 )
-				else
-					ent:SetRunSpeed( ent.OriginalRunSpeed )
-				end
-
-				-- We are no longer slow, remove the timer!
-				if currentWalkSpeed >= ent.OriginalWalkSpeed and currentRunSpeed >= ent.OriginalRunSpeed then
-					ent.IsSlowed = false
-					timer_Remove( restoreTimerName )
-				end
-			else
-				-- Our entity is no longer valid, remove me!
-				timer_Remove( restoreTimerName )
-			end
-		end)
-	end
-end
----------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:ChaseTarget( target )
 	self:StartRun()
 	self:SetBehavior( "ChasingVictim" )
@@ -777,11 +716,12 @@ function ENT:ChaseTarget( target )
 
 	while (path:IsValid() and TargetToChase:IsValid()) do
 
-		if ( path:GetAge() > 0.1 ) then
+		if ( path:GetAge() > 0.125 ) then
 			path:Compute( self, TargetToChase:GetPos())
 		end
 
 		path:Update( self )
+		//path:Draw()
 
 		if ( self.loco:IsStuck() ) then
 			self:HandleStuck()

@@ -1,8 +1,8 @@
 -- Include files in the corresponding folders
 -- Autorun files are seperated in folders unlike the ENT include lua files
 
-local file_Find = file.Find
-local ipairs = ipairs
+local file_Find 	= file.Find
+local ipairs 		= ipairs
 
 -- Base Addon includes --
 ---------------------------------------------------------------------------------------------------------------------------------------------
@@ -77,26 +77,26 @@ concommand.Add( "l4d_dev_reloadaddon", InitializeAddon )
 -- for now.
 
 ---------------------------------------------------------------------------------------------------------------------------------------------
-local IsValid = IsValid
-local random = math.random
-local Rand = math.Rand
-local GetConVar = GetConVar
-local Rad = math.rad
-local Cos = math.cos
-local VectorRand = VectorRand
-local ents_Create = ents.Create
-local Angle = Angle
-local EffectData = EffectData
-local util_Effect = util.Effect
-local undo_Create = undo.Create
-local undo_SetPlayer = undo.SetPlayer
-local undo_SetCustomUndoText = undo.SetCustomUndoText
-local undo_AddEntity = undo.AddEntity
-local undo_Finish = undo.Finish
-local Vector = Vector
-local tonumber = tonumber
-local util_TraceHull = util.TraceHull
-local SimpleTimer = timer.Simple
+local IsValid 					= IsValid
+local random 					= math.random
+local Rand 						= math.Rand
+local GetConVar 				= GetConVar
+local Rad 						= math.rad
+local Cos 						= math.cos
+local VectorRand 				= VectorRand
+local ents_Create 				= ents.Create
+local Angle 					= Angle
+local EffectData 				= EffectData
+local util_Effect 				= util.Effect
+local undo_Create 				= undo.Create
+local undo_SetPlayer 			= undo.SetPlayer
+local undo_SetCustomUndoText 	= undo.SetCustomUndoText
+local undo_AddEntity 			= undo.AddEntity
+local undo_Finish 				= undo.Finish
+local Vector 					= Vector
+local tonumber 					= tonumber
+local util_TraceHull 			= util.TraceHull
+local SimpleTimer 				= timer.Simple
 
 -- Check if a vector is within the player's FOV and visible from the player's perspective
 function IsInFOVAndVisible( player, vec )
@@ -185,7 +185,7 @@ function SpawnNPC( class, caller, amount, spawnAtCrosshair )
 		end ]]
 	end
 
-	timer.Create(spawnTimerName, 0.065, amount, function()
+	timer.Create( spawnTimerName, 0.065, amount, function()
 		if amount <= 6 then
 			pos = areas[ random( #areas ) ]
 		end
@@ -252,22 +252,22 @@ CreateConVar( "l4d_z_spawn_radius", 2000, FCVAR_ARCHIVE, "Zombie Spawn radius fr
 -- Used for cleaning up stuff for debugging
 -- Credit to VJ Base
 if SERVER then
-	local IsValid = IsValid
-	local ipairs = ipairs
-	local ents_GetAll = ents.GetAll
+	local IsValid 		= IsValid
+	local ipairs 		= ipairs
+	local ents_GetAll 	= ents.GetAll
 	local player_GetAll = player.GetAll
 
 	local cTypes = {
-		infected = "Infected",
-		droppedguns = "Ground Weapons",
-		props = "Some Props",
-		allprops = "All Props",
-		decals = "Removed All Decals",
-		guns = "Removed Your Weapons",
-		ammo = "Removed Your Ammo",
+		infected 		= "Infected",
+		droppedguns 	= "Ground Weapons",
+		props 			= "Some Props",
+		allprops 		= "All Props",
+		decals 			= "Removed All Decals",
+		guns 			= "Removed Your Weapons",
+		ammo 			= "Removed Your Ammo",
 	}
 
-	concommand.Add("l4d_dev_cleanup", function( ply, cmd, args )
+	concommand.Add( "l4d_dev_cleanup", function( ply, cmd, args )
 		local plyValid = IsValid( ply )
 		if plyValid and !ply:IsAdmin() then return end
 
@@ -275,7 +275,7 @@ if SERVER then
 		local i = 0
 
 		if !cType then
-			MsgC(Color(255, 255, 255), "Usage: l4d_dev_cleanup < all|infected|droppedguns|props|decals|guns|ammo|sound >\n")
+			MsgC( Color( 255, 255, 255 ), "Usage: l4d_dev_cleanup < all|infected|droppedguns|props|decals|guns|ammo|sound >\n" )
 			return
 
 		elseif cType == "all" then
@@ -321,15 +321,15 @@ if SERVER then
 	end, nil, "", {FCVAR_DONTRECORD})
 end
 
-CreateConVar( "l4d_z_drawcount", 1, FCVAR_ARCHIVE, "Show the amount of zombies on screen? Useful for debugging with The Director", 0, 1 )
+CreateConVar( "l4d_z_drawcount", 0, FCVAR_ARCHIVE, "Show the amount of zombies on screen? Useful for debugging with The Director", 0, 1 )
 
 local function DrawZombieCount()
 	if !GetConVar("l4d_z_drawcount"):GetBool() then return end
 	local count = 0
-	local color = Color(0, 255, 0) -- Placeholder "default" local color
+	local color = Color( 0, 255, 0 ) -- Placeholder "default" local color
 	local jimmyFound = false
 
-	for _, ent in pairs(ents.FindByClass("z_common")) do
+	for _, ent in pairs( ents.FindByClass( "z_common" ) ) do
 		count = count + 1
 		if ent:GetUncommonInf( "JIMMYGIBBS" ) then
 			jimmyFound = true
@@ -337,24 +337,24 @@ local function DrawZombieCount()
 	end
 
 	if jimmyFound then
-		color = Color(128, 0, 0) -- Red for JIMMY GIBBS
+		color = Color( 128, 0, 0 )
 	elseif count >= 1 and count <= 6 then
-		color = Color(0, 255, 0) -- Green
+		color = Color( 0, 255, 0 )
 	elseif count >= 7 and count <= 11 then
-		color = Color(255, 255, 0) -- Yellow
+		color = Color( 255, 255, 0 )
 	elseif count >= 12 and count <= 15 then
-		color = Color(255, 0, 0) -- Red
+		color = Color( 255, 0, 0 )
 	elseif count >= 16 then
-		color = Color(128, 0, 0) -- Darker red
+		color = Color( 128, 0, 0 )
 	else
-		color = Color(255, 255, 255)
+		color = Color( 255, 255, 255 )
 	end
 
 	if count > 0 then
-		draw.SimpleTextOutlined("Total Zombies Alive: " .. count, "DermaLarge", ScrW() / 2, 42, color, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER, 2, Color(0, 0, 0))
+		draw.SimpleTextOutlined( "Total Zombies Alive: " .. count, "DermaLarge", ScrW() / 2, 42, color, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER, 2, Color( 0, 0, 0 ) )
 	else
-		draw.SimpleTextOutlined("Total Zombies Alive:", "DermaLarge", ScrW() / 2, 42, color, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER, 2, Color(0, 0, 0))
+		draw.SimpleTextOutlined( "Total Zombies Alive:", "DermaLarge", ScrW() / 2, 42, color, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER, 2, Color( 0, 0, 0 ) )
 	end
 end
 
-hook.Add("HUDPaint", "DrawZombieCount", DrawZombieCount)
+hook.Add( "HUDPaint", "DrawZombieCount", DrawZombieCount )

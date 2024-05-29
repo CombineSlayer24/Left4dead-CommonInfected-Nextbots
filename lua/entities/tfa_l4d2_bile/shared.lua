@@ -7,11 +7,11 @@ ENT.Spawnable = false
 include( "left4dead/autorun_includes/client/haloglow.lua" )
 include( "left4dead/z_common/sh_util.lua" )
 
-local random = math.random
+local random 			= math.random
 local ents_FindInSphere = ents.FindInSphere
-local pairs = pairs
-local EmitSound = EmitSound
-local abs = math.abs
+local pairs 			= pairs
+local EmitSound 		= EmitSound
+local abs 				= math.abs
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:Draw()
 	self:DrawModel()
@@ -99,10 +99,10 @@ function ENT:PhysicsCollide( data, phys )
 		hitEntity:TakeDamage( 5, self:GetOwner(), self )
 	end
 
-	local ang = data.HitNormal:Angle()
-	ang.p = abs( ang.p )
-	ang.y = abs( ang.y )
-	ang.r = abs( ang.r )
+	local ang 	= data.HitNormal:Angle()
+	ang.p 		= abs( ang.p )
+	ang.y 		= abs( ang.y )
+	ang.r 		= abs( ang.r )
 	
 	-- We hit the wall, bounce off of it
 	if ang.p > 90 or ang.p < 60 and data.HitEntity:IsWorld() then

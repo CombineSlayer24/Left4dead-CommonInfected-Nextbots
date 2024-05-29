@@ -10,33 +10,33 @@ ENT.IsTriggered 	= false
 if SERVER then
 	AddCSLuaFile()
 
-	local IsValid = IsValid
-	local Vector = Vector
-	local CurTime = CurTime
-	local EmitSound = EmitSound
-	local ipairs = ipairs
-	local Color = Color
-	local ents_Create = ents.Create
-	local timer_Simple = timer.Simple
-	local timer_Create = timer.Create
-	local timer_TimeLeft = timer.TimeLeft
-	local table_Random = table.Random
-	local random = math.random
-	local Rand = math.Rand
-	local Angle = Angle
+	local IsValid 			= IsValid
+	local Vector 			= Vector
+	local CurTime 			= CurTime
+	local EmitSound 		= EmitSound
+	local ipairs 			= ipairs
+	local Color 			= Color
+	local ents_Create 		= ents.Create
+	local timer_Simple 		= timer.Simple
+	local timer_Create 		= timer.Create
+	local timer_TimeLeft 	= timer.TimeLeft
+	local table_Random 		= table.Random
+	local random 			= math.random
+	local Rand 				= math.Rand
+	local Angle 			= Angle
 	
-	local chripSnd = "vehicles/car_alarm/car_alarm_chirp2.wav"
-	local carMdl = "models/props_vehicles/cara_95sedan.mdl"
-	local glassMdl = "models/props_vehicles/cara_95sedan_glass.mdl"
-	local matAlarm = "models/props_vehicles/cara_95sedan_glass_alarm" -- The car is primed and ready!
-	local matAlarmExpired = "models/props_vehicles/4carz1024_glass" -- The car is now "safe"
+	local chripSnd 			= "vehicles/car_alarm/car_alarm_chirp2.wav"
+	local carMdl 			= "models/props_vehicles/cara_95sedan.mdl"
+	local glassMdl 			= "models/props_vehicles/cara_95sedan_glass.mdl"
+	local matAlarm 			= "models/props_vehicles/cara_95sedan_glass_alarm" -- The car is primed and ready!
+	local matAlarmExpired 	= "models/props_vehicles/4carz1024_glass" -- The car is now "safe"
 	
-	local alarmSnd = { "vehicles/car_alarm/car_alarm.wav", "vehicles/car_alarm/car_alarm2.wav", "vehicles/car_alarm/car_alarm3.wav" }
+	local alarmSnd 			= { "vehicles/car_alarm/car_alarm.wav", "vehicles/car_alarm/car_alarm2.wav", "vehicles/car_alarm/car_alarm3.wav" }
 
-	local chirpDistance = GetConVar( "l4d_car_alarm_chirp_distance" ):GetInt()
-	local alarmDistance = GetConVar( "l4d_car_alarm_distance" ):GetInt()
+	local chirpDistance 	= GetConVar( "l4d_car_alarm_chirp_distance" ):GetInt()
+	local alarmDistance 	= GetConVar( "l4d_car_alarm_distance" ):GetInt()
 	
-	local posTbl = {
+	local lightPosTbl = {
 		Vector( -106, -32, 31 ),
 		Vector( -106, 32, 31 ),
 		Vector( 101, -37, 30 ),
@@ -74,11 +74,12 @@ if SERVER then
 		end)
 	end
 
+	-- Actually make this into it's own global function
+	-- for spawning Mega Hordes.
 	local function SpawnMegaHorde( ent )
 		if IsValid( ent ) then
 	
 			local soundPath
-			local npcType = "z_common" -- Ent Name
 	
 			local amount = Rand( 12, 16 )
 			timer_Simple( 0.75, function()
@@ -88,7 +89,7 @@ if SERVER then
 			timer_Simple( 3, function()
 				soundPath = Z_Music_Germs[ random( #Z_Music_Germs ) ]
 				ent:EmitSound( soundPath, 75, 100, 1 )
-				CreateCommon( npcType, ent, amount )
+				CreateCommon( "z_common", ent, amount )
 			end)
 		end
 	end
@@ -193,7 +194,7 @@ if SERVER then
 					glow:SetKeyValue( "rendercolor","255 255 150" )
 					glow:AddEFlags( EFL_NO_THINK_FUNCTION )
 					glow:SetParent( self )
-					glow:SetPos(self:LocalToWorld( posTbl[ i ] ) )
+					glow:SetPos(self:LocalToWorld( lightPosTbl[ i ] ) )
 					glow:Spawn()
 					glow:Activate()
 
@@ -260,7 +261,7 @@ if SERVER then
 						glow:SetKeyValue( "rendercolor", "255 255 150" )
 						glow:AddEFlags( EFL_NO_THINK_FUNCTION )
 						glow:SetParent( self )
-						glow:SetPos( self:LocalToWorld( posTbl[ i ] ) )
+						glow:SetPos( self:LocalToWorld( lightPosTbl[ i ] ) )
 						glow:Spawn()
 						glow:Activate()
 						glow:Fire( "Hidesprite", "", 0.2 )
