@@ -18,15 +18,12 @@ local glow_performance_mode 	= GetConVar( "l4d_cl_glow_performance_mode" )
 local glow_infected_vomit_r 	= GetConVar( "l4d_cl_glow_infected_vomit_r" )
 local glow_infected_vomit_g 	= GetConVar( "l4d_cl_glow_infected_vomit_g" )
 local glow_infected_vomit_b 	= GetConVar( "l4d_cl_glow_infected_vomit_b" )
-
 local glow_npc_vomit_r 			= GetConVar( "l4d_cl_glow_npc_vomit_r" )
 local glow_npc_vomit_g 			= GetConVar( "l4d_cl_glow_npc_vomit_g" )
 local glow_npc_vomit_b 			= GetConVar( "l4d_cl_glow_npc_vomit_b" )
-
 local glow_npc_r 				= GetConVar( "l4d_cl_glow_npc_r" )
 local glow_npc_g 				= GetConVar( "l4d_cl_glow_npc_g" )
 local glow_npc_b 				= GetConVar( "l4d_cl_glow_npc_b" )
-
 local glow_item_r 				= GetConVar( "l4d_cl_glow_item_r" )
 local glow_item_g 				= GetConVar( "l4d_cl_glow_item_g" )
 local glow_item_b 				= GetConVar( "l4d_cl_glow_item_b" )

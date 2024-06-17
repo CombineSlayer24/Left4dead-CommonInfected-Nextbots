@@ -100,10 +100,9 @@ if SERVER then
 		local ent = ents_Create( "sent_alarmcar" )
 		local color = table_Random( carColors )
 		
-			-- Adjust the angle of the car to face the player
 		local ang = ply:GetAngles()
-		ang.yaw = ang.yaw + 90 -- Rotate the car 90 degrees
-		ent:SetAngles(ang)
+		ang.yaw = ang.yaw + 90
+		ent:SetAngles( ang )
 
 		ent:SetPos( SpawnPos )
 		ent:Spawn()
@@ -194,7 +193,7 @@ if SERVER then
 					glow:SetKeyValue( "rendercolor","255 255 150" )
 					glow:AddEFlags( EFL_NO_THINK_FUNCTION )
 					glow:SetParent( self )
-					glow:SetPos(self:LocalToWorld( lightPosTbl[ i ] ) )
+					glow:SetPos( self:LocalToWorld( lightPosTbl[ i ] ) )
 					glow:Spawn()
 					glow:Activate()
 

@@ -1,13 +1,24 @@
-local random = math.random
-local IsValid = IsValid
+local random 					= math.random
+local IsValid 					= IsValid
+local Angle 					= Angle
+local hook_Add 					= hook.Add
+local util_AddNetworkString 	= util.AddNetworkString
+local net_Start 				= net.Start
+local net_Receive 				= net.Receive
+local net_WriteString 			= net.WriteString
+local net_WriteInt 				= net.WriteInt
+local net_Broadcast 			= net.Broadcast
+local net_WriteEntity 			= net.WriteEntity
+local net_ReadString 			= net.ReadString
+local net_ReadInt 				= net.ReadInt
 
 if SERVER then
-	util.AddNetworkString("ZombieDeath")
-	util.AddNetworkString( "Event_Vomited" )
-	util.AddNetworkString( "Event_Highlight_Entity" )
+	util_AddNetworkString( "ZombieDeath" )
+	util_AddNetworkString( "Event_Vomited" )
+	util_AddNetworkString( "Event_Highlight_Entity" )
 
-	local KillfeedOverride = CreateConVar("l4d_sv_killfeed_override", 0, FCVAR_ARCHIVE + FCVAR_NOTIFY, "If L4D2 Nextbots should override killfeed so it wont display two killfeed entries?", 0, 1)
-	local CallNPCKilled = CreateConVar("l4d_sv_call_onnpckilled", 0, FCVAR_ARCHIVE + FCVAR_NOTIFY, "If L4D2 Nextbots should call 'OnNPCKilled' hook?", 0, 1)
+	local KillfeedOverride 	= CreateConVar("l4d_sv_killfeed_override", 0, FCVAR_ARCHIVE + FCVAR_NOTIFY, "If L4D2 Nextbots should override killfeed so it wont display two killfeed entries?", 0, 1)
+	local CallNPCKilled 	= CreateConVar("l4d_sv_call_onnpckilled", 0, FCVAR_ARCHIVE + FCVAR_NOTIFY, "If L4D2 Nextbots should call 'OnNPCKilled' hook?", 0, 1)
 
 	function GetDeathNoticeZombieName( ent )
 		if ent:GetClass() == "npc_citizen" then
@@ -60,43 +71,43 @@ if SERVER then
 			victim.IsLambdaPlayer = true
 		end
 
-		net.Start("ZombieDeath")
-		net.WriteString( attackername )
-		net.WriteInt( attackerteam, 8 )
-		net.WriteString( victimname )
-		net.WriteInt( victimteam, 8 )
-		net.WriteString( inflictorname )
-		net.Broadcast()
+		net_Start( "ZombieDeath" )
+		net_WriteString( attackername )
+		net_WriteInt( attackerteam, 8 )
+		net_WriteString( victimname )
+		net_WriteInt( victimteam, 8 )
+		net_WriteString( inflictorname )
+		net_Broadcast()
 	end
 
 	function HandleHaloEvent( entity, entityType )
-		net.Start( "Event_Highlight_Entity" )
-		net.WriteEntity( entity )
-		net.WriteString( entityType )
-		net.Broadcast()
+		net_Start( "Event_Highlight_Entity" )
+		net_WriteEntity( entity )
+		net_WriteString( entityType )
+		net_Broadcast()
 	end
 
-	function HandleVomitEvent( victim, type )
+	function HandleVomitEvent( victim, entType )
 		if IsValid( victim ) and ( !victim.NextVomitTime or victim.NextVomitTime < CurTime() ) then
 			victim.NextVomitTime = CurTime() + 2
 			victim.Is_Vomited = true
-			net.Start( "Event_Vomited" )
-			net.WriteEntity( victim )
-			net.WriteString( type )
-			net.Broadcast()
+			net_Start( "Event_Vomited" )
+			net_WriteEntity( victim )
+			net_WriteString( entType )
+			net_Broadcast()
 
-			if type == "Infected" then 
+			if entType == "Infected" then 
 				victim:Vocalize( ZCommon_Pain )
 			end
 
-			if type == "HumanPlayer" then 
+			if entType == "HumanPlayer" then 
 				victim:ViewPunch( Angle( random( -1, 8 ), random( -1, 10 ), random( -1, 12 ) ) )
 			end
 
-			if type == "LambdaPlayer" then
+			if entType == "LambdaPlayer" then
 				if random( 100 ) <= victim:GetVoiceChance() then
 					local soundFiles = { "death", "panic", "witness" }
-					victim:PlaySoundFile( soundFiles[random( 3 ) ] )
+					victim:PlaySoundFile( soundFiles[ random( 3 ) ] )
 				end
 
 				if random( 2 ) == 1 then
@@ -105,44 +116,20 @@ if SERVER then
 			end
 
 			-- The vomit soundeffect to play 
-			if type != "HumanPlayer" then
+			if entType != "HumanPlayer" then
 				victim:EmitSound( "left4dead/music/tags/pukricidehit.wav", 75, 100, 0.6 )
 			else
 				--TODO: Play the puke music on clientside only for human players!
 			end
 		end
 	end
-
-	concommand.Add("l4d_dev_check_vomit", function(ply, cmd, args)
-		local entity
-	
-		if args[1] == "self" then
-			entity = ply
-		else
-			local trace = ply:GetEyeTrace()
-			entity = trace.Entity
-		end
-	
-		if IsValid(entity) then
-			print("Classname: " .. entity:GetClass())
-	
-			if entity.Is_Vomited then
-				print("This entity has been vomited on.")
-			else
-				print("This entity has not been vomited on.")
-			end
-		else
-			print("No entity found.")
-		end
-	end)
-	
 end
 
 
 if CLIENT then
 	local KillfeedOverrideClient = GetConVar("l4d_sv_killfeed_override"):GetBool()
 	
-	hook.Add( "Initialize", "l4d_killfeedoverride", function()
+	hook_Add( "Initialize", "l4d_killfeedoverride", function()
 		if !KillfeedOverrideClient then return end
 		local olddeathnoticehookfunc = GAMEMODE.AddDeathNotice
 
@@ -153,12 +140,12 @@ if CLIENT then
 		end
 	end)
 
-	net.Receive("ZombieDeath", function()
-		local attacker = net.ReadString()
-		local attackerTeam = net.ReadInt(8)
-		local victim = net.ReadString()
-		local victimTeam = net.ReadInt(8)
-		local inflictor = net.ReadString()
-		GAMEMODE:AddDeathNotice(attacker, attackerTeam, inflictor, victim, victimTeam)
+	net_Receive("ZombieDeath", function()
+		local attacker 		= net_ReadString()
+		local attackerTeam 	= net_ReadInt( 8 )
+		local victim 		= net_ReadString()
+		local victimTeam 	= net_ReadInt( 8 )
+		local inflictor 	= net_ReadString()
+		GAMEMODE:AddDeathNotice( attacker, attackerTeam, inflictor, victim, victimTeam )
 	end)
 end

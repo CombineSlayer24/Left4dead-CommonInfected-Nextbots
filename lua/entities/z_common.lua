@@ -147,9 +147,9 @@ function ENT:Initialize()
 		self:InitSounds()
 		local mdl = self:GetModel()
 
-		self:SetBehavior( "Idle" ) -- The state for our behavior thread is currently running
-		self.ci_lastfootsteptime = 0 -- The last time we played a footstep sound
-		self.SpeakDelay = 0 -- the last time we spoke
+		self:SetBehavior( "Idle" ) 		-- The state for our behavior thread is currently running
+		self.ci_lastfootsteptime 	= 0 -- The last time we played a footstep sound
+		self.SpeakDelay 			= 0 -- the last time we spoke
 
 		local z_Health
 		local z_FallenHealth 	= GetConVar( "l4d_sv_z_fallen_health_multiplier" ):GetInt()
@@ -280,6 +280,7 @@ function ENT:CreateItemOnDeath( ragdoll )
 			local randZ 			= random( 450, 1000 )
 			local force 			= Vector( randX, randY, randZ )
 			local position 			= item:WorldToLocal( item:OBBCenter() ) + Vector( Rand( 5, 10 ), Rand( 5, 10 ), Rand( -10, 60 ) )
+
 			phys:ApplyForceOffset( force, position )
 		end
 	end
@@ -439,7 +440,7 @@ function ENT:OnTakeDamage( dmginfo )
 	end
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
-hook.Add( "ScaleNPCDamage","InfectedDamage", function( npc, hitgroup, dmginfo )
+hook.Add( "ScaleNPCDamage", "InfectedDamage", function( npc, hitgroup, dmginfo )
 	if npc:GetClass() == "z_common" then
 		if npc:GetUncommonInf( "JIMMYGIBBS" ) then
 			if hitgroup == HITGROUP_HEAD then
@@ -463,7 +464,7 @@ function ENT:OnKilled( dmginfo )
 
 	-- Suit deflate sound
 	if self:GetUncommonInf( "CEDA" ) then
-		ragdoll:EmitSound("left4dead/vocals/infected/death/ceda_suit_deflate_0" .. random( 3 ) .. ".wav", 75, random( 90, 100 ), 0.75 )
+		ragdoll:EmitSound( "left4dead/vocals/infected/death/ceda_suit_deflate_0" .. random( 3 ) .. ".wav", 75, random( 90, 100 ), 0.75 )
 	end
 
 	-- Set burn material if killed by fire.
