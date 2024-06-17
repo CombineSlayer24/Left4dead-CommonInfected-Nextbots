@@ -13,7 +13,7 @@ We plan on making Common Infected nextbots, special infected and SurvivorBots.
 
 ### Q: Can you more variations like the Human Infected Skin?
 
-### A: We don't really want to bloat up the files, as textures (currently) is 400MB for both L4D1 and L4D2 models, and Cuba's Common Infected have different UV texture placement for different skin colors based on the heads. I can also see some people perfer Grey/Human skin tones over the green skin tone that Cuba has done, which is fair. We'll see in the future for more possible L4D1 skin variations like Human looking skin and grey skin.
+### A: We don't want to bloat up the main addon. We'll include a way to implement more infected models as a moduluar add-on extension to the main core add-on.
 
 # Credits
 Without these awesome people, this add-on would not be possible.
